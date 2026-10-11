@@ -8,7 +8,14 @@ namespace BellumCivile.Behaviors
     {
         internal bool TryFinishCrownBatch(PendingPartitionSuccessionRecord pending, out string reason)
         {
-            try { return FinishCrownBatchSteps(pending, out reason); }
+            try
+            {
+                if (!FinishCrownBatchSteps(pending, out reason)) return false;
+                foreach (var promotion in pending.CrownPromotions)
+                    foreach (var house in promotion.Houses.Where(h => h.Transfer.Clan?.Kingdom == promotion.Successor))
+                        KingdomVisualHelper.RefreshClanBannerAfterInheritance(house.Transfer.Clan);
+                return true;
+            }
             catch (Exception ex)
             {
                 reason = "Crown batch finalization interrupted: " + ex.Message;

@@ -123,8 +123,7 @@ namespace BellumCivile
             if (sourceKingdom == null)
                 return new KingdomFoundingVisuals(foundingBanner, foundingPrimary, foundingSecondary, recolorMemberClans: false);
 
-            if (ShouldPreserveClanBanner(foundingClan)
-                || ShouldPreserveBreakawayBanner(sourceKingdom, foundingSourceBanner, foundingPrimary, foundingSecondary))
+            if (ShouldPreserveClanBanner(foundingClan))
                 return new KingdomFoundingVisuals(foundingBanner, foundingPrimary, foundingSecondary, recolorMemberClans: false);
 
             TailoredBannerPalette palette = BuildTailoredBannerPalette(seedKey, sourceBannerPrimary, sourceBannerSecondary);
@@ -311,6 +310,22 @@ namespace BellumCivile
                 RestoreClanBanner(preserved.Key, preserved.Value);
         }
 
+        internal static void RefreshClanBannerAfterInheritance(Clan clan)
+        {
+            if (clan == null) return;
+            // Transfer receipts verify the original artwork. Reapply the destination's policy
+            // only after the entire inheritance transaction has finished those checks.
+            try
+            {
+                InvokeClanBannerSync(clan);
+                MarkClanVisualsDirty(clan);
+            }
+            catch (Exception ex)
+            {
+                BellumCivileLogger.Log($"Completed inheritance banner refresh failed for {clan.StringId}: {ex.Message}");
+            }
+        }
+
         private static bool PaletteMatchesSource(Kingdom sourceKingdom, uint primaryColor, uint secondaryColor)
         {
             if (sourceKingdom == null)
@@ -321,17 +336,6 @@ namespace BellumCivile
 
             return (sourcePrimary == primaryColor && sourceSecondary == secondaryColor)
                 || (sourcePrimary == secondaryColor && sourceSecondary == primaryColor);
-        }
-
-        private static bool ShouldPreserveBreakawayBanner(Kingdom sourceKingdom, Banner foundingBanner, uint primaryColor, uint secondaryColor)
-        {
-            if (foundingBanner == null)
-                return false;
-
-            if (!PaletteMatchesSource(sourceKingdom, primaryColor, secondaryColor))
-                return true;
-
-            return HasForeignPaletteArtwork(sourceKingdom, foundingBanner);
         }
 
         private static Banner CaptureClanBannerToPreserve(Clan clan)
@@ -360,10 +364,16 @@ namespace BellumCivile
             if (clanBanner?.BannerDataList == null || clanBanner.BannerDataList.Count == 0)
                 return false;
 
+            // Native XML banners also contain multiple layers, mixed colors and neutral backgrounds.
+            // Artwork alone cannot opt a clan out of native kingdom-color synchronization.
+            bool hasPocPolicy = Patches.PocBannerCompatibility.TryGetPolicy(clan, out bool customBanner, out _);
+            if (!hasPocPolicy && !Patches.BannerPersistenceCompatibility.ShouldPreserve(clan))
+                return false;
+
             if (clanBanner.BannerDataList.Count > 2
                 || clanBanner.BannerDataList.Any(layer => layer.ColorId != layer.ColorId2))
                 return true;
-            if (Patches.PocBannerCompatibility.TryGetPolicy(clan, out bool customBanner, out _) && customBanner)
+            if (customBanner)
                 return true;
 
             Kingdom kingdom = clan.Kingdom;

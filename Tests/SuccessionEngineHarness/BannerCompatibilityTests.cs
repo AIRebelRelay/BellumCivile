@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
 using BellumCivile;
+using BellumCivile.Behaviors;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -24,6 +26,12 @@ internal static class BannerCompatibilityTests
     private const string Artwork = "11.1.2.1500.1500.764.764.1.0.0.505.2.1.300.400.700.600.1.1.45.506.1.2.200.250.800.900.0.0.90";
     private const string Simple = "11.1.1.1500.1500.764.764.0.0.0.505.2.2.300.400.764.764.0.0.0";
     private static bool NoPlayer(ref Clan __result) { __result = null; return false; }
+    private static bool PreserveCustomArtwork(ref bool __result) { __result = true; return false; }
+    private static bool NoVisuals() => false;
+    private static Hero _playerHero;
+    private static CharacterObject _playerCharacter;
+    private static bool PlayerCharacter(ref CharacterObject __result) { __result = _playerCharacter; return false; }
+    private static bool HumanPlayer(Hero __instance, ref bool __result) { __result = __instance == _playerHero; return false; }
     private static bool Background(ref int __result) { __result = 11; return false; }
     private static bool Icon(ref int __result) { __result = 505; return false; }
     private static bool SovereignName(ref TextObject __result) { __result = new TextObject("Kingdom of Vlandia"); return false; }
@@ -49,7 +57,7 @@ internal static class BannerCompatibilityTests
         return clan;
     }
 
-    internal static void Run(Action<bool, string> check)
+    internal static void Run(Action<bool, string> check, string game)
     {
         var harmony = new Harmony("bellum.test.banner_compatibility");
         BannerManager.Initialize();
@@ -67,6 +75,16 @@ internal static class BannerCompatibilityTests
         try
         {
             harmony.Patch(AccessTools.PropertyGetter(typeof(Clan), "PlayerClan"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(NoPlayer)));
+            harmony.Patch(AccessTools.PropertyGetter(typeof(CharacterObject), "PlayerCharacter"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(PlayerCharacter)));
+            harmony.Patch(AccessTools.PropertyGetter(typeof(Hero), "IsHumanPlayerCharacter"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(HumanPlayer)));
+            harmony.Patch(AccessTools.Method(Type("KingdomVisualHelper"), "PickBackgroundMeshId"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(Background)));
+            harmony.Patch(AccessTools.Method(Type("KingdomVisualHelper"), "PickIconMeshId"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(Icon)));
+            harmony.CreateClassProcessor(Type("Patches.CustomClanBannerSyncPatch")).Patch();
+            RunVanilla(check, realm, nativeSync, game);
+            harmony.Patch(AccessTools.Method(Type("KingdomVisualHelper"), "MarkClanVisualsDirty"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(NoVisuals)));
+            RunCompletedInheritance(check, realm, preserve: false);
+            MethodInfo persistencePolicy = AccessTools.Method(Type("Patches.BannerPersistenceCompatibility"), "ShouldPreserve");
+            harmony.Patch(persistencePolicy, prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(PreserveCustomArtwork)));
             string original = parent.ClanOriginalBanner.Serialize();
             object visuals = Call("KingdomVisualHelper", "ResolveCadetBranchVisuals", parent, "cadet_test");
             Banner inherited = Property<Banner>(visuals, "Banner");
@@ -90,14 +108,11 @@ internal static class BannerCompatibilityTests
             check(cadet.ClanOriginalBanner.Serialize() == original, "Creation survives in-place recoloring by the kingdom setter");
             check(cadet.Color == parent.ClanOriginalBanner.GetPrimaryColor(), "Creation retains banner-derived clan color metadata");
 
-            harmony.CreateClassProcessor(Type("Patches.CustomClanBannerSyncPatch")).Patch();
             nativeSync.Invoke(cadet, null);
             check(cadet.ClanOriginalBanner.Serialize() == original, "Native synchronization preserves layered cadet artwork");
             cadet.Banner = new Banner(cadet.ClanOriginalBanner.Serialize());
             nativeSync.Invoke(cadet, null);
             check(cadet.ClanOriginalBanner.Serialize() == original, "Serialized banner round trip followed by native load synchronization is lossless");
-            harmony.Patch(AccessTools.Method(Type("KingdomVisualHelper"), "PickBackgroundMeshId"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(Background)));
-            harmony.Patch(AccessTools.Method(Type("KingdomVisualHelper"), "PickIconMeshId"), prefix: new HarmonyMethod(typeof(BannerCompatibilityTests), nameof(Icon)));
             object generated = Call("KingdomVisualHelper", "ResolveCadetBranchVisuals", House(new Banner(Simple), realm), "generated_test");
             check(!Property<bool>(generated, "CopiedParentArtwork") && Property<Banner>(generated, "Banner").BannerDataList.Count == 2,
                 "Vanilla cadet generation still creates a fresh background and sigil");
@@ -113,6 +128,14 @@ internal static class BannerCompatibilityTests
             nativeSync.Invoke(parent, null);
             check(parent.ClanOriginalBanner.Serialize() == original && realm.Banner.Serialize() == kingdomBanner,
                 "Ruling house and kingdom artwork remain separate through native synchronization");
+            object breakaway = Call("KingdomVisualHelper", "ResolveBreakawayKingdomVisuals", realm, parent, "custom_rebels");
+            check(!Property<bool>(breakaway, "RecolorMemberClans") && Property<Banner>(breakaway, "Banner").Serialize() == original,
+                "Custom breakaways retain the founding house's exact artwork");
+            object successor = Call("KingdomVisualHelper", "ResolveIndependentSuccessorKingdomVisuals", realm, parent, "custom_successor");
+            check(Property<Banner>(successor, "Banner").Serialize() == original, "Custom independent successors retain their exact artwork");
+            RunCompletedInheritance(check, realm, preserve: true);
+            harmony.Unpatch(persistencePolicy, AccessTools.Method(typeof(BannerCompatibilityTests), nameof(PreserveCustomArtwork)));
+            realm.RulingClan = null;
 
             var map = new Hashtable { ["Vlandia"] = new object() };
             var display = new TextObject("Kingdom of Vlandia");
@@ -125,11 +148,164 @@ internal static class BannerCompatibilityTests
             var translatedNative = new TextObject("Valandie");
             check(ReferenceEquals(Call("Patches.PocBannerCompatibility", "SelectName", new Hashtable { ["Valandie"] = new object() }, translated, translatedNative), translatedNative), "Lookup aliases work with localized names without English rank stripping");
 
+            string bcpPath = Environment.GetEnvironmentVariable("BellumTestBannerPersistenceModule");
+            if (!string.IsNullOrWhiteSpace(bcpPath)) RunPersistence(check, harmony, realm, bcpPath);
+            else Console.WriteLine("SKIP: optional standalone Banner Color Persistence integration (set BellumTestBannerPersistenceModule).");
             string modulePath = Environment.GetEnvironmentVariable("BellumTestPocModule");
             if (!string.IsNullOrWhiteSpace(modulePath)) RunPoc(check, harmony, realm, modulePath);
             else Console.WriteLine("SKIP: optional installed POC integration (set BellumTestPocModule to its DLL).");
         }
-        finally { harmony.UnpatchAll(harmony.Id); }
+        finally { _playerHero = null; _playerCharacter = null; harmony.UnpatchAll(harmony.Id); }
+    }
+
+    private static void RunVanilla(Action<bool, string> check, Kingdom realm, MethodInfo sync, string game)
+    {
+        var clans = XDocument.Load(Path.Combine(game, "Modules", "SandBox", "ModuleData", "spclans.xml"))
+            .Descendants("Faction").Where(c => c.Attribute("banner_key") != null
+                && ((string)c.Attribute("super_faction"))?.StartsWith("Kingdom.", StringComparison.Ordinal) == true).ToList();
+        check(clans.Count > 0, "Regression fixtures read the installed game's noble clan banners");
+        foreach (var entry in clans)
+        {
+            var house = House(new Banner((string)entry.Attribute("banner_key")), realm);
+            string id = (string)entry.Attribute("id");
+            check(!(bool)Call("KingdomVisualHelper", "ShouldPreserveClanBanner", house),
+                "Native raw banner is not mistaken for custom artwork: " + id);
+            var expected = new Banner(house.ClanOriginalBanner);
+            expected.ChangePrimaryColor(realm.PrimaryBannerColor);
+            expected.ChangeIconColors(realm.SecondaryBannerColor);
+            sync.Invoke(house, null);
+            check(house.ClanOriginalBanner.Serialize() == expected.Serialize(),
+                "Native kingdom colors apply without changing the sigil: " + id);
+            house.Banner = new Banner(house.ClanOriginalBanner.Serialize());
+            sync.Invoke(house, null);
+            check(house.ClanOriginalBanner.Serialize() == expected.Serialize(),
+                "Native banner remains correct after serialization and load-style synchronization: " + id);
+        }
+
+        var founder = House(new Banner(Artwork), realm);
+        check(Call("KingdomVisualHelper", "CaptureClanBannerToPreserve", founder) == null,
+            "Native transfer snapshots do not restore neutral household colors over the destination palette");
+        uint primary = realm.PrimaryBannerColor, secondary = realm.SecondaryBannerColor;
+        AccessTools.Property(typeof(Kingdom), "PrimaryBannerColor").SetValue(realm, BannerManager.GetColor(3));
+        AccessTools.Property(typeof(Kingdom), "SecondaryBannerColor").SetValue(realm, BannerManager.GetColor(4));
+        sync.Invoke(founder, null);
+        check(founder.ClanOriginalBanner.GetPrimaryColor() == realm.PrimaryBannerColor
+            && founder.ClanOriginalBanner.GetFirstIconColor() == realm.SecondaryBannerColor,
+            "Native clans adopt a changed kingdom palette");
+        AccessTools.Property(typeof(Kingdom), "PrimaryBannerColor").SetValue(realm, primary);
+        AccessTools.Property(typeof(Kingdom), "SecondaryBannerColor").SetValue(realm, secondary);
+        sync.Invoke(founder, null);
+        check(founder.ClanOriginalBanner.GetPrimaryColor() == primary && founder.ClanOriginalBanner.GetFirstIconColor() == secondary,
+            "Native clans can return to their original kingdom colors");
+        founder.Banner = new Banner(Artwork);
+        object breakaway = Call("KingdomVisualHelper", "ResolveBreakawayKingdomVisuals", realm, founder, "native_rebels");
+        check(Property<bool>(breakaway, "RecolorMemberClans"), "Native breakaways use a uniform realm palette even with layered raw banners");
+        object successor = Call("KingdomVisualHelper", "ResolveIndependentSuccessorKingdomVisuals", realm, founder, "native_successor");
+        check(Property<Banner>(successor, "Banner").Serialize() != founder.ClanOriginalBanner.Serialize(),
+            "Native independent successors receive their own realm palette");
+        object cadet = Call("KingdomVisualHelper", "ResolveCadetBranchVisuals", founder, "native_cadet");
+        check(!Property<bool>(cadet, "CopiedParentArtwork"), "Native layered parent banners still generate a new cadet sigil");
+        check(founder.ClanOriginalBanner.Serialize() == new Banner(Artwork).Serialize(), "Founding visuals never mutate the parent's banner");
+    }
+
+    private static void RunPersistence(Action<bool, string> check, Harmony harmony, Kingdom realm, string path)
+    {
+        if (!File.Exists(path)) throw new FileNotFoundException("Banner Color Persistence test module not found", path);
+        Assembly bcp = Assembly.LoadFrom(path);
+        PropertyInfo config = AccessTools.Property(bcp.GetType("BannerColorPersistence.PersistColorSubModule", true), "Config");
+        object previous = config.GetValue(null);
+        object options = Activator.CreateInstance(config.PropertyType);
+        void Set(string name, bool value) => options.GetType().GetProperty(name).SetValue(options, value);
+        MethodInfo sync = AccessTools.Method(typeof(Clan), "UpdateBannerColorsAccordingToKingdom");
+        Type patch = bcp.GetType("BannerColorPersistence.PreventBannerColorUpdates", true);
+        var house = House(new Banner(Artwork), realm);
+        string artwork = house.ClanOriginalBanner.Serialize();
+        try
+        {
+            config.SetValue(null, options);
+            Set("BannerColorPersistenceEnabled", true);
+            Set("ShouldPreventNPCBannerColorChanges", true);
+            Call("Patches.BannerPersistenceCompatibility", "Initialize");
+            harmony.CreateClassProcessor(patch).Patch();
+            check((bool)Call("KingdomVisualHelper", "ShouldPreserveClanBanner", house), "Standalone persistence enables NPC custom-banner preservation when configured");
+            sync.Invoke(house, null);
+            check(house.ClanOriginalBanner.Serialize() == artwork, "Standalone persistence and Bellum keep custom banners intact");
+            object cadet = Call("KingdomVisualHelper", "ResolveCadetBranchVisuals", house, "bcp_cadet");
+            check(Property<bool>(cadet, "CopiedParentArtwork") && Property<Banner>(cadet, "Banner").Serialize() == artwork,
+                "Standalone persistence cadets copy the parent's exact artwork");
+            Set("ShouldPreventNPCBannerColorChanges", false);
+            check(!(bool)Call("KingdomVisualHelper", "ShouldPreserveClanBanner", house), "Player-only persistence does not disable NPC kingdom coloring");
+            sync.Invoke(house, null);
+            check(house.ClanOriginalBanner.GetPrimaryColor() == realm.PrimaryBannerColor
+                && house.ClanOriginalBanner.GetFirstIconColor() == realm.SecondaryBannerColor,
+                "Player-only persistence lets native NPC synchronization apply the realm palette");
+            _playerHero = Blank<Hero>();
+            _playerCharacter = Blank<CharacterObject>();
+            AccessTools.Field(typeof(Clan), "_leader").SetValue(house, _playerHero);
+            house.Banner = new Banner(Artwork);
+            check((bool)Call("Patches.BannerPersistenceCompatibility", "ShouldPreserve", house), "Player-only persistence still protects the actual player-led clan");
+            sync.Invoke(house, null);
+            check(house.ClanOriginalBanner.Serialize() == artwork, "Player artwork survives under the player-only persistence option");
+            _playerHero = null;
+            _playerCharacter = null;
+            Set("ShouldPreventNPCBannerColorChanges", true);
+            Set("BannerColorPersistenceEnabled", false);
+            check(!(bool)Call("KingdomVisualHelper", "ShouldPreserveClanBanner", house), "A loaded but disabled persistence option does not activate Bellum preservation");
+            config.SetValue(null, null);
+            check(!(bool)Call("KingdomVisualHelper", "ShouldPreserveClanBanner", house), "An uninitialized persistence configuration does not disable native coloring");
+        }
+        finally
+        {
+            _playerHero = null;
+            _playerCharacter = null;
+            config.SetValue(null, previous);
+            harmony.Unpatch(sync, AccessTools.Method(patch, "Prefix"));
+        }
+    }
+
+    private static void RunCompletedInheritance(Action<bool, string> check, Kingdom realm, bool preserve)
+    {
+        var house = House(new Banner(Artwork), realm);
+        var snapshot = new Banner(house.ClanOriginalBanner);
+        string original = snapshot.Serialize();
+        var expected = new Banner(snapshot);
+        if (!preserve)
+        {
+            expected.ChangePrimaryColor(realm.PrimaryBannerColor);
+            expected.ChangeIconColors(realm.SecondaryBannerColor);
+        }
+        var receipt = new RealmUnionClanRecord { Clan = house, OriginalBanner = snapshot };
+        var accession = new CrownAccessionRecord { Union = new RealmUnionRecord {
+            Destination = realm, RetirementStarted = true, RetirementReturned = true, SourceRetired = true,
+            Announced = true, Completed = true, Clans = new List<RealmUnionClanRecord> { receipt } } };
+        var unions = new CrownAccessionBehavior();
+        ((List<CrownAccessionRecord>)AccessTools.Field(typeof(CrownAccessionBehavior), "_accessions").GetValue(unions)).Add(accession);
+        var finishUnion = AccessTools.Method(typeof(CrownAccessionBehavior), "TryFinishRealmUnion");
+        check((bool)finishUnion.Invoke(unions, new object[] { accession, null })
+            && house.ClanOriginalBanner.Serialize() == expected.Serialize(),
+            "Completed union applies the destination banner policy; custom=" + preserve);
+        check(receipt.OriginalBanner.Serialize() == original, "Union refresh does not rewrite the saved source artwork");
+        house.Banner = new Banner(snapshot);
+        accession.Union.Completed = false;
+        accession.Union.RetirementStarted = false;
+        check(!(bool)finishUnion.Invoke(unions, new object[] { accession, null })
+            && house.ClanOriginalBanner.Serialize() == snapshot.Serialize(),
+            "Incomplete union cannot recolor banners before receipt verification");
+
+        var pending = new PendingPartitionSuccessionRecord("", "", "", "", "", default) {
+            CrownBatch = new CrownPartitionBatchRecord { Completed = true },
+            CrownPromotions = new List<CrownPartitionPromotionRecord> { new CrownPartitionPromotionRecord {
+                Successor = realm, Houses = new List<CrownPartitionHouseRecord> { new CrownPartitionHouseRecord { Transfer = receipt } } } } };
+        var partitions = new PartitionSuccessionBehavior();
+        ((List<PendingPartitionSuccessionRecord>)AccessTools.Field(typeof(PartitionSuccessionBehavior), "_pendingPartitions").GetValue(partitions)).Add(pending);
+        var finishPartition = AccessTools.Method(typeof(PartitionSuccessionBehavior), "TryFinishCrownBatch");
+        check((bool)finishPartition.Invoke(partitions, new object[] { pending, null })
+            && house.ClanOriginalBanner.Serialize() == expected.Serialize(),
+            "Completed partition applies the successor banner policy; custom=" + preserve);
+        house.Banner = new Banner(snapshot);
+        check(!(bool)finishPartition.Invoke(partitions, new object[] { pending, null })
+            && house.ClanOriginalBanner.Serialize() == snapshot.Serialize(),
+            "Unregistered partition cannot refresh banners");
     }
 
     private static void RunPoc(Action<bool, string> check, Harmony harmony, Kingdom realm, string path)

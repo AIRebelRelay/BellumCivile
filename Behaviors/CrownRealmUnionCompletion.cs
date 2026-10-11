@@ -39,6 +39,11 @@ namespace BellumCivile.Behaviors
                 if (!string.IsNullOrEmpty(details)) reason += ": " + details;
                 journal.PendingReason = reason;
             }
+            else
+            {
+                foreach (var receipt in journal.Clans.Where(r => r.Clan?.Kingdom == journal.Destination))
+                    KingdomVisualHelper.RefreshClanBannerAfterInheritance(receipt.Clan);
+            }
             return result;
         }
     }

@@ -162,7 +162,7 @@ internal static class Program
             }
             else if (args.Contains("--banner-compatibility"))
             {
-                BannerCompatibilityTests.Run(Check);
+                BannerCompatibilityTests.Run(Check, _game);
                 Console.WriteLine($"{_checks} banner compatibility checks passed.");
             }
             else if (args.Contains("--title-name-cache"))

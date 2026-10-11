@@ -79,6 +79,7 @@ namespace BellumCivile
             InitializeDiplomacyIntegration(finalAttempt: false);
             Patches.ArtemRealmNameCompatibility.TryApply(_harmony);
             Patches.PocBannerCompatibility.TryApply(_harmony);
+            Patches.BannerPersistenceCompatibility.Initialize();
         }
 
         private void TryRegisterBundledNavalDlcPatch()
@@ -240,6 +241,7 @@ namespace BellumCivile
                     InitializeDiplomacyIntegration(finalAttempt: true);
                 Patches.ArtemRealmNameCompatibility.TryApply(_harmony);
                 Patches.PocBannerCompatibility.TryApply(_harmony);
+                Patches.BannerPersistenceCompatibility.Initialize();
 
                 CampaignGameStarter campaignStarter = (CampaignGameStarter)gameStarterObject;
 
