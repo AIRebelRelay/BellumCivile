@@ -71,6 +71,8 @@ internal static class Program
                 CrownPartitionReconciliationTests.Run(Check);
                 CrownEstateDeliveryTests.Run(Check);
                 EstateSovereignRoutingTests.Run(Check);
+                CadetNamingTests.Run(Check);
+                TestRoyalCadetNames();
                 Console.WriteLine($"{_checks} inheritance regression checks passed.");
             }
             else if (args.Contains("--campaign-ui-startup")) CampaignUiStartupProbe.Run(Check);
@@ -169,6 +171,12 @@ internal static class Program
             {
                 TitleNameCacheTests.Run(Check);
                 Console.WriteLine($"{_checks} title-name cache checks passed.");
+            }
+            else if (args.Contains("--cadet-names"))
+            {
+                CadetNamingTests.Run(Check);
+                TestRoyalCadetNames();
+                Console.WriteLine($"{_checks} cadet naming checks passed.");
             }
             else if (args.Contains("--cadet-household-preparation"))
             {
@@ -2310,6 +2318,11 @@ internal static class Program
 
     private static void TestRoyalCadetNames()
     {
+        CadetNamingTests.WithEmptyRegistry(TestRoyalCadetNamesCore);
+    }
+
+    private static void TestRoyalCadetNamesCore()
+    {
         var royal = (Clan)FormatterServices.GetUninitializedObject(typeof(Clan));
         var married = (Clan)FormatterServices.GetUninitializedObject(typeof(Clan));
         var build = AccessTools.Method(typeof(DynasticHeirBehavior), "BuildRoyalHeiressCadetName");
@@ -2345,6 +2358,10 @@ internal static class Program
         namingPlan.EndowmentFiefs.Add("advance_fief");
         Check(roots().SequenceEqual(new[] { "advance_fief", "inherited_fief" }),
             "Formation endowment keeps naming priority before separately pending inheritance");
+        share.Fiefs.Add("principal_fief");
+        share.PrimaryFiefId = "principal_fief";
+        Check(roots().SequenceEqual(new[] { "advance_fief", "principal_fief", "inherited_fief" }),
+            "Pending death estate offers its principal holding first without changing endowment priority");
         namingPlan.EndowmentFiefs.Clear();
         share.Completed = true;
         Check(roots().Length == 0, "Completed historical shares cannot name a future cadet");

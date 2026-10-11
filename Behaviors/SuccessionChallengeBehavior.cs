@@ -11,6 +11,9 @@ namespace BellumCivile.Behaviors
     public sealed partial class SuccessionChallengeBehavior : CampaignBehaviorBase
     {
         private List<SuccessionChallengeRecord> _records = new List<SuccessionChallengeRecord>();
+
+        internal IEnumerable<CrownAccessionRecord> GetPendingCadetNamingPlans() => _records
+            .Where(r => r != null && r.IsOpen).SelectMany(r => new[] { r.Estate, r.CrownEstate, r.WarEstate });
         private Dictionary<string, int> _lastInitiationChecks = new Dictionary<string, int>();
         private readonly HashSet<SuccessionChallengeRecord> _settling = new HashSet<SuccessionChallengeRecord>();
         public static SuccessionChallengeBehavior Instance => Campaign.Current?.GetCampaignBehavior<SuccessionChallengeBehavior>();
@@ -261,6 +264,7 @@ namespace BellumCivile.Behaviors
             };
             var partition = Campaign.Current.GetCampaignBehavior<PartitionSuccessionBehavior>();
             if (partition == null) return null;
+            estate.CadetNamingSettlementId = share.PrimaryFief?.Settlement?.StringId;
             estate.CadetName = partition.PreviewAbdicationCadetName(estate);
             if (!lawfulOnly) record.FallbackGrant = fallback;
             return estate;

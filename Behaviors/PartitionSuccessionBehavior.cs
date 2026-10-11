@@ -46,6 +46,8 @@ namespace BellumCivile.Behaviors
             dataStore.SyncData("BellumCivile_PendingPartitionSuccessions", ref _pendingPartitions);
             dataStore.SyncData("BellumCivile_KnownPartitionClanLeaders", ref _knownClanLeaderIds);
             dataStore.SyncData("BC_CrossClanDeathEstates", ref _crossClanEstates);
+            dataStore.SyncData("BC_CadetClanNames", ref _cadetNames);
+            _cadetNames = _cadetNames ?? new Dictionary<string, CadetNameRecord>();
             _crossClanEstates = _crossClanEstates ?? new List<CrossClanEstateRecord>();
             EnsureCollectionsInitialized();
             PrunePendingPartitions();
@@ -502,16 +504,6 @@ namespace BellumCivile.Behaviors
             return totalTransferred;
         }
 
-        internal string PreviewAbdicationCadetName(CrownAccessionRecord record)
-        {
-            Clan household = record.EndowmentHouse;
-            if (record.Heir?.Spouse?.Clan == household
-                && household != null && record.PreviousHouse != null && record.PreviousHouse != household)
-                return DynasticHeirBehavior.BuildRoyalHeiressCadetName(record.PreviousHouse, household).ToString();
-            return BuildCadetClanName(household, GetCadetNamingFiefIds(record).Select(Settlement.Find)
-                .Select(settlement => settlement?.Town).FirstOrDefault(town => town != null)).ToString();
-        }
-
         internal bool PrepareAbdicationCadet(CrownAccessionRecord record)
         {
             if (record == null) return false;
@@ -546,14 +538,19 @@ namespace BellumCivile.Behaviors
                 return DeferCadetPreparation(record, "retained heir party is unavailable");
             // Save the clan reference immediately. Recovery initializes this same object,
             // never creates a second branch or computes a different inheritance package.
-            if (record.Cadet == null) record.Cadet = Clan.CreateClan(record.CadetId);
+            if (record.Cadet == null)
+            {
+                FinalizeCadetNameBeforeCreation(record);
+                record.Cadet = Clan.CreateClan(record.CadetId);
+            }
             Clan cadet = record.Cadet;
             if (cadet.IsEliminated) return DeferCadetPreparation(record, "cadet house was eliminated");
             if (!record.CadetInitialized)
             {
                 var visuals = KingdomVisualHelper.ResolveCadetBranchVisuals(parent, record.CadetId);
-                var name = new TextObject("{=!}" + record.CadetName);
+                var name = record.CadetNaming?.Name?.CopyTextObject() ?? new TextObject("{=!}" + record.CadetName);
                 cadet.ChangeClanName(name, name);
+                RememberCadetName(cadet, record.CadetNaming);
                 cadet.Culture = parent.Culture ?? heir.Culture;
                 cadet.Banner = visuals.Banner;
                 cadet.UpdateBannerColor(visuals.PrimaryColor, visuals.SecondaryColor);
@@ -687,15 +684,17 @@ namespace BellumCivile.Behaviors
             string clanId = promotion?.FounderId ?? BuildUniqueClanIdFromSeed(parentClan, identitySeed, heir);
             if (promotion != null && (!promotion.FounderCreationStarted || promotion.Founder != null
                 || string.IsNullOrWhiteSpace(clanId) || Clan.All.Any(c => c.StringId == clanId))) return null;
+            CadetNameRecord naming = BuildTerritorialCadetName(parentClan, residence, GetOccupiedCadetNames());
             Clan cadetClan = Clan.CreateClan(clanId);
             if (promotion != null) promotion.Founder = cadetClan;
-            TextObject clanName = BuildCadetClanName(parentClan, residence);
+            TextObject clanName = naming.Name.CopyTextObject();
             KingdomVisualHelper.CadetBranchVisuals visuals = KingdomVisualHelper.ResolveCadetBranchVisuals(parentClan, clanId);
             Banner banner = visuals.Banner;
             uint primary = visuals.PrimaryColor;
             uint icon = visuals.SecondaryColor;
 
             cadetClan.ChangeClanName(clanName, clanName);
+            RememberCadetName(cadetClan, naming);
             cadetClan.Culture = parentClan.Culture ?? heir.Culture;
             cadetClan.Banner = banner;
             cadetClan.UpdateBannerColor(primary, icon);
@@ -977,154 +976,6 @@ namespace BellumCivile.Behaviors
                 _knownClanLeaderIds[clan.StringId] = clan.Leader.StringId;
             }
         }
-
-        private static TextObject BuildCadetClanName(Clan parentClan, Town fief)
-        {
-            string fiefName = CleanFiefName(fief?.Settlement?.Name?.ToString() ?? fief?.Name?.ToString() ?? parentClan?.Name?.ToString() ?? "Cadet");
-            HashSet<string> existingClanNames = GetLivingClanNames();
-
-            foreach (string rootName in GetCadetNameRoots(parentClan, fief, fiefName))
-            {
-                TextObject candidate = ApplyCadetCultureNaming(parentClan, fief, rootName);
-                if (!ClanNameExists(candidate.ToString(), existingClanNames))
-                    return candidate;
-            }
-
-            TextObject fallback = BuildLocalizedCadetName(
-                "BC_CadetName_FiefParent",
-                "{FIEF_NAME}-{PARENT_CLAN}",
-                ("FIEF_NAME", new TextObject("{=!}" + fiefName)),
-                ("PARENT_CLAN", new TextObject("{=!}" + CleanClanName(parentClan?.Name?.ToString()))));
-            string fallbackName = fallback.ToString();
-            if (!ClanNameExists(fallbackName, existingClanNames))
-                return fallback;
-
-            int suffix = 2;
-            TextObject uniqueFallback = fallback;
-            while (ClanNameExists(uniqueFallback.ToString(), existingClanNames))
-            {
-                uniqueFallback = BuildLocalizedCadetName(
-                    "BC_CadetName_Numbered",
-                    "{BASE_NAME} {NUMBER}",
-                    ("BASE_NAME", fallback),
-                    ("NUMBER", new TextObject("{=!}" + suffix++)));
-            }
-
-            return uniqueFallback;
-        }
-
-        private static TextObject ApplyCadetCultureNaming(Clan parentClan, Town fief, string rootName)
-        {
-            TextObject root = new TextObject("{=!}" + rootName);
-            string cultureId = parentClan?.Culture?.StringId?.ToLowerInvariant() ?? string.Empty;
-            switch (cultureId)
-            {
-                case "vlandia":
-                    return BuildLocalizedCadetName("BC_CadetName_Vlandia", "dey {ROOT_NAME}", ("ROOT_NAME", root));
-                case "battania":
-                    return BuildLocalizedCadetName("BC_CadetName_Battania", "fen {ROOT_NAME}", ("ROOT_NAME", root));
-                case "aserai":
-                    return BuildLocalizedCadetName("BC_CadetName_Aserai", "Banu {ROOT_NAME}", ("ROOT_NAME", root));
-                case "sturgia":
-                    return BuildLocalizedCadetName("BC_CadetName_Sturgia", "{ROOT_NAME}ing", ("ROOT_NAME", root));
-                case "nord":
-                    return BuildLocalizedCadetName("BC_CadetName_Nord", "{ROOT_NAME}ing", ("ROOT_NAME", root));
-                case "khuzait":
-                    return BuildLocalizedCadetName("BC_CadetName_Khuzait", "{ROOT_NAME}it", ("ROOT_NAME", root));
-                case "empire":
-                    return BuildImperialCadetName(parentClan, fief, root);
-                default:
-                    return BuildLocalizedCadetName("BC_CadetName_Default", "{ROOT_NAME}", ("ROOT_NAME", root));
-            }
-        }
-
-        private static TextObject BuildImperialCadetName(Clan parentClan, Town fief, TextObject rootName)
-        {
-            switch (ResolveImperialCadetSuffixIndex(parentClan, fief))
-            {
-                case 0:
-                    return BuildLocalizedCadetName("BC_CadetName_EmpireEs", "{ROOT_NAME}es", ("ROOT_NAME", rootName));
-                case 1:
-                    return BuildLocalizedCadetName("BC_CadetName_EmpireOs", "{ROOT_NAME}os", ("ROOT_NAME", rootName));
-                default:
-                    return BuildLocalizedCadetName("BC_CadetName_EmpireIs", "{ROOT_NAME}is", ("ROOT_NAME", rootName));
-            }
-        }
-
-        private static TextObject BuildLocalizedCadetName(string id, string fallback, params (string Name, TextObject Value)[] variables)
-        {
-            TextObject text = new TextObject("{=" + id + "}" + fallback);
-            foreach (var variable in variables)
-                text.SetTextVariable(variable.Name, variable.Value ?? new TextObject(string.Empty));
-            return text;
-        }
-
-        private static IEnumerable<string> GetCadetNameRoots(Clan parentClan, Town fief, string fiefName)
-        {
-            HashSet<string> yielded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (yielded.Add(fiefName))
-                yield return fiefName;
-
-            foreach (Village village in fief?.Villages ?? Enumerable.Empty<Village>())
-            {
-                string villageName = CleanFiefName(village?.Settlement?.Name?.ToString());
-                if (!string.IsNullOrWhiteSpace(villageName) && yielded.Add(villageName))
-                    yield return villageName;
-            }
-        }
-
-        private static HashSet<string> GetLivingClanNames()
-        {
-            return new HashSet<string>(
-                Clan.All
-                    .Where(c => c != null && !c.IsEliminated)
-                    .Select(c => NormalizeClanName(c.Name?.ToString()))
-                    .Where(n => !string.IsNullOrWhiteSpace(n)),
-                StringComparer.OrdinalIgnoreCase);
-        }
-
-        private static bool ClanNameExists(string name, HashSet<string> existingClanNames)
-        {
-            return existingClanNames != null && existingClanNames.Contains(NormalizeClanName(name));
-        }
-
-        private static string NormalizeClanName(string name)
-        {
-            return string.IsNullOrWhiteSpace(name)
-                ? string.Empty
-                : name.Trim().ToLowerInvariant();
-        }
-
-        private static string CleanClanName(string name)
-        {
-            return string.IsNullOrWhiteSpace(name) ? "Cadet" : name.Trim();
-        }
-
-        private static int ResolveImperialCadetSuffixIndex(Clan parentClan, Town fief)
-        {
-            string seed = $"{parentClan?.StringId ?? string.Empty}|{fief?.StringId ?? string.Empty}";
-            int hash = 17;
-            unchecked
-            {
-                for (int i = 0; i < seed.Length; i++)
-                    hash = (hash * 31) + seed[i];
-            }
-
-            return Math.Abs(hash) % 3;
-        }
-
-        private static string CleanFiefName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return "Cadet";
-
-            string cleaned = name.Trim();
-            if (cleaned.EndsWith(" Castle", StringComparison.OrdinalIgnoreCase))
-                cleaned = cleaned.Substring(0, cleaned.Length - " Castle".Length).Trim();
-
-            return string.IsNullOrWhiteSpace(cleaned) ? name.Trim() : cleaned;
-        }
-
         private static string BuildUniqueClanIdFromSeed(Clan parentClan, string identitySeed, Hero heir)
         {
             string baseId = $"bc_partition_{parentClan.StringId}_{identitySeed}_{heir.StringId}".ToLowerInvariant();

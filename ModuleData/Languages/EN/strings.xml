@@ -364,6 +364,7 @@
     <string id="BC_Address_Lord" text="lord" />
     <string id="BC_Address_Lady" text="lady" />
     <string id="BC_CadetName_Generic" text="Cadet Branch" />
+    <string id="BC_CadetName_CastlePattern" text="{ROOT_NAME} Castle" />
     <string id="BC_CadetName_Default" text="{ROOT_NAME}" />
     <string id="BC_CadetName_Vlandia" text="dey {ROOT_NAME}" />
     <string id="BC_CadetName_Battania" text="fen {ROOT_NAME}" />

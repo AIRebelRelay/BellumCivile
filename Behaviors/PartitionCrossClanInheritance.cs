@@ -159,7 +159,7 @@ namespace BellumCivile.Behaviors
                 .Where(r => !r.Completed && r.Deceased.IsDead)
                 .SelectMany(r => r.Shares)
                 .Where(s => record.Heir != null && s.Heir == record.Heir && !s.Completed)
-                .SelectMany(s => s.Fiefs)).Distinct(StringComparer.Ordinal);
+                .SelectMany(s => s.Fiefs.OrderBy(id => id == s.PrimaryFiefId ? 0 : 1))).Distinct(StringComparer.Ordinal);
         }
 
         internal bool HasCrossClanEstate(Hero deceased) => deceased != null
@@ -317,6 +317,7 @@ namespace BellumCivile.Behaviors
                             .Where(h => h != null && h.IsAlive && h.Clan == record.Source
                                 && h != record.Source.Leader && h != Hero.MainHero)
                             .Distinct().Select(h => h.StringId).ToList();
+                        draft.CadetNamingSettlementId = share.PrimaryFiefId;
                         draft.CadetName = PreviewAbdicationCadetName(draft);
                         share.CadetPlan = draft;
                     }

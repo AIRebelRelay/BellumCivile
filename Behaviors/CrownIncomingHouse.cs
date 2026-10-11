@@ -6,6 +6,9 @@ namespace BellumCivile.Behaviors
 {
     public sealed partial class CrownAccessionBehavior
     {
+        internal System.Collections.Generic.IEnumerable<CrownAccessionRecord> GetPendingCadetNamingPlans() =>
+            _accessions.Where(r => r != null && !r.Completed && !r.CadetInitialized);
+
         internal static bool CanUseExistingCrownHouse(Hero heir, Hero leader, Hero legalHead) =>
             heir != null && (heir == leader || heir == legalHead);
 
@@ -62,6 +65,8 @@ namespace BellumCivile.Behaviors
             record.RequiresRegency = heir.Age < SuccessionLawHelper.GetAgeOfMajority();
             record.CadetId = "bc_partition_accession_" + Guid.NewGuid().ToString("N");
             record.CadetName = draft.CadetName;
+            record.CadetNaming = draft.CadetNaming;
+            record.CadetNamingSettlementId = draft.CadetNamingSettlementId;
             record.Household = draft.Household;
             record.EndowmentFiefs = draft.EndowmentFiefs;
             record.EndowmentTitles = draft.EndowmentTitles;
@@ -82,6 +87,7 @@ namespace BellumCivile.Behaviors
             var share = FeudalInheritancePlanner.GetLivingAccessionShare(plan, primary, record.Heir,
                 BellumCivileOptions.EnablePartitionSuccession);
             if (share == null) return;
+            record.CadetNamingSettlementId = share.PrimaryFief?.Settlement?.StringId;
             record.HasLivingEndowment = true;
             int others = BellumCivileOptions.EnablePartitionSuccession
                 ? Math.Min(plan.SecondaryPackages.Count, plan.NaturalHeirs.Count(h => h != primary)) : 0;

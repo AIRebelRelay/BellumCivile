@@ -41,6 +41,8 @@ namespace BellumCivile.Behaviors
             record.CreatesCadet = false;
             record.CadetId = "bc_partition_accession_" + Guid.NewGuid().ToString("N");
             record.CadetName = null;
+            record.CadetNaming = null;
+            record.CadetNamingSettlementId = null;
             record.RequiresRegency = false;
             record.HasLivingEndowment = false;
             record.EndowmentGold = 0;

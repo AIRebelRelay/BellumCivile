@@ -16,6 +16,7 @@ namespace BellumCivile
 
         protected override void DefineClassTypes()
         {
+            AddClassDefinition(typeof(CadetNameRecord), 131);
             AddClassDefinition(typeof(PartitionCompletionRecord), 129);
             AddClassDefinition(typeof(PartitionRecipientRecord), 130);
             AddClassDefinition(typeof(PlayerMarriageAgreement), 128);
@@ -156,6 +157,8 @@ namespace BellumCivile
 
         protected override void DefineContainerDefinitions()
         {
+            ConstructContainerDefinition(typeof(Dictionary<string, CadetNameRecord>));
+            ConstructContainerDefinition(typeof(List<TaleWorlds.Localization.TextObject>));
             ConstructContainerDefinition(typeof(List<PartitionCompletionRecord>));
             ConstructContainerDefinition(typeof(List<PartitionRecipientRecord>));
             ConstructContainerDefinition(typeof(List<PlayerMarriageAgreement>));

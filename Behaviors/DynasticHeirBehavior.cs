@@ -904,66 +904,10 @@ namespace BellumCivile.Behaviors
 
         internal static TextObject BuildRoyalHeiressCadetName(Clan dynastyClan, Clan marriedClan)
         {
-            string dynastyName = CleanClanName(dynastyClan?.Name?.ToString());
-            string branchName = StripCadetPrefixWhenSecondName(CleanClanName(marriedClan?.Name?.ToString()), dynastyClan, marriedClan);
-
-            if (string.IsNullOrWhiteSpace(dynastyName))
-                return string.IsNullOrWhiteSpace(branchName)
-                    ? new TextObject("{=BC_CadetName_Generic}Cadet Branch")
-                    : new TextObject("{=!}" + branchName);
-
-            if (string.IsNullOrWhiteSpace(branchName))
-                return new TextObject("{=!}" + dynastyName);
-
-            TextObject text = new TextObject("{=BC_DynasticHeiress_CadetName}{DYNASTY_NAME}-{BRANCH_NAME}");
-            text.SetTextVariable("DYNASTY_NAME", new TextObject("{=!}" + dynastyName));
-            text.SetTextVariable("BRANCH_NAME", new TextObject("{=!}" + branchName));
-            return text;
-        }
-
-        private static string StripCadetPrefixWhenSecondName(string name, Clan dynastyClan, Clan marriedClan)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return name;
-
-            string cultureId = marriedClan?.Culture?.StringId?.ToLowerInvariant()
-                ?? dynastyClan?.Culture?.StringId?.ToLowerInvariant()
-                ?? string.Empty;
-
-            switch (cultureId)
-            {
-                case "vlandia":
-                    return StripLeadingPrefix(name, "dey");
-                case "battania":
-                    return StripLeadingPrefix(name, "fen");
-                case "aserai":
-                    return StripLeadingPrefix(name, "Banu");
-                default:
-                    return name.Trim();
-            }
-        }
-
-        private static string StripLeadingPrefix(string name, string prefix)
-        {
-            string trimmed = name?.Trim() ?? string.Empty;
-            if (trimmed.Length <= prefix.Length)
-                return trimmed;
-
-            if (!trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                return trimmed;
-
-            if (!char.IsWhiteSpace(trimmed[prefix.Length]))
-                return trimmed;
-
-            string stripped = trimmed.Substring(prefix.Length).Trim();
-            return string.IsNullOrWhiteSpace(stripped) ? trimmed : stripped;
-        }
-
-        private static string CleanClanName(string name)
-        {
-            return string.IsNullOrWhiteSpace(name)
-                ? string.Empty
-                : string.Join(" ", name.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+            var names = Campaign.Current?.GetCampaignBehavior<PartitionSuccessionBehavior>();
+            CadetNameRecord Family(Clan clan) => string.IsNullOrWhiteSpace(clan?.Name?.ToString()) ? null
+                : CadetClanNameBuilder.Family(clan.Name, names?.GetKnownCadetName(clan));
+            return CadetClanNameBuilder.Dynastic(Family(dynastyClan), Family(marriedClan)).Name;
         }
 
         private void PruneCadetBranchOrigins()

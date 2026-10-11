@@ -45,6 +45,7 @@ namespace BellumCivile.Behaviors
                                     && h != Hero.MainHero && !otherHeirs.Contains(h))
                                 .Distinct().Select(h => h.StringId).ToList()
                         };
+                        draft.CadetNamingSettlementId = share.PrimaryFiefId;
                         draft.CadetName = PreviewAbdicationCadetName(draft);
                         share.CadetPlan = draft;
                     }

@@ -86,6 +86,8 @@ namespace BellumCivile
         [SaveableField(76)] public Dictionary<FactionType, Clan> ElectionEndorsements = new Dictionary<FactionType, Clan>();
         [SaveableField(77)] public bool ElectionEndorsementsCaptured;
         [SaveableField(78)] public RealmUnionRecord Union;
+        [SaveableField(79)] public CadetNameRecord CadetNaming;
+        [SaveableField(80)] public string CadetNamingSettlementId;
         public bool IsAbdication => VoluntaryAbdication || ForcedAbdication;
         public Clan EndowmentHouse => IncomingSourceHouse ?? PreviousHouse;
         public Hero EndowmentDonor => IncomingSourceHead ?? Predecessor;

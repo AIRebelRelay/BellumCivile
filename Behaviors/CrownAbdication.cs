@@ -85,6 +85,7 @@ namespace BellumCivile.Behaviors
             var plan = FeudalInheritancePlanner.BuildPlan(record.PreviousHouse, record.Predecessor,
                 BellumCivileOptions.PartitionSuccessionMainHeirReservedFiefs);
             var share = FeudalInheritancePlanner.GetPrimaryHeirShare(plan, record.Heir, BellumCivileOptions.EnablePartitionSuccession);
+            record.CadetNamingSettlementId = share.PrimaryFief?.Settlement?.StringId;
             int otherBeneficiaries = BellumCivileOptions.EnablePartitionSuccession
                 ? Math.Min(plan.SecondaryPackages.Count, plan.NaturalHeirs.Count(h => h != record.Heir)) : 0;
             record.EndowmentGold = CalculateAbdicationGold(record.Predecessor.Gold, otherBeneficiaries);
