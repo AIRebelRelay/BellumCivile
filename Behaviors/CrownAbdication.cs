@@ -173,6 +173,7 @@ namespace BellumCivile.Behaviors
         internal bool SettleCrownCadet(CrownAccessionRecord record)
         {
             if (record.EndowmentSettled) return true;
+            RetainExistingCrownChildren(record);
             Clan source = record.EndowmentHouse;
             if (source == null || source.IsEliminated || source.Kingdom != record.HouseholdRealm)
                 return DeferAbdication(record, "the source household is unavailable");

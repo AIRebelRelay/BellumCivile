@@ -14,8 +14,9 @@ internal static class CadetHouseholdPreparationTests
 {
     private sealed class Manager : ICampaignBehaviorManager
     {
-        public T GetBehavior<T>() => default;
-        public IEnumerable<T> GetBehaviors<T>() => Enumerable.Empty<T>();
+        internal readonly List<CampaignBehaviorBase> Items = new List<CampaignBehaviorBase>();
+        public T GetBehavior<T>() => Items.OfType<T>().FirstOrDefault();
+        public IEnumerable<T> GetBehaviors<T>() => Items.OfType<T>();
         public void AddBehavior(CampaignBehaviorBase b) { }
         public void RemoveBehavior<T>() where T : CampaignBehaviorBase { }
         public void ClearBehaviors() { }
@@ -33,6 +34,7 @@ internal static class CadetHouseholdPreparationTests
     private static readonly List<string> Logs = new List<string>();
     private static Clan _source, _cadet, _foreign;
     private static Hero _heir, _spouse, _child, _sourceHead, _failBefore, _failAfter, _moveChild, _noMove;
+    private static Hero _mother, _father;
     private static Settlement _home;
     private static Kingdom _realm;
     private static float _age;
@@ -49,6 +51,10 @@ internal static class CadetHouseholdPreparationTests
     private static bool Age(ref float __result) { __result = _age; return false; }
     private static bool No(ref bool __result) { __result = false; return false; }
     private static bool MainHero(ref Hero __result) { __result = null; return false; }
+    private static bool Mother(Hero __instance, ref Hero __result)
+    { __result = __instance == _child ? _mother : null; return false; }
+    private static bool Father(Hero __instance, ref Hero __result)
+    { __result = __instance == _child ? _father : null; return false; }
     private static bool FindHero(string id, ref Hero __result)
     { __result = Heroes.TryGetValue(id, out var hero) ? hero : null; return false; }
     private static bool FindHome(ref Settlement __result) { __result = _home; return false; }
@@ -86,6 +92,7 @@ internal static class CadetHouseholdPreparationTests
         Heads[_source] = _sourceHead; Heads[_cadet] = null;
         Dead.Clear(); Captive.Clear(); Transfers.Clear(); Logs.Clear();
         _failBefore = _failAfter = _moveChild = _noMove = null;
+        _mother = _heir; _father = _spouse;
         _age = 30; _headBeforeDependants = true; _foundings = 0;
         return new CrownAccessionRecord
         {
@@ -112,6 +119,7 @@ internal static class CadetHouseholdPreparationTests
         _foreign = Blank<Clan>(); _foreign.StringId = "independent_child_house";
         _home = Blank<Settlement>(); _realm = Blank<Kingdom>();
         var behavior = new PartitionSuccessionBehavior();
+        var manager = new Manager();
         var prepare = AccessTools.Method(typeof(PartitionSuccessionBehavior), "PrepareAbdicationCadet");
         var reconcile = AccessTools.Method(typeof(PartitionSuccessionBehavior), "ReconcileEstateCadetHousehold");
         bool Prepare(CrownAccessionRecord r) => (bool)prepare.Invoke(behavior, new object[] { r });
@@ -131,7 +139,7 @@ internal static class CadetHouseholdPreparationTests
         {
             var campaign = Blank<Campaign>();
             AccessTools.PropertySetter(typeof(Campaign), "Current").Invoke(null, new object[] { campaign });
-            campaign.AddCampaignBehaviorManager(new Manager());
+            campaign.AddCampaignBehaviorManager(manager);
             Patch(AccessTools.PropertyGetter(typeof(Hero), "Clan"), nameof(House));
             Patch(AccessTools.PropertySetter(typeof(Hero), "Clan"), nameof(ChangeHouse));
             Patch(AccessTools.PropertyGetter(typeof(Clan), "Heroes"), nameof(Members));
@@ -193,6 +201,7 @@ internal static class CadetHouseholdPreparationTests
             r = Reset(); r.Household.Reverse();
             check(Prepare(r) && Transfers[0] == _heir && _headBeforeDependants,
                 "Legacy household ordering cannot move dependants ahead of the founder");
+            check(Houses[_child] == _cadet, "Ordinary estate cadets still bring their recorded children");
 
             r = Reset(); r.CadetAnnounced = false; _failBefore = _spouse;
             check(Throws(r) && Heads[_cadet] == _heir && Houses[_spouse] == _source && !r.CadetAnnounced,
@@ -233,6 +242,92 @@ internal static class CadetHouseholdPreparationTests
             AccessTools.Method(typeof(PartitionSuccessionBehavior), "RestorePendingEstateHeads").Invoke(behavior, null);
             check(Heads[_cadet] == _heir && !share.Completed && !share.LandedSettled,
                 "Session recovery also protects pending lesser Crown-estate cadets without settling their share");
+
+            // Exercise the real Crown settlement entrypoint with a saved child-inclusive
+            // plan. Only native world endpoints and the empty title inventory are stubbed.
+            var crown = new CrownAccessionBehavior();
+            manager.Items.Add(behavior);
+            manager.Items.Add(Blank<FeudalTitleBehavior>());
+            Patch(AccessTools.PropertyGetter(typeof(Hero), "Mother"), nameof(Mother));
+            Patch(AccessTools.PropertyGetter(typeof(Hero), "Father"), nameof(Father));
+            Patch(AccessTools.PropertyGetter(typeof(Clan), "HomeSettlement"), nameof(FindHome));
+            Patch(AccessTools.Method(typeof(FeudalTitleBehavior), "MoveCrownHeirClaims"), nameof(Skip));
+            var settle = AccessTools.Method(typeof(CrownAccessionBehavior), "SettleCrownCadet");
+            var retain = AccessTools.Method(typeof(CrownAccessionBehavior), "RetainExistingCrownChildren");
+            bool Settle(CrownAccessionRecord record) => (bool)settle.Invoke(crown, new object[] { record });
+            void Retain(CrownAccessionRecord record) => retain.Invoke(null, new object[] { record });
+            CrownAccessionRecord CrownPlan()
+            {
+                var record = Reset();
+                record.CreatesCadet = record.IncomingHousePrepared = true;
+                record.IncomingSourceHouse = _source;
+                record.IncomingSourceHead = _sourceHead;
+                record.PreviousHouse = _foreign;
+                record.EndowmentFiefs.Clear();
+                return record;
+            }
+
+            r = CrownPlan(); Heads[_source] = _spouse; r.IncomingSourceHead = _spouse;
+            r.Household.Remove(_spouse.StringId); Captive.Add(_child);
+            check(Settle(r) && Houses[_heir] == _cadet && Houses[_spouse] == _source
+                && Houses[_child] == _source && Transfers.SequenceEqual(new[] { _heir }),
+                "A married Crown heiress leaves her clan-leading spouse and existing child behind");
+            check(!r.Household.Contains(_child.StringId) && r.EndowmentSettled,
+                "Legacy child removal precedes availability checks even when that child is captive");
+            check(Logs.Count(message => message.Contains("retained existing children")) == 1,
+                "Crown child retention produces one diagnostic for the saved-plan change");
+            moved = Transfers.Count; logCount = Logs.Count;
+            check(Settle(r) && Transfers.Count == moved && Logs.Count == logCount,
+                "Completed Crown settlement retries neither move children nor repeat retention diagnostics");
+
+            foreach (bool paternal in new[] { false, true })
+            {
+                r = CrownPlan(); r.IncomingHousePrepared = false; r.PreviousHouse = _source;
+                r.IncomingSourceHouse = null; r.IncomingSourceHead = null;
+                r.VoluntaryAbdication = !paternal; r.ForcedAbdication = paternal;
+                _mother = paternal ? _spouse : _heir; _father = paternal ? _heir : _spouse;
+                check(Settle(r) && Houses[_child] == _source && Houses[_spouse] == _cadet,
+                    "Same-house abdication retains adult children but permits an eligible spouse; paternal=" + paternal);
+            }
+
+            r = CrownPlan(); Houses[_heir] = Houses[_spouse] = _cadet;
+            r.DeliveredFiefs.Add("delivered_fief"); r.DeliveredTitles.Add("delivered_title");
+            r.GoldDebited = r.GoldCredited = true; r.DeliveredGold = 125;
+            check(Settle(r) && Houses[_child] == _source && Transfers.Count == 0
+                && r.DeliveredFiefs.SequenceEqual(new[] { "delivered_fief" })
+                && r.DeliveredTitles.SequenceEqual(new[] { "delivered_title" }) && r.DeliveredGold == 125
+                && r.GoldDebited && r.GoldCredited,
+                "Partial Crown recovery retains children without replaying parents, property or gold");
+
+            r = CrownPlan(); Houses[_child] = _cadet;
+            check(Settle(r) && Houses[_child] == _cadet && r.Household.Contains(_child.StringId)
+                && !Transfers.Contains(_child), "Already-transferred Crown children retain their saved household receipt");
+            r = CrownPlan(); Houses[_child] = _cadet; r.Cadet = null;
+            Retain(r);
+            check(r.Household.Contains(_child.StringId) && Houses[_child] == _cadet,
+                "Saved cadet identity protects a completed child transfer before its clan reference recovers");
+
+            r = CrownPlan(); Houses[_child] = _foreign;
+            check(Settle(r) && Houses[_child] == _foreign && !Transfers.Contains(_child),
+                "A Crown child now living in a third house is not reclaimed");
+            r = CrownPlan(); r.Household.Add("unresolved");
+            check(!Settle(r) && r.Household.Contains("unresolved") && Transfers.Count == 0,
+                "Unresolved Crown household references still defer rather than being discarded");
+
+            r = CrownPlan(); r.ChallengeConcession = true;
+            check(Settle(r) && Houses[_child] == _cadet && r.Household.Contains(_child.StringId),
+                "Inheritance concessions using the Crown settlement helper retain their existing household rules");
+            r = CrownPlan(); r.EndowmentSettled = true;
+            check(Settle(r) && r.Household.Contains(_child.StringId) && Transfers.Count == 0,
+                "Already-settled Crown plans are not rewritten");
+            r = CrownPlan(); r.Completed = true; Retain(r);
+            check(r.Household.Contains(_child.StringId), "Completed accession history is not rewritten");
+            r = Reset(); Retain(r);
+            check(r.Household.Contains(_child.StringId), "Non-Crown cadet records are not normalized as Crown plans");
+            r = CrownPlan(); r.Heir = null; Retain(r);
+            check(r.Household.Contains(_child.StringId), "An unresolved Crown heir does not discard household references");
+            r = CrownPlan(); r.Household = null; Retain(r);
+            check(r.Household == null, "An absent household is left to normal settlement validation");
 
             // Exercise the real transfer helper as well as the fault-injected preparation flow.
             r = Reset(); _homeRefreshes = 0;

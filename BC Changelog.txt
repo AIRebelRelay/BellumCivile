@@ -756,3 +756,4 @@ Improved MCM setting descriptions with clearer explanations and Bellum-versus-va
 Fixed vanilla clan banners losing their kingdom colors while preserving compatibility with POC and Banner Color Persistence.
 Unified cadet branch naming across all creation paths, preventing repeated cultural prefixes and family names, preserving distinct dynastic components, and using Roman numerals when names are already taken.
 Fixed player-negotiated marriages being blocked when a clan or Crown heir was their house’s last viable successor, while preserving NPC marriage protections and existing compensation costs.
+Fixed older pending Crown successions moving existing children into the heir’s new cadet house; children now remain in their current clan.

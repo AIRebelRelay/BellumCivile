@@ -11,6 +11,28 @@ namespace BellumCivile.Behaviors
             && _accessions.Any(r => !r.Completed && !r.Emergency
                 && (r.Heir == hero || r.Household?.Contains(hero.StringId) == true));
 
+        private static void RetainExistingCrownChildren(CrownAccessionRecord record)
+        {
+            if (record.Heir == null || record.Household == null || !record.CreatesCadet
+                || record.Completed || record.EndowmentSettled || record.ChallengeConcession) return;
+
+            // Older Crown plans may include children. Prune only their pending moves;
+            // members already in the recorded cadet remain part of its saved household.
+            int retained = record.Household.RemoveAll(id =>
+            {
+                Hero member = ResolveAbdicationHero(id);
+                if (member == null || member == record.Heir
+                    || (member.Mother != record.Heir && member.Father != record.Heir)) return false;
+                Clan house = member.Clan;
+                bool alreadyTransferred = record.Cadet != null ? house == record.Cadet
+                    : house != null && !string.IsNullOrWhiteSpace(record.CadetId)
+                        && house.StringId == record.CadetId;
+                return !alreadyTransferred;
+            });
+            if (retained > 0)
+                BellumCivileLogger.Log($"Crown household retained existing children; realm={record.Realm?.StringId}; heir={record.Heir.StringId}; retained={retained}.");
+        }
+
         private static bool HasCommittedHouseholdSettlement(CrownAccessionRecord record) =>
             record.Cadet != null || record.CadetInitialized || record.CadetAnnounced || record.EndowmentSettled
             || record.DeliveredFiefs?.Count > 0 || record.DeliveredTitles?.Count > 0
