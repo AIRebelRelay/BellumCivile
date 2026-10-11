@@ -126,9 +126,54 @@ internal static partial class MarriageHouseholdTests
         Hero oldLeader = Leaders[brideHouse]; Leaders[brideHouse] = bride;
         check(!Valid(Record(true, groomHouse)) && Valid(Record(true, brideHouse)), "Money cannot move a ruling clan head");
         Leaders[brideHouse] = oldLeader;
-        var dyingHouse = Houses.Where(p => p.Value == brideHouse && p.Key != bride).Select(p => p.Key).ToArray();
+        var dyingHouse = Houses.Where(p => p.Value == brideHouse && p.Key != bride && p.Key != oldLeader).Select(p => p.Key).ToArray();
         foreach (Hero hero in dyingHouse) Dead.Add(hero);
-        check(!Valid(Record(true, groomHouse)), "Money cannot buy the last continuation of the NPC bloodline");
+        // An ageing mother and her only viable heir reproduce the reported royal-household case.
+        Women.Add(oldLeader);
+        var policyType = assembly.GetType("BellumCivile.MarriageHouseholdPolicy");
+        check((bool)AccessTools.Method(policyType, "IsLastContinuation").Invoke(Activator.CreateInstance(policyType, true), new object[] { bride }),
+            "Ageing ruler's sole viable child reproduces the last-continuation restriction");
+        var dialogue = new SpecificMarriageProposalBehavior();
+        AccessTools.Field(typeof(SpecificMarriageProposalBehavior), "_selectedPlayerHero").SetValue(dialogue, groom);
+        AccessTools.Field(typeof(SpecificMarriageProposalBehavior), "_selectedOtherHero").SetValue(dialogue, bride);
+        bool Choice(bool maternal) => (bool)AccessTools.Method(typeof(SpecificMarriageProposalBehavior), "CanChooseHousehold")
+            .Invoke(dialogue, new object[] { maternal, null });
+        check(Choice(true), "A nonleader player-clan relative can still join the heiress's house");
+        Hero playerHead = Leaders[groomHouse]; Leaders[groomHouse] = groom;
+        _offerReady = true;
+        var guardType = assembly.GetType("BellumCivile.Patches.PlayerMarriageBarterGuard");
+        foreach (bool royal in new[] { true, false })
+        {
+            Crowns.Clear();
+            if (royal) Crowns[_realms[0]] = bride;
+            foreach (bool femaleHeir in new[] { true, false })
+            {
+                if (femaleHeir) { Women.Add(bride); Women.Remove(groom); }
+                else { Women.Remove(bride); Women.Add(groom); }
+                string scenario = (royal ? "Crown" : "Clan") + (femaleHeir ? " heiress" : " heir");
+                check(!Valid(Record(false, groomHouse)) && Valid(Record(true, groomHouse)),
+                    scenario + ": direct negotiation may bring the sole continuation home, unsolicited offers may not");
+                check(Choice(!femaleHeir) && !Choice(femaleHeir),
+                    scenario + ": dialogue permits incoming spouse but never sends away the player clan leader");
+                var agreement = Record(true, groomHouse);
+                check((bool)AccessTools.Method(AgreementBehavior, "Ready").Invoke(null, new object[] { agreement, null }),
+                    scenario + ": the same exception survives final wedding readiness checks");
+                var item = new MarriageBarterable(groom, null, groom, bride);
+                Quote(item, agreement);
+                check(item.GetUnitValueForFaction(brideHouse) == (royal ? -170000 : -120000),
+                    scenario + ": existing heir premium and bloodline health cost remain payable");
+                check((bool)AccessTools.Method(guardType, "Validate").Invoke(null, new object[] { new List<Barterable> { item } }),
+                    scenario + ": whole-barter preflight allows the explicitly negotiated departure");
+                item.Apply();
+                check(Spouses[groom] == bride && Houses[bride] == groomHouse && Houses[groom] == groomHouse
+                    && _callbackHouse == groomHouse && Leaders[brideHouse] == oldLeader,
+                    scenario + ": native barter wedding moves only the heir into the player's house");
+                Reset();
+            }
+        }
+        Leaders[groomHouse] = playerHead;
+        Women.Remove(oldLeader); Women.Remove(groom); Women.Add(bride);
+        Crowns.Clear(); Crowns[_realms[0]] = bride;
         Dead.Clear();
         var changed = Record(true, groomHouse); Houses[bride] = groomHouse;
         check(!Valid(changed), "Changed clan cancels an agreement instead of silently changing its recipient");

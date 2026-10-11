@@ -46,7 +46,8 @@ namespace BellumCivile
                 if (leaving == Hero.MainHero || leaving == leaving.Clan.Leader
                     || leaving == MarriageHouseholdPolicy.LegalHead(leaving.Clan))
                     reason = new TextObject("{=BC_Marriage_HeadMustStay}The head of a house cannot leave it through marriage.");
-                else if (leaving == other && policy.IsLastContinuation(other))
+                // Direct negotiations price household loss; automatic offers must preserve continuity.
+                else if (leaving == other && !negotiated && policy.IsLastContinuation(other))
                     reason = new TextObject("{=BC_Marriage_LastContinuation}This house cannot give up its last viable continuation of the family line.");
                 else if (leaving == other && !negotiated && policy.MustRemain(other))
                     reason = new TextObject("{=BC_Marriage_HeirMustStay}This offer requires the heir to remain in their own house.");
