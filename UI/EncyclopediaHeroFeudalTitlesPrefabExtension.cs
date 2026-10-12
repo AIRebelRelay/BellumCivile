@@ -64,21 +64,20 @@ namespace BellumCivile.ViewModelMixin
                     <ListPanel WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' StackLayout.LayoutMethod='VerticalTopToBottom' IsVisible='@HasBellumInheritance'>
                       <Children>
                         <EncyclopediaDivider Id='BellumInheritanceDivider' MarginTop='20' Parameter.Title='@BellumInheritanceText' Parameter.ItemList='..\BellumInheritanceParent' GamepadNavigationIndex='0'/>
-                        <ListPanel Id='BellumInheritanceParent' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' MarginTop='10' MarginLeft='45' MarginRight='30' StackLayout.LayoutMethod='VerticalTopToBottom'>
+                        <Widget Id='BellumInheritanceParent' DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' MarginTop='10' MarginLeft='30'>
                           <Children>
-                            <ListPanel DataSource='{BellumInheritance}' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' StackLayout.LayoutMethod='VerticalTopToBottom'>
+                            <GridWidget DataSource='{BellumInheritance}' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' DefaultCellWidth='325' DefaultCellHeight='65' ColumnCount='2' UseDynamicCellHeight='true' HorizontalAlignment='Left'>
                               <ItemTemplate>
-                                <ListPanel WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' MarginBottom='12' StackLayout.LayoutMethod='VerticalTopToBottom'>
+                                <ListPanel WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' MarginLeft='15' MarginRight='15' MarginTop='3' MarginBottom='12' StackLayout.LayoutMethod='VerticalTopToBottom'>
                                   <Children>
                                     <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.DefinitionText' Brush.TextHorizontalAlignment='Left' Text='@Definition'/>
                                     <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.ValueText' Brush.TextHorizontalAlignment='Left' Text='@Value' MarginTop='2'/>
                                   </Children>
                                 </ListPanel>
                               </ItemTemplate>
-                            </ListPanel>
-                            <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.ValueText' Brush.TextHorizontalAlignment='Left' Text='@BellumInheritanceCaveat' MarginTop='5'/>
+                            </GridWidget>
                           </Children>
-                        </ListPanel>
+                        </Widget>
                       </Children>
                     </ListPanel>
 

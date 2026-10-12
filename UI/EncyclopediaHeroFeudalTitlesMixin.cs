@@ -16,7 +16,6 @@ namespace BellumCivile.ViewModelMixin
         private string _bellumTitlesText;
         private string _bellumClaimsText;
         private string _bellumInheritanceText;
-        private string _bellumInheritanceCaveat;
         private bool _hasBellumTitles;
         private bool _hasBellumClaims;
         private bool _hasBellumInheritance;
@@ -31,7 +30,6 @@ namespace BellumCivile.ViewModelMixin
             _bellumTitlesText = new TextObject("{=BC_HeroTitles_Header}Titles").ToString();
             _bellumClaimsText = new TextObject("{=BC_HeroClaims_Header}Claims").ToString();
             _bellumInheritanceText = new TextObject("{=BC_EstatePreview_Header}Inheritance").ToString();
-            _bellumInheritanceCaveat = EstateInheritanceDisplay.Caveat;
         }
 
         [DataSourceProperty]
@@ -76,20 +74,6 @@ namespace BellumCivile.ViewModelMixin
                 {
                     _bellumInheritanceText = value;
                     ViewModel.OnPropertyChangedWithValue(value, "BellumInheritanceText");
-                }
-            }
-        }
-
-        [DataSourceProperty]
-        public string BellumInheritanceCaveat
-        {
-            get => _bellumInheritanceCaveat;
-            set
-            {
-                if (value != _bellumInheritanceCaveat)
-                {
-                    _bellumInheritanceCaveat = value;
-                    ViewModel.OnPropertyChangedWithValue(value, "BellumInheritanceCaveat");
                 }
             }
         }
@@ -155,7 +139,6 @@ namespace BellumCivile.ViewModelMixin
             BellumTitlesText = new TextObject("{=BC_HeroTitles_Header}Titles").ToString();
             BellumClaimsText = new TextObject("{=BC_HeroClaims_Header}Claims").ToString();
             BellumInheritanceText = new TextObject("{=BC_EstatePreview_Header}Inheritance").ToString();
-            BellumInheritanceCaveat = EstateInheritanceDisplay.Caveat;
             BellumTitles.Clear();
             BellumClaims.Clear();
             BellumInheritance.Clear();

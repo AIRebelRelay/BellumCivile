@@ -81,6 +81,11 @@ internal static class Program
                 TestRoyalCadetNames();
                 Console.WriteLine($"{_checks} inheritance regression checks passed.");
             }
+            else if (args.Contains("--encyclopedia-inheritance"))
+            {
+                EncyclopediaInheritanceLayoutTests.Run(Check);
+                Console.WriteLine($"{_checks} encyclopedia inheritance layout checks passed.");
+            }
             else if (args.Contains("--campaign-ui-startup")) CampaignUiStartupProbe.Run(Check);
             else if (args.Contains("--marriage-dowry-simulation"))
             {
@@ -833,6 +838,7 @@ internal static class Program
         LandlessLeaderStyleTests.Run(Check);
         MercenaryLeaderStyleTests.Run(Check);
         ClanMemberLocationHintTests.Run(Check);
+        EncyclopediaInheritanceLayoutTests.Run(Check);
         CourtLeadershipHandoverTests.Run(Check);
         CourtNominationMandateTests.Run(Check);
         CourtMotionNavigationTests.Run(Check);
