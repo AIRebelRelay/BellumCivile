@@ -173,8 +173,9 @@ namespace BellumCivile
         private static int FindPrefix(string name, List<Tuple<string, int>> prefixes, out string prefix)
         {
             foreach (var entry in prefixes)
+                // A localized prefix that already ends in punctuation (such as a middle dot) needs no space after it.
                 if (name.Length > entry.Item1.Length && name.StartsWith(entry.Item1, StringComparison.OrdinalIgnoreCase)
-                    && char.IsWhiteSpace(name[entry.Item1.Length]))
+                    && (char.IsWhiteSpace(name[entry.Item1.Length]) || !char.IsLetterOrDigit(entry.Item1[entry.Item1.Length - 1])))
                 { prefix = entry.Item1; return entry.Item2; }
             prefix = null;
             return -1;
