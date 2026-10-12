@@ -2099,8 +2099,7 @@ namespace BellumCivile.Behaviors
                 && claim.ClaimantClanId == heirClan.StringId
                 && claim.TargetTitleId == title.TitleId);
 
-            RebuildRuntimeIndexes();
-            QueueServiceReview(title, "partition title legalized");
+            FinishInheritedTitleTransfer(title, "partition title legalized");
             BellumCivileLogger.Log(
                 $"Feudal partition title legalized; title={title.TitleId}; heir_clan={heirClan.StringId}; de_jure={oldDeJure}->{title.DeJureHolderClanId}; de_facto={oldDeFacto}->{title.DeFactoHolderClanId}.");
         }
@@ -2122,11 +2121,33 @@ namespace BellumCivile.Behaviors
             if (!preserveDeFacto) inheritedTitle.SetDeFactoHolder(heirClan.StringId);
             inheritedTitle.MarkSynced(CurrentDay);
             RemoveRedundantClaimsForHolder(heirClan, inheritedTitle);
-            RebuildRuntimeIndexes();
-            QueueServiceReviewForTitleAndChildren(inheritedTitle, reason);
+            FinishInheritedTitleTransfer(inheritedTitle, reason);
 
             BellumCivileLogger.Log(
-                $"Feudal title inheritance legalized; title={inheritedTitle.TitleId}; heir_clan={heirClan.StringId}; type={inheritedTitle.TitleType}; de_jure={oldDeJure}->{inheritedTitle.DeJureHolderClanId}; de_facto={oldDeFacto}->{inheritedTitle.DeFactoHolderClanId}; reason={reason ?? "unknown"}.");
+                $"Feudal title inheritance legalized; title={inheritedTitle.TitleId}; heir_clan={heirClan.StringId}; type={inheritedTitle.TitleType}; de_jure={oldDeJure}->{inheritedTitle.DeJureHolderClanId}; de_facto={oldDeFacto}->{inheritedTitle.DeFactoHolderClanId}; de_jure_parent={inheritedTitle.ParentTitleId}; origin_realm={GetDriftOriginKingdomId(inheritedTitle)}; reason={reason ?? "unknown"}.");
+        }
+
+        internal void FinishInheritedTitleTransfer(FeudalTitleRecord title, string reason)
+        {
+            if (title?.IsActive != true) return;
+            RebuildRuntimeIndexes();
+            QueueServiceReviewForTitleAndChildren(title, reason);
+            // Refresh after legalization, not just the earlier possession callback. Journaled
+            // topology must remain frozen: refreshing drift can complete it synchronously.
+            if (CrownAccessionBehavior.Instance?.IsRealmUnionTitleProtected(title.TitleId) == true
+                || Campaign.Current?.GetCampaignBehavior<PartitionSuccessionBehavior>()
+                    ?.IsCrownPromotionTitleProtected(title.TitleId) == true) return;
+            Campaign.Current?.GetCampaignBehavior<FeudalDeJureDriftBehavior>()?.RefreshTitleFamily(title);
+        }
+
+        internal FeudalClaimRecord RegisterEstateReversionClaim(
+            Clan source, Clan recipient, FeudalTitleRecord title, Hero deceased)
+        {
+            if (source == null || source.IsEliminated || source.Leader?.IsAlive != true
+                || recipient == null || source == recipient || title?.IsActive != true
+                || title.DeJureHolderClanId != recipient.StringId) return null;
+            return RegisterClaim(source, title, FeudalClaimStrength.Strong, "domestic_estate_escheat",
+                deceased, source, carrierHero: source.Leader, generationDepth: 0);
         }
 
         internal bool CompleteCourtTitleGrant(CourtTitleGrantRecord plan, out string reason)
@@ -3509,8 +3530,8 @@ namespace BellumCivile.Behaviors
             string previousContext = _deFactoOnlySettlementTransferTitleId;
             try
             {
-                if (title.DeJureHolderClanId != source.StringId)
-                    _deFactoOnlySettlementTransferTitleId = title.TitleId;
+                // Possession is delivered before the separately journaled legal inheritance.
+                _deFactoOnlySettlementTransferTitleId = title.TitleId;
                 ChangeOwnerOfSettlementAction.ApplyByDefault(recipient.Leader, holding);
                 return holding.OwnerClan == recipient;
             }
@@ -3684,6 +3705,7 @@ namespace BellumCivile.Behaviors
         {
             if (_clientLandGrantInProgress == settlement) return;
             if (TryApplyJournaledCrownEstateOwnership(settlement, newOwner?.Clan)) return;
+            if (TryApplyMixedEstateOwnership(settlement, newOwner?.Clan)) return;
             if (!IsLandedSettlement(settlement))
                 return;
 
@@ -3692,6 +3714,10 @@ namespace BellumCivile.Behaviors
             _titlesById.TryGetValue(BuildBaronyTitleId(settlement), out FeudalTitleRecord titleBeforeTransfer);
             string previousDeJure = titleBeforeTransfer?.DeJureHolderClanId;
             string previousDeFacto = oldOwner?.Clan?.StringId ?? titleBeforeTransfer?.DeFactoHolderClanId;
+            bool possessionOnly = titleBeforeTransfer != null
+                && string.Equals(_deFactoOnlySettlementTransferTitleId, titleBeforeTransfer.TitleId, StringComparison.Ordinal);
+            string previousParent = titleBeforeTransfer?.ParentTitleId;
+            string previousOrigin = possessionOnly ? GetDriftOriginKingdomId(titleBeforeTransfer) : null;
             FeudalTitleRecord title = EnsureBaronyTitle(settlement, "settlement owner changed");
             if (title == null)
                 return;
@@ -3699,7 +3725,15 @@ namespace BellumCivile.Behaviors
             // EnsureBaronyTitle synchronizes possession and fills missing legal ownership.
             // Every transfer must use the rights that existed before that synchronization.
             if (titleBeforeTransfer != null)
+            {
                 title.SetDeJureHolder(previousDeJure);
+                if (possessionOnly)
+                {
+                    // Empty legal topology is not permission to adopt the recipient's realm.
+                    title.SetParentTitle(previousParent);
+                    title.SetAssociatedKingdom(previousOrigin);
+                }
+            }
             else
             {
                 // A newly reconstructed record must not mistake the incoming custodian for the old owner.
@@ -3763,7 +3797,7 @@ namespace BellumCivile.Behaviors
                     BellumCivileLogger.Log($"Challenge cadet barter trace; settlement={settlement.StringId}; seller={sellerClan.StringId}; buyer={newClanId}; remaining_fiefs={sellerClan.Fiefs.Count}; caller={new System.Diagnostics.StackTrace(false)}");
             }
             BellumCivileLogger.Log(
-                $"Feudal barony synced after ownership change; settlement={settlement.StringId}; detail={detail}; legal_transfer={legalTransfer}; political_parent_changed={politicalParentChanged}; de_jure={previousDeJure}->{title.DeJureHolderClanId}; de_facto={previousDeFacto}->{title.DeFactoHolderClanId}; de_facto_parent={title.DeFactoParentTitleId}.");
+                $"Feudal barony synced after ownership change; settlement={settlement.StringId}; detail={detail}; legal_transfer={legalTransfer}; political_parent_changed={politicalParentChanged}; de_jure={previousDeJure}->{title.DeJureHolderClanId}; de_facto={previousDeFacto}->{title.DeFactoHolderClanId}; de_facto_parent={title.DeFactoParentTitleId}; de_jure_parent={title.ParentTitleId}; origin_realm={GetDriftOriginKingdomId(title)}; inherited_possession={possessionOnly}.");
         }
 
         private bool TryApplySubinfeudationOwnershipChange(

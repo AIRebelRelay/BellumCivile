@@ -61,6 +61,27 @@ namespace BellumCivile.ViewModelMixin
                       </Children>
                     </ListPanel>
 
+                    <ListPanel WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' StackLayout.LayoutMethod='VerticalTopToBottom' IsVisible='@HasBellumInheritance'>
+                      <Children>
+                        <EncyclopediaDivider Id='BellumInheritanceDivider' MarginTop='20' Parameter.Title='@BellumInheritanceText' Parameter.ItemList='..\BellumInheritanceParent' GamepadNavigationIndex='0'/>
+                        <ListPanel Id='BellumInheritanceParent' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' MarginTop='10' MarginLeft='45' MarginRight='30' StackLayout.LayoutMethod='VerticalTopToBottom'>
+                          <Children>
+                            <ListPanel DataSource='{BellumInheritance}' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' StackLayout.LayoutMethod='VerticalTopToBottom'>
+                              <ItemTemplate>
+                                <ListPanel WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' MarginBottom='12' StackLayout.LayoutMethod='VerticalTopToBottom'>
+                                  <Children>
+                                    <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.DefinitionText' Brush.TextHorizontalAlignment='Left' Text='@Definition'/>
+                                    <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.ValueText' Brush.TextHorizontalAlignment='Left' Text='@Value' MarginTop='2'/>
+                                  </Children>
+                                </ListPanel>
+                              </ItemTemplate>
+                            </ListPanel>
+                            <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.ValueText' Brush.TextHorizontalAlignment='Left' Text='@BellumInheritanceCaveat' MarginTop='5'/>
+                          </Children>
+                        </ListPanel>
+                      </Children>
+                    </ListPanel>
+
                     <EncyclopediaDivider Id='AlliesDivider' MarginTop='50' Parameter.Title='@AlliesText' Parameter.ItemList='..\..\AlliesGridParent' GamepadNavigationIndex='0'/>
                   </Children>
                 </ListPanel>");

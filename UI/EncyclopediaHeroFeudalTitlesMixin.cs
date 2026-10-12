@@ -15,8 +15,11 @@ namespace BellumCivile.ViewModelMixin
         private readonly Hero _hero;
         private string _bellumTitlesText;
         private string _bellumClaimsText;
+        private string _bellumInheritanceText;
+        private string _bellumInheritanceCaveat;
         private bool _hasBellumTitles;
         private bool _hasBellumClaims;
+        private bool _hasBellumInheritance;
         private bool _hasBellumTitleOrClaimSection;
 
         public EncyclopediaHeroFeudalTitlesMixin(EncyclopediaHeroPageVM vm) : base(vm)
@@ -24,8 +27,11 @@ namespace BellumCivile.ViewModelMixin
             _hero = vm?.Obj as Hero;
             BellumTitles = new MBBindingList<StringPairItemVM>();
             BellumClaims = new MBBindingList<StringPairItemVM>();
+            BellumInheritance = new MBBindingList<StringPairItemVM>();
             _bellumTitlesText = new TextObject("{=BC_HeroTitles_Header}Titles").ToString();
             _bellumClaimsText = new TextObject("{=BC_HeroClaims_Header}Claims").ToString();
+            _bellumInheritanceText = new TextObject("{=BC_EstatePreview_Header}Inheritance").ToString();
+            _bellumInheritanceCaveat = EstateInheritanceDisplay.Caveat;
         }
 
         [DataSourceProperty]
@@ -58,6 +64,49 @@ namespace BellumCivile.ViewModelMixin
 
         [DataSourceProperty] public MBBindingList<StringPairItemVM> BellumTitles { get; set; }
         [DataSourceProperty] public MBBindingList<StringPairItemVM> BellumClaims { get; set; }
+        [DataSourceProperty] public MBBindingList<StringPairItemVM> BellumInheritance { get; set; }
+
+        [DataSourceProperty]
+        public string BellumInheritanceText
+        {
+            get => _bellumInheritanceText;
+            set
+            {
+                if (value != _bellumInheritanceText)
+                {
+                    _bellumInheritanceText = value;
+                    ViewModel.OnPropertyChangedWithValue(value, "BellumInheritanceText");
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public string BellumInheritanceCaveat
+        {
+            get => _bellumInheritanceCaveat;
+            set
+            {
+                if (value != _bellumInheritanceCaveat)
+                {
+                    _bellumInheritanceCaveat = value;
+                    ViewModel.OnPropertyChangedWithValue(value, "BellumInheritanceCaveat");
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public bool HasBellumInheritance
+        {
+            get => _hasBellumInheritance;
+            set
+            {
+                if (value != _hasBellumInheritance)
+                {
+                    _hasBellumInheritance = value;
+                    ViewModel.OnPropertyChangedWithValue(value, "HasBellumInheritance");
+                }
+            }
+        }
 
         [DataSourceProperty]
         public bool HasBellumTitles
@@ -105,11 +154,19 @@ namespace BellumCivile.ViewModelMixin
         {
             BellumTitlesText = new TextObject("{=BC_HeroTitles_Header}Titles").ToString();
             BellumClaimsText = new TextObject("{=BC_HeroClaims_Header}Claims").ToString();
+            BellumInheritanceText = new TextObject("{=BC_EstatePreview_Header}Inheritance").ToString();
+            BellumInheritanceCaveat = EstateInheritanceDisplay.Caveat;
             BellumTitles.Clear();
             BellumClaims.Clear();
+            BellumInheritance.Clear();
             HasBellumTitles = false;
             HasBellumClaims = false;
             HasBellumTitleOrClaimSection = false;
+
+            foreach (StringPairItemVM entry in EstateInheritanceDisplay.BuildHeroEntries(_hero))
+                BellumInheritance.Add(entry);
+            HasBellumInheritance = BellumInheritance.Count > 0;
+            HasBellumTitleOrClaimSection = HasBellumInheritance;
 
             if (_hero?.Clan == null || _hero.Clan.Leader != _hero)
                 return;
@@ -127,7 +184,7 @@ namespace BellumCivile.ViewModelMixin
 
             HasBellumTitles = BellumTitles.Count > 0;
             HasBellumClaims = BellumClaims.Count > 0;
-            HasBellumTitleOrClaimSection = HasBellumTitles || HasBellumClaims;
+            HasBellumTitleOrClaimSection = HasBellumTitles || HasBellumClaims || HasBellumInheritance;
         }
 
         private void AddCouncilOffices()

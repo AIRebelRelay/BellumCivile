@@ -70,7 +70,7 @@ namespace BellumCivile.Behaviors
                 var heir = heirsByCrown[assignment.Key];
                 var crown = titles.GetTitle(assignment.Key);
                 if (!recordedHeirs.Contains(heir.StringId) || !recordedTitles.Contains(assignment.Key)
-                    || !IsStillEligibleSecondaryHeir(heir, retained, predecessor)
+                    || !IsEligibleBatchFounder(pending, heir, retained, predecessor)
                     || BuildUniqueClanIdFromSeed(retained, assignment.Key, heir) != assignment.Value
                     || Clan.All.Any(c => c.StringId == assignment.Value))
                 { reason = "recorded heir or reserved founder identity changed before batch capture"; return false; }

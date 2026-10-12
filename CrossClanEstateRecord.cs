@@ -19,6 +19,11 @@ namespace BellumCivile
         [SaveableField(11)] public string PreferredPrimaryTitleId;
         [SaveableField(12)] public string RealmCrownTitleId;
         [SaveableField(13)] internal bool IntegrationPublished;
+        // Zero denotes an allocation made before domestic estate inheritance was introduced.
+        [SaveableField(14)] public int PolicyVersion;
+        [SaveableField(15)] public List<Hero> DomesticHeirs = new List<Hero>();
+        [SaveableField(16)] public GenderSuccessionLaw GenderLaw;
+        [SaveableField(17)] public HouseSuccessionLaw SuccessionLaw;
     }
 
     public class CrossClanEstateShare
@@ -45,5 +50,8 @@ namespace BellumCivile
         [SaveableField(20)] public List<CrownEstateDeliveryRecord> PartitionReceipts;
         [SaveableField(21)] public bool PartitionFounderStarted;
         [SaveableField(22)] public bool PartitionFounderReturned;
+        [SaveableField(23)] public bool DomesticOnly;
+        [SaveableField(24)] public bool IsEscheat;
+        [SaveableField(25)] public bool ReceivesGold;
     }
 }

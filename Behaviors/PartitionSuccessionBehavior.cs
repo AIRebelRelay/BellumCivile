@@ -174,6 +174,13 @@ namespace BellumCivile.Behaviors
                     continue;
                 }
 
+                // The linked death estate owns scheduling and final publication.
+                if (record.MixedEstate != null)
+                {
+                    if (record.CrownBatch?.Completed == true) TryFinishCrownBatch(record, out _);
+                    continue;
+                }
+
                 if (record.CrownBatch?.Completed == true)
                 {
                     PublishCrownPartition(record);
@@ -427,8 +434,10 @@ namespace BellumCivile.Behaviors
                 .OrderBy(f => f == unit.PrimaryFief ? 0 : 1)
                 .ThenByDescending(f => f.Prosperity))
             {
-                if (fief.OwnerClan != cadetClan)
-                    ChangeOwnerOfSettlementAction.ApplyByDefault(cadetClan.Leader, fief.Settlement);
+                if (fief.OwnerClan != cadetClan
+                    && Campaign.Current?.GetCampaignBehavior<FeudalTitleBehavior>()
+                        ?.TransferInheritedPossession(fief.OwnerClan, cadetClan, fief.Settlement) != true)
+                    continue;
 
                 if (fief.OwnerClan == cadetClan)
                     transferredFiefs.Add(fief);
@@ -707,7 +716,9 @@ namespace BellumCivile.Behaviors
             cadetClan.SetInitialHomeSettlement(residence.Settlement);
             KingdomVisualHelper.AssignCadetKingdom(cadetClan, kingdom, visuals);
 
-            TransferHouseholdToCadet(parentClan, cadetClan, heir);
+            var otherEstateHeirs = GetCrownPromotionBatch(promotion)?.MixedEstate?.Shares
+                .Where(s => s.Heir != heir).Select(s => s.Heir).ToList();
+            TransferHouseholdToCadet(parentClan, cadetClan, heir, otherEstateHeirs);
             cadetClan.SetLeader(heir);
             cadetClan.ConsiderAndUpdateHomeSettlement();
             Campaign.Current.GetCampaignBehavior<CadetHouseholdBehavior>()?.EnsureFoundingMembers(cadetClan);
@@ -741,7 +752,7 @@ namespace BellumCivile.Behaviors
                 RelationMemorySources.CadetHouseFounded, RelationMemoryScope.House);
         }
 
-        private static void TransferHouseholdToCadet(Clan parentClan, Clan cadetClan, Hero heir)
+        private static void TransferHouseholdToCadet(Clan parentClan, Clan cadetClan, Hero heir, List<Hero> reservedHeirs = null)
         {
             if (parentClan == null || cadetClan == null || heir == null)
                 return;
@@ -755,7 +766,7 @@ namespace BellumCivile.Behaviors
                 movers.AddRange(heir.Children
                     .Where(child => child != null && child.Clan == parentClan && child != parentClan.Leader));
 
-            foreach (Hero hero in movers.Distinct().ToList())
+            foreach (Hero hero in movers.Distinct().Where(h => reservedHeirs?.Contains(h) != true).ToList())
                 TransferHeroToClan(hero, parentClan, cadetClan);
         }
 

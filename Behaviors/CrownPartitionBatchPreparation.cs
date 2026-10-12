@@ -14,6 +14,7 @@ namespace BellumCivile.Behaviors
             if (titles == null || pending?.EstateShares == null || !TryVerifyCrownBatchWorld(pending, out reason)) return false;
             var batch = pending.CrownBatch;
             if (batch.Completed) { reason = "batch is already complete"; return false; }
+            if (!MixedHouseholdsReady(pending, out reason)) return false;
             if (!TryCaptureCrownBatchObligations(pending, out reason)) return false;
             if (batch.CourtFinalizationStarted != batch.CourtFinalizationReturned
                 || batch.CourtFinalizationReturned && !batch.HierarchyVerified)
@@ -38,11 +39,16 @@ namespace BellumCivile.Behaviors
                         if (!TryMoveCrownPromotionHouses(journal, out reason)) return false;
                 }
                 if (!titles.TryFinalizeCrownBatchHierarchy(pending, out reason)) return false;
+                if (pending.MixedEstate != null && !TryDeliverMixedEstateLand(pending, titles, out reason)) return false;
                 foreach (var share in pending.EstateShares ?? Enumerable.Empty<CrossClanEstateShare>())
                     if (!share.Primary && !batch.Recipients.ContainsKey(share.RootTitleId ?? "") && !share.LandedSettled
                         && !TryDeliverLesserPartitionShare(pending, share, out reason)) return false;
                 if (!TryFinalizeCrownBatchCourt(pending, out reason)) return false;
-                if (!TrySettleCrownBatchRewards(pending, out reason)) return false;
+                if (pending.MixedEstate != null)
+                {
+                    if (!TrySettleMixedEstateRewards(pending, titles, out reason)) return false;
+                }
+                else if (!TrySettleCrownBatchRewards(pending, out reason)) return false;
                 foreach (var journal in promotions)
                     journal.PendingReason = "Crown batch and estate rewards settled; obligation verification and final completion remain pending";
                 reason = null;

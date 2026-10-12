@@ -227,7 +227,7 @@ namespace BellumCivile.Behaviors
                 {
                     return;
                 }
-                if (!record.MandateExpiry && Campaign.Current.GetCampaignBehavior<PartitionSuccessionBehavior>()?.SettleCrownDeathEstate(heir) == false)
+                if (!record.MandateExpiry && Campaign.Current.GetCampaignBehavior<PartitionSuccessionBehavior>()?.SettleCrownDeathEstate(heir, record) == false)
                     return;
                 if (!PrepareForeignCrownClan(record, house)) return;
                 if (record.Realm.RulingClan != house) ChangeRulingClanAction.Apply(record.Realm, house);

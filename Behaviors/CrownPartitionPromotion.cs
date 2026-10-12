@@ -69,7 +69,7 @@ namespace BellumCivile.Behaviors
             if (placeholders.Count != 1 || journal.Founder != null) return false;
             if (!CanPrepareCrownPartitionDiplomacy(journal.Parent, null, out reason)) return false;
             if (existing.Count != 0 || journal.Parent.IsEliminated || journal.Parent.RulingClan != journal.RetainedHouse
-                || !IsStillEligibleSecondaryHeir(journal.Heir, journal.RetainedHouse, ResolveHero(pending.DeadLeaderId))) return false;
+                || !IsEligibleBatchFounder(pending, journal.Heir, journal.RetainedHouse, ResolveHero(pending.DeadLeaderId))) return false;
             var crown = titles.GetTitle(journal.CrownId);
             var residence = titles.ResolveCrownPartitionResidence(journal.Parent, crown);
             if (residence?.Settlement != journal.Residence || residence == null

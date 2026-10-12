@@ -29,6 +29,7 @@ namespace BellumCivile.Behaviors
             reason = "registered Crown batch required for completion";
             if (pending?.CrownBatch == null || _pendingPartitions?.Contains(pending) != true) return false;
             var batch = pending.CrownBatch;
+            if (pending.MixedEstate != null) return TryFinishMixedEstateBatch(pending, out reason);
             if (batch.Completed)
             {
                 PublishCrownPartition(pending);

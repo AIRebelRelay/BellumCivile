@@ -11,7 +11,7 @@ namespace BellumCivile.Patches
     [HarmonyPatch(typeof(EncyclopediaClanPageVM), "Refresh")]
     public static class EncyclopediaClanSuccessionPatch
     {
-        private const string HeirDefinitionText = "{=BC_ClanHeir_Label}Heir:";
+        private const string HeirDefinitionText = "{=BC_EstatePreview_ClanSuccessor}Clan successor:";
 
         [HarmonyPostfix]
         public static void Postfix(EncyclopediaClanPageVM __instance)
@@ -27,7 +27,7 @@ namespace BellumCivile.Patches
                 __instance,
                 new TextObject(HeirDefinitionText).ToString(),
                 heirName,
-                new BasicTooltipViewModel(() => SuccessionLawHelper.BuildSuccessionLineTooltipProperties(clan)));
+                new BasicTooltipViewModel(() => EstateInheritanceDisplay.BuildClanTooltip(clan)));
         }
 
         private static void AddLawRow(

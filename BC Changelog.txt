@@ -757,3 +757,4 @@ Fixed vanilla clan banners losing their kingdom colors while preserving compatib
 Unified cadet branch naming across all creation paths, preventing repeated cultural prefixes and family names, preserving distinct dynastic components, and using Roman numerals when names are already taken.
 Fixed player-negotiated marriages being blocked when a clan or Crown heir was their house’s last viable successor, while preserving NPC marriage protections and existing compensation costs.
 Fixed older pending Crown successions moving existing children into the heir’s new cadet house; children now remain in their current clan.
+Restricted new ordinary landed inheritance to eligible blood relatives within the realm, with Crown reversion when none remain, and added clearer inheritance previews while preserving legal title hierarchies.

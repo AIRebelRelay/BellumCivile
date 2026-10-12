@@ -56,6 +56,11 @@ internal static class Program
                 IntegrationSaveDefinitionTests.Run(Check);
                 Console.WriteLine($"{_checks} integration checks passed.");
             }
+            else if (args.Contains("--domestic-estates"))
+            {
+                DomesticEstateTests.Run(Check);
+                Console.WriteLine($"{_checks} domestic estate checks passed.");
+            }
             else if (args.Contains("--inheritance-regression"))
             {
                 TestHereditaryRealmLine();
@@ -71,6 +76,7 @@ internal static class Program
                 CrownPartitionReconciliationTests.Run(Check);
                 CrownEstateDeliveryTests.Run(Check);
                 EstateSovereignRoutingTests.Run(Check);
+                DomesticEstateTests.Run(Check);
                 CadetNamingTests.Run(Check);
                 TestRoyalCadetNames();
                 Console.WriteLine($"{_checks} inheritance regression checks passed.");

@@ -219,7 +219,14 @@ namespace BellumCivile.Behaviors
             foreach (string id in record.EndowmentFiefs.Except(record.DeliveredFiefs).ToList())
             {
                 Settlement fief = Settlement.Find(id);
-                if (fief.OwnerClan != record.Cadet) ChangeOwnerOfSettlementAction.ApplyByDefault(record.Cadet.Leader, fief);
+                if (fief.OwnerClan != record.Cadet)
+                {
+                    // Concessions are negotiated grants; retain their existing legal-transfer rules.
+                    if (record.ChallengeConcession)
+                        ChangeOwnerOfSettlementAction.ApplyByDefault(record.Cadet.Leader, fief);
+                    else if (!titles.TransferInheritedPossession(source, record.Cadet, fief))
+                        return DeferAbdication(record, "holding transfer failed: " + id);
+                }
                 if (fief.OwnerClan != record.Cadet) return DeferAbdication(record, "holding transfer failed: " + id);
                 // Barony legalization occurs in the title loop, including de-jure-only titles.
                 record.DeliveredFiefs.Add(id);

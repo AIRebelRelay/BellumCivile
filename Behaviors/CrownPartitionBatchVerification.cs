@@ -22,6 +22,7 @@ namespace BellumCivile.Behaviors
                 || !CrownPartitionBatchReconciliation.TryProjectTitles(batch, pending.CrownPromotions, out var expectedTitles, out reason)
                 || !CrownPartitionBatchHoldings.TryProject(batch, pending.CrownPromotions, out var expectedRealms, out var expectedHoldings, out reason)
                 || !PartitionLesserEstateProjection.TryApply(pending, expectedTitles, expectedRealms, expectedHoldings, out reason)
+                || !MixedEstateBatch.TryProject(pending, expectedTitles, expectedRealms, expectedHoldings, out reason)
                 || !CrownPartitionBatchReconciliation.TryVerifyProjectedTitles(expectedTitles, titles.GetAllTitles(), out reason)) return false;
             if (pending.CrownPromotions.Any(p => p.Parent.IsEliminated || !Kingdom.All.Contains(p.Parent)
                 || p.Parent.RulingClan != p.RetainedHouse

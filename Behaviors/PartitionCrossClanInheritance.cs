@@ -60,39 +60,18 @@ namespace BellumCivile.Behaviors
         public void CaptureCrossClanEstate(Hero victim)
         {
             Clan source = victim?.Clan;
-            if (source == null || source.Leader != victim || !CanPartitionClan(source)
-                || RegencyBehavior.Instance?.GetLegalClanHead(source) is Hero ward && ward != victim
+            Hero legalHead = RegencyBehavior.Instance?.GetLegalClanHead(source) ?? source?.Leader;
+            if (source == null || legalHead != victim || !CanPartitionClan(source)
                 || _crossClanEstates.Any(r => r.Deceased == victim)) return;
-            var heirs = OrderEstateHeirs(source.Heroes, victim, SuccessionLawHelper.GetLawsForClan(source));
-            if (!heirs.Any(h => h.Clan != source)) return;
-            var titles = Campaign.Current.GetCampaignBehavior<FeudalTitleBehavior>();
-            if (titles == null) return;
-            // Keep the same full hierarchy and primary-title anchor as local partition.
-            // Sovereign execution is separated after planning, never by filtering inputs.
-            var estateTitles = titles.GetTitlesHeldByClan(source, deJure: true)
-                .Where(t => t.IsActive).ToList();
-            var primarySovereign = source == source.Kingdom?.RulingClan
-                ? titles.GetRealmSovereignTitle(source.Kingdom, FeudalHierarchyMode.DeFacto)
-                    ?? titles.GetKingdomPoliticalTitle(source.Kingdom) : null;
-            var plan = FeudalInheritancePlanner.BuildPlan(source, victim, GetPartitionableFiefs(source),
-                heirs, estateTitles, GetMainHeirReservedFiefs(), primarySovereign?.TitleId ?? string.Empty);
-            var record = new CrossClanEstateRecord
-            {
-                Source = source, Deceased = victim, Realm = source.Kingdom,
-                PreferredPrimaryTitleId = primarySovereign?.TitleId,
-                RealmCrownTitleId = source == source.Kingdom?.RulingClan
-                    ? titles.GetKingdomPoliticalTitle(source.Kingdom)?.TitleId : null,
-                ReadyDate = CampaignTime.Now + CampaignTime.Hours(1f)
-            };
-            for (int i = 0; i < heirs.Count; i++)
-            {
-                var share = SnapshotEstateShare(plan, heirs[0], heirs[i],
-                    BellumCivileOptions.EnablePartitionSuccession);
-                if (share != null) record.Shares.Add(share);
-            }
-            if (!record.Shares.Any(s => s.Heir.Clan != source && (s.Fiefs.Count > 0 || s.Titles.Count > 0))) return;
+            var record = EstateInheritancePolicy.BuildProjection(source, victim);
+            if (record == null || record.Shares.Count == 0) return;
+            // Routing follows allocated beneficiaries, not excluded foreign relatives.
+            // Entirely in-house estates retain the established local/Crown executor.
+            if (!record.Shares.Any(s => s.IsEscheat || s.Heir?.Clan != source)
+                && source.Leader == victim) return;
+            record.ReadyDate = CampaignTime.Now + CampaignTime.Hours(1f);
             _crossClanEstates.Add(record);
-            BellumCivileLogger.Log($"Cross-clan death estate captured; deceased={victim.StringId}; source={source.StringId}; shares={record.Shares.Count}; heirs={string.Join(",", record.Shares.Select(s => s.Heir.StringId))}.");
+            BellumCivileLogger.Log($"Cross-clan death estate captured; deceased={victim.StringId}; source={source.StringId}; shares={record.Shares.Count}; heirs={string.Join(",", record.Shares.Select(s => s.Heir?.StringId ?? "crown"))}; policy={record.PolicyVersion}; escheats={record.Shares.Count(s => s.IsEscheat)}.");
         }
 
         internal static CrossClanEstateShare SnapshotEstateShare(FeudalInheritancePlan plan,
@@ -116,7 +95,7 @@ namespace BellumCivile.Behaviors
         }
 
         internal static bool NeedsLandedSettlement(CrossClanEstateShare share, Hero heir) =>
-            share.Heir == heir && !share.Completed && !share.LandedSettled;
+            share.Heir == heir && !share.IsEscheat && !share.Completed && !share.LandedSettled;
 
         internal static bool IsUnsupportedSovereignPackage(CrossClanEstateRecord record,
             IEnumerable<FeudalTitleRecord> titles) => titles.Any(t => t != null
@@ -168,13 +147,13 @@ namespace BellumCivile.Behaviors
         internal bool HasCrossClanShare(Hero heir) => heir != null && _crossClanEstates.Any(r =>
             r.Deceased.IsDead && r.Shares.Any(s => s.Heir == heir && !s.Completed));
 
-        internal bool SettleCrownDeathEstate(Hero heir)
+        internal bool SettleCrownDeathEstate(Hero heir, CrownAccessionRecord accession = null)
         {
             foreach (var record in _crossClanEstates.Where(r => !r.Completed && r.Deceased.IsDead
                 && r.Shares.Any(s => s.Heir == heir && !s.Completed)).ToList())
-                TrySettleCrossClanEstate(record, heir);
+                if (!CanFinishRetainedMixedAccession(record, heir, accession)) TrySettleCrossClanEstate(record, heir);
             return !_crossClanEstates.Any(r => !r.Completed && r.Deceased.IsDead
-                && r.Shares.Any(s => NeedsLandedSettlement(s, heir)));
+                && r.Shares.Any(s => NeedsLandedSettlement(s, heir)) && !CanFinishRetainedMixedAccession(r, heir, accession));
         }
 
         internal bool KeepCrossClanEstateHouse(Clan house) => house != null
@@ -197,11 +176,14 @@ namespace BellumCivile.Behaviors
                 RepairEstateFiefIds(record);
                 var titles = Campaign.Current.GetCampaignBehavior<FeudalTitleBehavior>();
                 if (titles == null) return;
+                if (TryHandleMixedEstate(record, titles)) return;
+                if (!CanStartDomesticEstateDelivery(record, titles)) return;
                 if (!record.GoldPrepared)
                 {
                     record.GoldDonor = record.Source.Leader?.IsAlive == true ? record.Source.Leader : null;
+                    int goldShares = record.PolicyVersion == 0 ? record.Shares.Count : record.Shares.Count(s => s.ReceivesGold);
                     record.GoldPerShare = record.GoldDonor == null ? 0
-                        : Math.Max(0, record.GoldDonor.Gold) / record.Shares.Count;
+                        : Math.Max(0, record.GoldDonor.Gold) / Math.Max(1, goldShares);
                     record.GoldPrepared = true;
                 }
                 foreach (var share in record.Shares.Where(s => !s.Completed))
@@ -211,7 +193,7 @@ namespace BellumCivile.Behaviors
                 }
                 if (record.Shares.All(s => s.Completed))
                     titles.RegisterPartitionHouseClaims(record.Source, record.Deceased,
-                        record.Shares.Where(s => !s.BeneficiaryReconciled && s.Recipient != null
+                        record.Shares.Where(s => !s.IsEscheat && !s.BeneficiaryReconciled && s.Recipient != null
                             && s.Heir?.IsAlive == true && s.Heir.Clan == s.Recipient)
                             .Select(s => Tuple.Create(s.Recipient, s.Heir)).ToList(),
                         record.Shares.SelectMany(s => s.DeliveredFiefs).Distinct().Select(Settlement.Find)
@@ -248,11 +230,13 @@ namespace BellumCivile.Behaviors
                 SupersedeEstateTitle(share, record.RealmCrownTitleId);
             if (EstateDeliveryComplete(share))
             {
+                RestoreEstateReversionClaims(record, share, titles);
                 share.LandedSettled = true;
                 share.Completed = true;
                 ReportEstateShare(record, share, "completed from existing delivery receipts");
                 return;
             }
+            if (record.PolicyVersion > 0 && share.DomesticOnly && !PrepareDomesticEstateShare(record, share)) return;
             Hero heir = share.Heir;
             if (heir == null)
             { ReportEstateShare(record, share, "awaiting unresolved beneficiary reference"); return; }
@@ -284,8 +268,9 @@ namespace BellumCivile.Behaviors
                 ReconcileEstateTitleReceipt(record, share, title, heir.Clan);
             }
             foreach (var sovereign in share.Titles.Except(share.DeliveredTitles).Except(share.SupersededTitles)
-                .Select(titles.GetTitle).Where(t => RequiresSovereignEstateExecutor(record, titles, t)))
+                .Select(titles.GetTitle).Where(t => !share.IsEscheat && RequiresSovereignEstateExecutor(record, titles, t)))
             {
+                if (RetainsSovereignEstateInSource(record, share, sovereign)) continue;
                 if (heir.Clan != record.Source && heir.Clan.Kingdom != record.Realm
                     && CrownAccessionBehavior.CanUseExistingCrownHouse(heir, heir.Clan.Leader,
                         RegencyBehavior.Instance?.GetLegalClanHead(heir.Clan))
@@ -305,7 +290,9 @@ namespace BellumCivile.Behaviors
                     {
                         var draft = new CrownAccessionRecord
                         {
-                            Realm = record.Realm,
+                            Realm = record.PolicyVersion > 0 && share.DomesticOnly
+                                ? CrownAccessionBehavior.Instance?.ResolveEstateRealm(record.Realm) ?? record.Realm
+                                : record.Realm,
                             PreviousHouse = record.Source,
                             Predecessor = record.Deceased,
                             Heir = heir,
@@ -331,7 +318,7 @@ namespace BellumCivile.Behaviors
                 share.Recipient = heir.Clan;
             }
             Clan recipient = share.Recipient;
-            if (recipient != heir.Clan || recipient.IsEliminated)
+            if (!share.IsEscheat && (recipient != heir.Clan || recipient.IsEliminated))
             {
                 share.BeneficiaryReconciled = true;
                 share.Recipient = recipient = heir.Clan;
@@ -378,6 +365,7 @@ namespace BellumCivile.Behaviors
                 { ReportEstateShare(record, share, "awaiting verified legal inheritance: " + id); return; }
                 share.DeliveredTitles.Add(id);
             }
+            RestoreEstateReversionClaims(record, share, titles);
             foreach (string id in share.SovereignTransfers.Except(share.DeliveredSovereignTransfers).ToList())
             {
                 if (share.SupersededTitles.Contains(id))
@@ -391,7 +379,8 @@ namespace BellumCivile.Behaviors
                 {
                     IncomingSourceHead = record.GoldDonor,
                     GoldRecipient = recipient.Leader,
-                    EndowmentGold = record.GoldDonor == recipient.Leader ? 0 : record.GoldPerShare
+                    EndowmentGold = record.GoldDonor == recipient.Leader
+                        || record.PolicyVersion > 0 && !share.ReceivesGold ? 0 : record.GoldPerShare
                 };
             if (!share.GoldPayment.GoldDebited && share.GoldPayment.EndowmentGold > 0
                 && share.GoldPayment.EndowmentDonor?.IsAlive != true)
@@ -411,17 +400,55 @@ namespace BellumCivile.Behaviors
             share.Completed = true;
             share.Status = "completed";
             BellumCivileLogger.Log($"Cross-clan death estate delivered; deceased={record.Deceased.StringId}; heir={heir.StringId}; recipient={recipient.StringId}; fiefs={share.DeliveredFiefs.Count}; titles={share.DeliveredTitles.Count}; superseded_fiefs={share.SupersededFiefs.Count}; superseded_titles={share.SupersededTitles.Count}.");
-            if (recipient != record.Source)
+            ShowEstateInheritanceMessage(record, share, titles);
+        }
+
+        private static void ShowEstateInheritanceMessage(CrossClanEstateRecord record, CrossClanEstateShare share, FeudalTitleBehavior titles)
+        {
+            var recipient = share.Recipient;
+            var heir = share.Heir;
+            if (recipient != record.Source && (share.DeliveredTitles.Count > 0 || share.DeliveredFiefs.Count > 0
+                || share.GoldPayment.EndowmentGold > 0))
             {
-                var message = new TextObject("{=BC_CrossClanEstateInherited}Following the death of {PARENT}, {HEIR} has received {POSSESSIVE} lawful share of the estates of {HOUSE} into the keeping of {RECIPIENT}.");
+                var message = new TextObject(share.IsEscheat
+                    ? "{=BC_EstateInheritance_Reverted}Following the death of {PARENT}, {ESTATE} of {HOUSE} reverted to {RECIPIENT}, the ruling house of {REALM}, because no eligible blood heir remained within the realm."
+                    : "{=BC_EstateInheritance_Delivered}Following the death of {PARENT}, {HEIR} inherited {ESTATE} from {HOUSE}. The inheritance is now held by {RECIPIENT} in {REALM}.");
                 message.SetTextVariable("PARENT", record.Deceased.Name);
                 message.SetTextVariable("HEIR", heir.Name);
-                message.SetTextVariable("POSSESSIVE", heir.IsFemale ? new TextObject("{=BC_Pronoun_Her}her") : new TextObject("{=BC_Pronoun_His}his"));
                 message.SetTextVariable("HOUSE", record.Source.Name);
                 message.SetTextVariable("RECIPIENT", recipient.Name);
+                message.SetTextVariable("ESTATE", DescribeDeliveredEstate(share, titles, recipient));
+                message.SetTextVariable("REALM", recipient.Kingdom?.Name
+                    ?? new TextObject("{=BC_EstateInheritance_NoRealm}an independent house"));
                 BellumCivileNotifications.Show(message, BellumNotificationColors.Inheritance,
                     primaryKingdom: record.Realm, primaryClan: recipient, secondaryClan: record.Source);
             }
+        }
+
+        private static void RestoreEstateReversionClaims(CrossClanEstateRecord record, CrossClanEstateShare share,
+            FeudalTitleBehavior titles)
+        {
+            if (!share.IsEscheat || share.Recipient == null) return;
+            // Reconciliation can recover legal delivery before its claim receipt was written.
+            foreach (string id in share.DeliveredTitles)
+                titles.RegisterEstateReversionClaim(record.Source, share.Recipient, titles.GetTitle(id), record.Deceased);
+        }
+
+        private static string DescribeDeliveredEstate(CrossClanEstateShare share, FeudalTitleBehavior titles, Clan recipient)
+        {
+            var names = share.DeliveredTitles.Select(titles.GetTitle).Where(t => t != null)
+                .OrderByDescending(t => t.TitleType).Select(t => FeudalTitleDisplayHelper.FormatTitleName(t, recipient)).ToList();
+            var namedSettlements = new HashSet<string>(share.DeliveredTitles.Select(titles.GetTitle)
+                .Where(t => t?.TitleType == FeudalTitleType.Barony).Select(t => t.CapitalSettlementId));
+            names.AddRange(share.DeliveredFiefs.Where(id => !namedSettlements.Contains(id))
+                .Select(Settlement.Find).Where(s => s != null).Select(s => s.Name.ToString()));
+            if (names.Count == 0) return new TextObject("{=BC_EstateInheritance_Treasury}a share of the family treasury").ToString();
+            string summary = string.Join(", ", names.Take(3));
+            if (names.Count <= 3) return summary;
+            var text = new TextObject("{=BC_EstateInheritance_More}{TITLES} and {COUNT} further estates");
+            text.SetTextVariable("TITLES", summary);
+            text.SetTextVariable("COUNT", names.Count - 3);
+            return text.ToString();
         }
 
         private static void ReconcileEstateCadetHousehold(CrossClanEstateRecord estate, CrossClanEstateShare share)
