@@ -68,7 +68,8 @@ namespace BellumCivile.ViewModelMixin
                           <Children>
                             <GridWidget DataSource='{BellumInheritance}' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' DefaultCellWidth='325' DefaultCellHeight='65' ColumnCount='2' UseDynamicCellHeight='true' HorizontalAlignment='Left'>
                               <ItemTemplate>
-                                <ListPanel WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' MarginLeft='15' MarginRight='15' MarginTop='3' MarginBottom='12' StackLayout.LayoutMethod='VerticalTopToBottom'>
+                                <!-- GridWidget premeasures dynamic-height cells at zero width; constrain text before that pass. -->
+                                <ListPanel WidthSizePolicy='Fixed' SuggestedWidth='295' HeightSizePolicy='CoverChildren' VerticalAlignment='Top' MarginLeft='15' MarginRight='15' MarginTop='3' MarginBottom='12' StackLayout.LayoutMethod='VerticalTopToBottom'>
                                   <Children>
                                     <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.DefinitionText' Brush.TextHorizontalAlignment='Left' Text='@Definition'/>
                                     <TextWidget DoNotAcceptEvents='true' WidthSizePolicy='StretchToParent' HeightSizePolicy='CoverChildren' Brush='Encyclopedia.Stat.ValueText' Brush.TextHorizontalAlignment='Left' Text='@Value' MarginTop='2'/>
