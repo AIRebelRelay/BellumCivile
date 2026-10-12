@@ -792,12 +792,15 @@ It has no dependency on a particular companion mod. Call it on the **active camp
 when applying an asynchronously generated chat result. Calls without a campaign or from another thread
 throw `InvalidOperationException`; do not interpret that as permission to run a competing system.
 Optional integrations can discover this type and its methods by reflection and remain disabled when absent.
+Additive API extensions keep version 1; probe for the particular method/event when supporting older Bellum builds.
 
 | API | Contract |
 | --- | --- |
 | `ManagesRelationPair(first, second)` | Includes the enabled setting and Bellum's hero-pair eligibility. Temporary relation-patch suppression does not surrender ownership. |
 | `GetHostageStatus(hero)` | Returns a copied status, or null when no relevant reservation/captivity remains. Distinguishes reserved, active peace pledge, awaiting disposition and ordinary retained prisoner; also exposes expiry, agreement validity, protection and actual treaty custody. |
 | `GetCourtAgendas(realm)` | Copies current/retained agendas with persistent IDs, objective kind/target/action, enact/repeal direction, state and dates. Session dates are scheduling data, not record identity. |
+| `GetPendingVotes(realm)` | Read-only snapshots of open expulsion, fief allocation and council appointment votes, covering deliberation and unresolved ballots. Includes stable IDs, subjects, proposers and current candidate houses. |
+| `CouncilAppointmentDecided`, `GetRecentCouncilAppointments()` | Verified council ballot results, delivered on a later campaign tick and retained in saved recent history. Includes incumbent confirmations. |
 | `TryPledgePolicyVote`, `TryPledgeExpulsionVote`, `TryPledgeFiefVote`, `TryPledgeCouncilVote` | Validate a pending Bellum ballot, eligible choice and influence reservation before calling the existing setters. Return false with a localized reason when unavailable; existing promises are not overwritten. |
 | `CanBeginElectionPersuasion`, `TryBeginElectionPersuasion`, `CompleteElectionPersuasion` | Share native dialogue's relation requirement and once-per-speaker/realm court-term attempt limit. The returned attempt binds completion to the original election and term. |
 | `IsIllegitimate`, `MarkIllegitimate`, `Legitimize` | Explicit, saved, idempotent legitimacy support for companion mods. No hero is marked automatically. |
@@ -809,6 +812,34 @@ and dialogue. Invoke the checked setter **before** taking payment and honor its 
 `expel` means support expelling the target. Fief/council promises name a clan. Eligibility or actual
 influence can still change before voting; a promise cannot guarantee a future shortlist or funds.
 The older public setters remain available, but bypass these additional integration checks.
+
+`GetPendingVotes` returns an empty list for a null or eliminated realm. Each `PendingVoteSnapshot`
+has `Id`, `Kind`, `Stage`, `Realm`, `Proposer`, and the relevant `TargetClan`, `Settlement` or nullable
+`Office`. `ScheduledDay` is the planned campaign day during deliberation, not a guaranteed deadline;
+it is null once the ballot is open. `EligibleCandidates` copies the currently eligible fief/council
+houses. `LeadingNominees` copies up to three recorded nomination leaders during deliberation, or
+the stored council shortlist at ballot stage, filtered against current eligibility. Expulsions have
+empty candidate lists. These lists are provisional: they do not promise the final three candidates.
+Polling never opens an election, refreshes nominations, initializes council offices or commits support.
+Snapshots copy scalar data and collections; their native hero/clan/realm objects remain live game references.
+
+Vote IDs survive deliberation-to-ballot handoff and save/load; later proposals for the same subject
+receive different IDs. Old pending queues and unresolved ballots receive IDs when loaded, durable
+after the next save. Canceled/completed votes disappear from this query. Announced agendas without
+a queued vote, first-refusal choices, preliminary redistribution votes, policy votes and Crown
+elections are outside its scope. A listed pending vote does **not** guarantee that new promises can
+still be accepted: always use the corresponding `TryPledge*` method and honor its result.
+
+Subscribe to `CouncilAppointmentDecided` each campaign session. Its `CouncilAppointmentResultSnapshot`
+contains `VoteId` (matching the pending snapshot's `Id`), `Realm`, `Office`, `Winner`, `WinnerLeader`
+(captured at resolution), `PreviousHolder` (immediately before appointment), `IncumbentRetained`,
+and `CompletedDay`. Only successfully applied council ballots produce results; failed appointments,
+withdrawals and direct/startup appointments do not. This reports the outcome, not how each lord voted
+or whether a particular promise was honored. Delivery is outside ballot execution, on the campaign
+thread, and subscriber exceptions are isolated. The latest **100** delivered results are retained;
+undelivered results are also saved until dispatch. Read `GetRecentCouncilAppointments()` on session
+launch and deduplicate by `VoteId` in your own campaign-scoped history. Dispatched events are not
+replayed after loading, and pre-update completed appointments are not reconstructed.
 
 For a crown-election chat appeal, checking availability does not spend an attempt. Call `TryBegin...`
 when the player actually makes the appeal, then report its result:

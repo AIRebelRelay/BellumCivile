@@ -759,3 +759,8 @@ Fixed player-negotiated marriages being blocked when a clan or Crown heir was th
 Fixed older pending Crown successions moving existing children into the heir’s new cadet house; children now remain in their current clan.
 Restricted new ordinary landed inheritance to eligible blood relatives within the realm, with Crown reversion when none remain, and added clearer inheritance previews while preserving legal title hierarchies.
 Fixed civil-war settlement crashes caused by blocked mercenary dismissals, adding Happy’s Improved Mercenaries compatibility and safe settlement retries.
+
+1.4.4 CHANGELOG
+
+Merged fix for localized cadet-clan name prefixes ending in punctuation. (credits and thanks to OhMyMike57/Cartoonist57)
+Expanded the mod integration API with pending-vote queries, candidate information, and council appointment result notifications with saved recent history.

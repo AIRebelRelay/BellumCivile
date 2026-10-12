@@ -21,7 +21,10 @@ namespace BellumCivile.Behaviors
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this,
                 _ => _threadId = Thread.CurrentThread.ManagedThreadId);
             CampaignEvents.TickEvent.AddNonSerializedListener(this, DispatchPartitions);
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, InitializeVotes);
+            CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, TrackVote);
+            CampaignEvents.TickEvent.AddNonSerializedListener(this, DispatchCouncilAppointments);
         }
-        public override void SyncData(IDataStore store) { SyncLegitimacy(store); SyncPartitions(store); }
+        public override void SyncData(IDataStore store) { SyncLegitimacy(store); SyncPartitions(store); SyncVotes(store); }
     }
 }

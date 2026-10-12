@@ -130,6 +130,8 @@ internal static class IntegrationTests
             var grandchild = Person("grandchild", 2, _house);
             son.Father = daughter.Father = _speaker; grandchild.Father = son;
             Leaders[_player] = _main; Leaders[_house] = _speaker; Leaders[_foreign] = daughter;
+            // Keep native fields consistent when the Release JIT inlines a simple getter.
+            foreach (var pair in Leaders) Set(pair.Key, "_leader", pair.Value);
             var campaign = Blank<Campaign>();
             AccessTools.PropertySetter(typeof(Campaign), "Current").Invoke(null, new object[] { campaign });
             campaign.AddCampaignBehaviorManager(manager);
@@ -308,7 +310,7 @@ internal static class IntegrationTests
 
             var partition = new PartitionSuccessionBehavior();
             var pending = new PendingPartitionSuccessionRecord(_speaker.StringId, _house.StringId, _realm.StringId,
-                "fief", "son|daughter", CampaignTime.Now) {
+                "fief", "son|daughter", CampaignTime.Days(_day)) {
                 CrownBatch = new CrownPartitionBatchRecord(),
                 EstateShares = new List<CrossClanEstateShare> {
                     new CrossClanEstateShare { Heir = son, Recipient = _house, Primary = true },

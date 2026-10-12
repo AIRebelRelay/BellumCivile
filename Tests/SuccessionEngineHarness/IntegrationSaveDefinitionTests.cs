@@ -10,7 +10,9 @@ using TaleWorlds.SaveSystem.Definition;
 internal static class IntegrationSaveDefinitionTests
 {
     private static readonly Type[] Records = { typeof(BellumIntegration).Assembly.GetType("BellumCivile.PartitionCompletionRecord"),
-        typeof(BellumIntegration).Assembly.GetType("BellumCivile.PartitionRecipientRecord") };
+        typeof(BellumIntegration).Assembly.GetType("BellumCivile.PartitionRecipientRecord"),
+        typeof(BellumIntegration).Assembly.GetType("BellumCivile.IntegrationVoteRecord"),
+        typeof(BellumIntegration).Assembly.GetType("BellumCivile.CouncilAppointmentResultRecord") };
     private static bool OnlyRecords(Type type) => Records.Contains(type);
     private static bool OnlyLists(Type type) => Records.Any(r => type == typeof(List<>).MakeGenericType(r));
     internal static void Run(Action<bool, string> check)

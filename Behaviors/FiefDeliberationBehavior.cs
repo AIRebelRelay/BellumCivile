@@ -140,6 +140,8 @@ namespace BellumCivile.Behaviors
             if (_fiefCommittedNominationKeys == null) _fiefCommittedNominationKeys = new Dictionary<string, bool>();
             if (_fiefSelfEncouragementUsed == null) _fiefSelfEncouragementUsed = new Dictionary<string, bool>();
             if (_fiefPersuasionFailed == null) _fiefPersuasionFailed = new Dictionary<string, bool>();
+            IntegrationVoteIds.Sync(dataStore, "BC_Fief_IntegrationVoteIds", ref _integrationVoteIds,
+                _pendingFiefDate.Keys.Concat(_openedFiefVoteDates.Keys));
         }
 
 
@@ -737,6 +739,7 @@ namespace BellumCivile.Behaviors
                 ?? CampaignTime.Now + CampaignTime.Days(O.PoliticalDeliberationDays);
             _pendingFiefCreatedDay[key] = DelayedVoteReliability.CurrentDay;
             _pendingFiefRetryCount[key] = 0;
+            IntegrationVoteIds.Ensure(_integrationVoteIds, key);
             if (!isReliabilityRecovery)
                 _fiefStaleRepairCount[key] = 0;
             BuildPreliminaryNominations(kingdom, settlement, capturerHero?.Clan ?? proposerClan, clanToExclude);
@@ -1615,6 +1618,7 @@ namespace BellumCivile.Behaviors
 
         private void RemovePendingKey(string key)
         {
+            _integrationVoteIds.Remove(key);
             _openedFiefVoteDates.Remove(key);
             _pendingFiefProposer.Remove(key);
             _pendingFiefCapturer.Remove(key);

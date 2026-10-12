@@ -53,8 +53,15 @@ internal static class Program
             if (args.Contains("--integration"))
             {
                 IntegrationTests.Run(Check);
+                IntegrationVoteTests.Run(Check);
                 IntegrationSaveDefinitionTests.Run(Check);
                 Console.WriteLine($"{_checks} integration checks passed.");
+            }
+            else if (args.Contains("--integration-votes"))
+            {
+                IntegrationVoteTests.Run(Check);
+                IntegrationSaveDefinitionTests.Run(Check);
+                Console.WriteLine($"{_checks} integration vote checks passed.");
             }
             else if (args.Contains("--domestic-estates"))
             {

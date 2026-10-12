@@ -30,7 +30,7 @@ namespace BellumCivile.Behaviors
     /// separate slots in the dialogue sub-menu (one per accused lord). Court agendas supply
     /// the vote date in every realm; this behavior executes the queue and owns persuasion.
     /// </summary>
-    public class ExpulsionDeliberationBehavior : CampaignBehaviorBase
+    public partial class ExpulsionDeliberationBehavior : CampaignBehaviorBase
     {
         public static ExpulsionDeliberationBehavior Current =>
             Campaign.Current?.GetCampaignBehavior<ExpulsionDeliberationBehavior>();
@@ -93,6 +93,7 @@ namespace BellumCivile.Behaviors
             if (_expelStaleRepairCount == null) _expelStaleRepairCount = new Dictionary<string, int>();
             if (_expelBribedOverrides == null) _expelBribedOverrides = new Dictionary<string, int>();
             if (_expelPersuasionFailed == null) _expelPersuasionFailed = new Dictionary<string, bool>();
+            IntegrationVoteIds.Sync(dataStore, "BC_Expulsion_IntegrationVoteIds", ref _integrationVoteIds, _pendingExpelDate.Keys);
         }
 
         // -------------------- Public API --------------------
@@ -193,6 +194,7 @@ namespace BellumCivile.Behaviors
 
         private void RemovePendingKey(string pendingKey)
         {
+            _integrationVoteIds.Remove(pendingKey);
             _pendingExpelProposer.Remove(pendingKey);
             _pendingExpelDate.Remove(pendingKey);
             _pendingExpelCreatedDay.Remove(pendingKey);
@@ -209,6 +211,7 @@ namespace BellumCivile.Behaviors
 
         private void InitializePendingLifecycle(string pendingKey, bool resetStaleRepair)
         {
+            IntegrationVoteIds.Ensure(_integrationVoteIds, pendingKey);
             _pendingExpelCreatedDay[pendingKey] = DelayedVoteReliability.CurrentDay;
             _pendingExpelRetryCount[pendingKey] = 0;
             if (resetStaleRepair)

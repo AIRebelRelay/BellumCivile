@@ -2087,17 +2087,33 @@ namespace BellumCivile.Behaviors
                 return new List<Clan>();
 
             Clan incumbent = GetOfficeHolder(kingdom, office);
-            HashSet<string> occupiedClanIds = new HashSet<string>(GetOfficeRecords(kingdom)
+            return SelectAppointmentCandidates(kingdom, incumbent?.StringId, GetOfficeRecords(kingdom))
+                .OrderByDescending(candidate => CalculateAppointmentMerit(kingdom, candidate, office))
+                .ThenBy(candidate => candidate.StringId)
+                .ToList();
+        }
+
+        internal IReadOnlyList<Clan> GetIntegrationAppointmentCandidates(Kingdom kingdom, PrivyCouncilOffice office)
+        {
+            if (!IsOfficeUnlocked(kingdom, office)) return new List<Clan>();
+            // Inspect existing offices without initializing a realm's council or recalculating support.
+            var records = _officeRecords.Where(r => r?.KingdomId == kingdom.StringId).ToList();
+            string incumbentId = records.FirstOrDefault(r => r.Office == office)?.HolderClanId;
+            return SelectAppointmentCandidates(kingdom, incumbentId, records)
+                .OrderBy(candidate => candidate.StringId).ToList();
+        }
+
+        private static IEnumerable<Clan> SelectAppointmentCandidates(Kingdom kingdom, string incumbentId,
+            IEnumerable<PrivyCouncilOfficeRecord> records)
+        {
+            HashSet<string> occupiedClanIds = new HashSet<string>(records
                 .Where(record => record != null && !string.IsNullOrEmpty(record.HolderClanId))
                 .Select(record => record.HolderClanId));
 
             return GetEligibleCouncilClans(kingdom, includePrisoners: true)
                 .Where(candidate => candidate != kingdom.RulingClan
-                    && (candidate == incumbent || !candidate.Leader.IsPrisoner)
-                    && (candidate == incumbent || !occupiedClanIds.Contains(candidate.StringId)))
-                .OrderByDescending(candidate => CalculateAppointmentMerit(kingdom, candidate, office))
-                .ThenBy(candidate => candidate.StringId)
-                .ToList();
+                    && (candidate.StringId == incumbentId || !candidate.Leader.IsPrisoner)
+                    && (candidate.StringId == incumbentId || !occupiedClanIds.Contains(candidate.StringId)));
         }
 
         public IReadOnlyList<Clan> GetAppointmentChallengers(Kingdom kingdom, PrivyCouncilOffice office)

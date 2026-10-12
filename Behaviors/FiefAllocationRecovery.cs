@@ -38,6 +38,8 @@ namespace BellumCivile.Behaviors
             // Older saves can contain an already-open ballot without a Bellum receipt.
             var due = _pendingFiefDate.TryGetValue(key, out var original) ? original : CampaignTime.Now - CampaignTime.Hours(1);
             _openedFiefVoteDates[key] = due;
+            _integrationVoteIds[key] = BellumIntegrationBehavior.Current?.GetTrackedVoteId(decision)
+                ?? IntegrationVoteIds.Ensure(_integrationVoteIds, key);
             if (!_pendingFiefProposer.ContainsKey(key)) _pendingFiefProposer[key] = decision.ProposerClan?.StringId ?? "";
             var capturer = ResolveClaimantDecisionCapturer(decision);
             if (!_pendingFiefCapturer.ContainsKey(key)) _pendingFiefCapturer[key] = capturer?.StringId ?? "";

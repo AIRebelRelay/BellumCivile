@@ -14,7 +14,7 @@ using TaleWorlds.Localization;
 
 namespace BellumCivile.Behaviors
 {
-    public sealed class CouncilAppointmentDeliberationBehavior : CampaignBehaviorBase
+    public sealed partial class CouncilAppointmentDeliberationBehavior : CampaignBehaviorBase
     {
 
         public static CouncilAppointmentDeliberationBehavior Current =>
@@ -81,6 +81,7 @@ namespace BellumCivile.Behaviors
             _nominationScores = _nominationScores ?? new Dictionary<string, float>();
             _committedVotes = _committedVotes ?? new Dictionary<string, bool>();
             _persuasionFailures = _persuasionFailures ?? new Dictionary<string, bool>();
+            IntegrationVoteIds.Sync(dataStore, "BC_Council_IntegrationVoteIds", ref _integrationVoteIds, _pendingVoteDate.Keys);
         }
 
         public bool HasPendingAppointment(Kingdom kingdom)
@@ -226,6 +227,7 @@ namespace BellumCivile.Behaviors
             // An agenda's promised deliberation window is not a stalled-ballot retry period.
             _pendingCreatedDay[pendingKey] = (float)scheduledVoteDate.ToDays;
             _pendingRetryCount[pendingKey] = 0;
+            IntegrationVoteIds.Ensure(_integrationVoteIds, pendingKey);
             BuildPreliminaryNominations(kingdom, office, preserveCommitted: false);
 
             TextObject notice = new TextObject("{=BC_CouncilDelib_Queued}The nobility of {KINGDOM_NAME} has begun considering candidates for the office of {OFFICE}. The court will deliberate and call for a vote within {DAYS} days.");
@@ -479,12 +481,12 @@ namespace BellumCivile.Behaviors
 
         private List<CouncilAppointmentNominationRanking> BuildStoredRanking(
             Kingdom kingdom,
-            PrivyCouncilOffice office)
+            PrivyCouncilOffice office, IEnumerable<Clan> candidates = null)
         {
             string prefix = BuildPendingKey(kingdom, office) + "|";
             PrivyCouncilBehavior council = Campaign.Current?.GetCampaignBehavior<PrivyCouncilBehavior>();
             HashSet<Clan> validCandidates = new HashSet<Clan>(
-                council?.GetAppointmentCandidatesForVote(kingdom, office) ?? new List<Clan>());
+                candidates ?? council?.GetAppointmentCandidatesForVote(kingdom, office) ?? new List<Clan>());
             return _nomineeByVoter
                 .Where(pair => pair.Key.StartsWith(prefix, StringComparison.Ordinal))
                 .GroupBy(pair => pair.Value)
@@ -558,6 +560,7 @@ namespace BellumCivile.Behaviors
 
         private void RemovePendingLifecycle(string pendingKey)
         {
+            _integrationVoteIds.Remove(pendingKey);
             _pendingCourtAgendaIds.Remove(pendingKey);
             _pendingProposerClan.Remove(pendingKey);
             _pendingFactionType.Remove(pendingKey);

@@ -67,6 +67,7 @@ namespace BellumCivile
         [SaveableField(107)] internal string CourtAgendaId;
 
         internal Clan AppliedCandidate => _appliedCandidate;
+        internal IReadOnlyList<Clan> IntegrationShortlist => _shortlistedClans ?? new List<Clan>();
 
         public PrivyCouncilOffice Office => _office;
 
@@ -193,6 +194,7 @@ namespace BellumCivile
             _outcomeAttempted = true;
             PrivyCouncilAppointmentOutcome outcome = chosenOutcome as PrivyCouncilAppointmentOutcome;
             var council = GetBehavior();
+            Clan previousHolder = outcome?.CandidateClan == null ? null : council?.GetOfficeHolder(Kingdom, _office);
             if (outcome?.CandidateClan == null
                 || council?.TryAppointOffice(Kingdom, _office, outcome.CandidateClan, showNotification: false) != true
                 || council.GetOfficeHolder(Kingdom, _office) != outcome.CandidateClan)
@@ -201,6 +203,7 @@ namespace BellumCivile
                 return;
             }
             _appliedCandidate = outcome.CandidateClan;
+            BellumIntegrationBehavior.Current?.RecordCouncilAppointment(this, previousHolder);
         }
 
         public override TextObject GetSecondaryEffects()
