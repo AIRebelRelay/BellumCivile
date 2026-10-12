@@ -162,8 +162,9 @@ namespace BellumCivile.Behaviors
                 }
                 if (record.Stage == 2)
                 {
-                    ReleaseMercenariesFromKingdom(record.WinnerRealm);
-                    ReleaseMercenariesFromKingdom(record.Parent);
+                    if (!ReleaseMercenariesFromKingdom(record.WinnerRealm)
+                        || !ReleaseMercenariesFromKingdom(record.Parent))
+                    { record.Failure = "Mercenary dismissal pending"; return; }
                     TransferClansToKingdom(record.WinnerRealm, record.Successor, record.WinnerHouse);
                     TransferClansToKingdom(record.Parent, record.Successor, record.WinnerHouse);
                     if (record.WinnerRealm.Clans.Any(c => !c.IsEliminated) || record.Parent.Clans.Any(c => !c.IsEliminated)) return;

@@ -859,6 +859,14 @@ With the revamp on, disable Diplomacy settings independently controlling overlap
 
 The warning waits until campaign UI is ready and returns on load while conflicts remain. Bellum reports incompatible settings; it does not change another mod's configuration. Reflection-based compatibility is build-sensitive and requires testing against supported external versions.
 
+### Mercenary Contracts
+
+Civil-war settlement ends temporary-realm mercenary contracts before completing the war tracker, removing the faction, or applying judgments. Blocked departures retain a saved outcome for daily retry; the affected clans remain mercenaries and occupied rebel shells are not destroyed. Existing saves initialize the new pending-outcome list empty.
+
+For Happy's Improved Mercenaries (`LongerMercenaryContracts`), `ModIntegrationHelper.ExecuteWithMercenarySettlementExit` temporarily enables its deliberate-exit flag around the native departure action, then restores the previous value. Normal departure callbacks retain control of influence payouts and contract cleanup. Bellum does not clear contract data in advance, call the penalized walk-away action, or change ordinary contract enforcement. Unknown departure blockers defer settlement instead of crashing.
+
+`--civil-war-mercenaries` tests blocked departures, initial outcomes, recovery and save-data persistence. Add `--mercenary-mod="path/to/LongerMercenaryContracts.dll"` to check the optional adapter against an installed DLL. `--civil-war-settlement` also runs adjacent peace, war-score and civil-war continuation checks. These harness tests use native-action doubles; campaign save/load and mod-stack retesting remain necessary.
+
 ### Relations, Economy, and Banners
 
 True Noble Opinion integration retains hero-pair identity, including regular members/family. Verify displayed values, events, and save/load with and without it.

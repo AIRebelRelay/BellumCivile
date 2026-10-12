@@ -84,7 +84,8 @@ namespace BellumCivile.Behaviors
                     if (victor?.IsEliminated != false || (victor.Kingdom != realm && victor.Kingdom != record.WarShell)
                         || victor.Leader != record.Challenger || record.Challenger?.IsAlive != true) return;
                     if (realm.RulingClan != victor && realm.Leader != record.Sovereign) return;
-                    ReleaseMercenariesFromKingdom(record.WarShell);
+                    if (!ReleaseMercenariesFromKingdom(record.WarShell))
+                    { record.Failure = "Mercenary dismissal pending"; return; }
                     foreach (Clan clan in record.WarShell?.Clans.ToList() ?? new List<Clan>())
                         TransferCivilWarClan(clan, record.WarShell, realm, faction);
                     if (victor.Kingdom != realm) return;
@@ -106,8 +107,7 @@ namespace BellumCivile.Behaviors
                 Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>()?.RemoveFaction(faction);
                 if (record.WarShell?.IsEliminated == false)
                 {
-                    ReleaseMercenariesFromKingdom(record.WarShell);
-                    DrainAndDestroyRebelKingdom(record.WarShell, realm);
+                    if (!DrainAndDestroyRebelKingdom(record.WarShell, realm)) return;
                 }
                 faction.RestoreCivilWarInfluenceSnapshots(faction.Members.Concat(record.OutcomeLosers));
                 if (record.WarOutcome != SuccessionChallengeOutcome.WhitePeace)

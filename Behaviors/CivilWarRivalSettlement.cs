@@ -52,7 +52,8 @@ namespace BellumCivile.Behaviors
                 }
                 if (record.Stage == 1)
                 {
-                    ReleaseMercenariesFromKingdom(loser.Realm);
+                    if (!ReleaseMercenariesFromKingdom(loser.Realm))
+                    { record.Failure = "Mercenary dismissal pending"; return; }
                     foreach (var clan in record.LosingClans.Where(c => !c.IsEliminated && !c.IsUnderMercenaryService))
                     {
                         TransferCivilWarClan(clan, loser.Realm, winner.Realm, winner.Faction);

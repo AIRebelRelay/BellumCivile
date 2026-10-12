@@ -1592,7 +1592,8 @@ namespace BellumCivile.Behaviors
                     }
                     else
                     {
-                        return resolution.TryResolveTerminalLiegeVictory(faction, primary);
+                        resolution.TryResolveTerminalLiegeVictory(faction, primary);
+                        return !war.IsActive;
                     }
                 }
 

@@ -88,6 +88,8 @@ namespace BellumCivile.Behaviors
         }
         public override void SyncData(IDataStore dataStore)
         {
+            dataStore.SyncData("BC_PendingMercenarySettlements", ref _pendingMercenarySettlements);
+            _pendingMercenarySettlements = _pendingMercenarySettlements ?? new List<CivilWarMercenarySettlementRecord>();
             dataStore.SyncData("BC_TribunalReactions", ref _tribunalReactions);
             _tribunalReactions = _tribunalReactions ?? new List<CourtTribunalReactionRecord>();
             dataStore.SyncData("BC_CoalitionDeaths", ref _coalitionDeaths);
@@ -487,7 +489,7 @@ namespace BellumCivile.Behaviors
 
             RunWithRulerRepairSuppressed(sourceKingdom, () =>
             {
-                ReleaseMercenariesFromKingdom(sourceKingdom);
+                if (!ReleaseMercenariesFromKingdom(sourceKingdom)) return;
                 List<Clan> clansToTransfer = sourceKingdom.Clans.ToList();
                 if (preferredRuler != null && clansToTransfer.Remove(preferredRuler))
                 {
@@ -508,7 +510,7 @@ namespace BellumCivile.Behaviors
             if (clan == null || clan.IsEliminated || sourceKingdom == null || targetKingdom == null
                 || sourceKingdom == targetKingdom || targetKingdom.IsEliminated || clan.Kingdom != sourceKingdom)
                 return false;
-            if (ReleaseCivilWarMercenary(clan, sourceKingdom)) return false;
+            if (ReleaseCivilWarMercenary(clan, sourceKingdom) != MercenaryReleaseResult.NotMercenary) return false;
 
             if (faction != null)
                 faction.MoveClanToKingdomPreservingCivilWarInfluence(clan, targetKingdom, preserveCustomBanner: true, showNotification: false);
@@ -681,6 +683,7 @@ namespace BellumCivile.Behaviors
 
         private void OnDailyTick()
         {
+            ResumePendingMercenarySettlements();
             PurgeSuccessfulIndependenceJudgments();
             PurgeUnauthorizedPlayerSuccessionState();
             ProcessPendingSuccessionVotes();
@@ -1581,6 +1584,16 @@ namespace BellumCivile.Behaviors
                 .Where(clan => clan != null && !losingClanSet.Contains(clan))
                 .ToList();
 
+            var returnedMercenaries = allowEliminatedRebelShell
+                ? losingClans.Where(c => c.IsUnderMercenaryService && c.Kingdom == faction.ParentKingdom).ToList()
+                : null;
+            // Departure clears the service flag. Capture noble rosters before dismissal
+            // so a former player mercenary cannot enter the tribunal or reward lists.
+            losingClans.RemoveAll(c => c.IsUnderMercenaryService);
+            loyalistWinners.RemoveAll(c => c.IsUnderMercenaryService);
+            if (!PrepareMercenarySettlement(faction, rebelKingdom, MercenaryLiegeVictory, allowEliminatedRebelShell,
+                additionalMercenaries: returnedMercenaries)) return false;
+
             var resultNotice = ConflictOutcomeBehavior.Current?.BeginCivil(faction, rebelKingdom);
             if (SuccessionChallengeBehavior.Instance?.PrepareWarOutcome(faction, SuccessionChallengeOutcome.Defeat, faction.ParentKingdom) == false) return false;
 
@@ -1609,16 +1622,6 @@ namespace BellumCivile.Behaviors
                 ApplyPostWarConsequences(faction.ParentKingdom, losingClans, faction.ParentKingdom, out bool anyExec, out bool anyForgive, out bool anyExile, out bool oldKingExec, rebelKingdom, GetRebelExileCause(faction.Type), civilWarStartFiefSnapshot);
             }
 
-            ReleaseMercenariesFromKingdom(rebelKingdom);
-            if (allowEliminatedRebelShell)
-            {
-                foreach (Clan mercenary in losingClans
-                    .Where(clan => clan.IsUnderMercenaryService && clan.Kingdom == faction.ParentKingdom)
-                    .ToList())
-                {
-                    ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(mercenary, showNotification: false);
-                }
-            }
             DrainAndDestroyRebelKingdom(rebelKingdom, faction.ParentKingdom, reunification: true);
             faction.RestoreCivilWarInfluenceSnapshots(losingClans.Concat(loyalistWinners));
             ApplyChallengeAwareVictoryRewards(faction, loyalistWinners, faction.ParentKingdom.RulingClan, "loyalist victory", loyalistVictory: true);
@@ -1721,6 +1724,7 @@ namespace BellumCivile.Behaviors
                 ResolveWhitePeace(faction, rebelKingdom, cause: new TextObject("{=BC_Result_ClaimantUnavailable}The original claimant can no longer take the throne. The challenge has ended, and the rebel houses return to the realm."));
                 return;
             }
+            if (!PrepareMercenarySettlement(faction, rebelKingdom, MercenaryRebelVictory)) return;
             var resultNotice = ConflictOutcomeBehavior.Current?.BeginCivil(faction, rebelKingdom);
             if (CivilWarConflictBehavior.Instance?.PrepareRivalCrownVictory(faction) == false) return;
             if (SuccessionChallengeBehavior.Instance?.PrepareWarOutcome(faction, SuccessionChallengeOutcome.Victory, faction.ParentKingdom) == false) return;
@@ -1741,8 +1745,6 @@ namespace BellumCivile.Behaviors
             bool tribunalDeferredUntilSuccession = false;
 
             Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>()?.RemoveFaction(faction);
-
-            ReleaseMercenariesFromKingdom(rebelKingdom);
 
             switch (faction.Type)
             {
@@ -1920,6 +1922,9 @@ namespace BellumCivile.Behaviors
                          && !x.RebelKingdom.IsEliminated)
                 .ToDictionary(x => x.Faction, x => x.RebelKingdom);
 
+            if (!PrepareMercenarySettlement(decisiveCivilWarVictor, collapsedParent, MercenaryParentCollapse,
+                additionalRealms: activeRebellions.Values)) return;
+
             if (activeRebellions.Count == 0)
             {
                 foreach (FactionObject orphanedFaction in factionManager.GetFactionsInKingdom(collapsedParent).Where(f => !f.IsIdeology).ToList())
@@ -2038,7 +2043,6 @@ namespace BellumCivile.Behaviors
                 if (rivalKingdom != null && rivalKingdom != successorKingdom && !rivalKingdom.IsEliminated)
                 {
                     ApplyPacifiedCooldowns(rivalKingdom.Clans, CivilWarPacifiedDays);
-                    ReleaseMercenariesFromKingdom(rivalKingdom);
                     DrainAndDestroyRebelKingdom(rivalKingdom, restoredSuccessorKingdom);
                 }
 
@@ -2990,20 +2994,44 @@ namespace BellumCivile.Behaviors
             _tribunalAnyExiled[groupId] = true;
         }
 
-        private static void ReleaseMercenariesFromKingdom(Kingdom kingdom)
+        private enum MercenaryReleaseResult { NotMercenary, Released, Blocked }
+        private static readonly HashSet<Kingdom> ReleasingMercenaries = new HashSet<Kingdom>();
+
+        private static bool ReleaseMercenariesFromKingdom(Kingdom kingdom)
         {
-            if (kingdom == null) return;
-            foreach (Clan clan in kingdom.Clans.Where(c => c != null && c.IsUnderMercenaryService).ToList())
-                ReleaseCivilWarMercenary(clan, kingdom);
+            if (kingdom == null) return true;
+            if (!ReleasingMercenaries.Add(kingdom)) return false;
+            try
+            {
+                bool ready = true;
+                RunWithoutPeaceHandling(() => RunWithRulerRepairSuppressed(kingdom, () =>
+                {
+                    foreach (Clan clan in kingdom.Clans.Where(c => c != null && !c.IsEliminated
+                        && c.Kingdom == kingdom && c.IsUnderMercenaryService).ToList())
+                        ready &= ReleaseCivilWarMercenary(clan, kingdom) != MercenaryReleaseResult.Blocked;
+                }));
+                return ready && !kingdom.Clans.Any(c => c != null && !c.IsEliminated
+                    && c.Kingdom == kingdom && c.IsUnderMercenaryService);
+            }
+            finally { ReleasingMercenaries.Remove(kingdom); }
         }
 
-        private static bool ReleaseCivilWarMercenary(Clan clan, Kingdom kingdom)
+        private static MercenaryReleaseResult ReleaseCivilWarMercenary(Clan clan, Kingdom kingdom)
         {
-            if (clan == null || clan.Kingdom != kingdom || !clan.IsUnderMercenaryService) return false;
-            ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(clan, showNotification: false);
-            if (clan.Kingdom == kingdom)
-                throw new System.InvalidOperationException($"Civil-war mercenary dismissal did not release clan {clan.StringId} from {kingdom.StringId}.");
-            return true;
+            if (clan == null || clan.IsEliminated || kingdom == null || clan.Kingdom != kingdom || !clan.IsUnderMercenaryService)
+                return MercenaryReleaseResult.NotMercenary;
+            try
+            {
+                ModIntegrationHelper.ExecuteWithMercenarySettlementExit(() =>
+                    ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(clan, showNotification: false));
+            }
+            catch (System.Exception ex)
+            {
+                BellumCivileLogger.Log($"Civil-war mercenary dismissal interrupted; clan={clan.StringId}; realm={kingdom.StringId}; error={ex.Message}.");
+                return MercenaryReleaseResult.Blocked;
+            }
+            return clan.Kingdom == kingdom || clan.Kingdom == null && clan.IsUnderMercenaryService
+                ? MercenaryReleaseResult.Blocked : MercenaryReleaseResult.Released;
         }
 
         private Kingdom PromoteRebelKingdomToIndependentKingdom(FactionObject faction, Kingdom rebelKingdom, Clan victoriousLeader)
@@ -3254,6 +3282,9 @@ namespace BellumCivile.Behaviors
             CivilWarTransitionDiagnostics.Log("white peace requested", faction, rebelKingdom,
                 $"demand_satisfied={demandSatisfied}; cause={cause}");
             if (CivilWarConflictBehavior.IsFactionTransferPending(faction)) return;
+            if (faction?.ParentKingdom == null || rebelKingdom == null) return;
+            if (!PrepareMercenarySettlement(faction, rebelKingdom, MercenaryWhitePeace,
+                demandSatisfied: demandSatisfied, cause: cause)) return;
             var resultNotice = ConflictOutcomeBehavior.Current?.BeginCivil(faction, rebelKingdom);
             if (resultNotice != null) resultNotice.Names["RESULT_KIND"] = demandSatisfied ? "satisfied" : cause != null ? "ended" : "peace";
             ConflictOutcomeBehavior.Capture(resultNotice, "DEMAND_RESULT", faction.Type == FactionType.Abdication
@@ -3270,7 +3301,6 @@ namespace BellumCivile.Behaviors
             factionManager?.RemoveFaction(faction);
 
             ApplyPacifiedCooldowns(rebelKingdom.Clans, CivilWarPacifiedDays);
-            ReleaseMercenariesFromKingdom(rebelKingdom);
             List<Clan> rebelClans = rebelKingdom.Clans.ToList();
             foreach (Clan rebelClan in rebelKingdom.Clans.ToList())
                 TransferCivilWarClan(rebelClan, rebelKingdom, faction.ParentKingdom, faction);
@@ -3306,6 +3336,7 @@ namespace BellumCivile.Behaviors
         private void ResolveRecognizedIndependence(FactionObject faction, Kingdom rebelKingdom, bool parentDestroyed)
         {
             if (CivilWarConflictBehavior.IsFactionTransferPending(faction)) return;
+            if (!PrepareMercenarySettlement(faction, rebelKingdom, MercenaryIndependence, parentDestroyed)) return;
             var resultNotice = ConflictOutcomeBehavior.Current?.BeginCivil(faction, rebelKingdom);
             Campaign.Current.GetCampaignBehavior<RebellionSummaryBehavior>()?.RecordOutcome(faction, RebellionSummaryOutcome.RecognizedIndependence);
             CompleteCivilWarTracker(faction, rebelKingdom, parentDestroyed
@@ -3318,7 +3349,6 @@ namespace BellumCivile.Behaviors
             var factionManager = Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>();
             factionManager?.RemoveFaction(faction);
 
-            ReleaseMercenariesFromKingdom(rebelKingdom);
             List<Clan> independentClans = rebelKingdom.Clans.ToList();
             Clan formerRulingHouse = faction.ParentKingdom.RulingClan;
             Kingdom permanentKingdom = PromoteRebelKingdomToIndependentKingdom(faction, rebelKingdom, faction.Leader);
@@ -3337,6 +3367,7 @@ namespace BellumCivile.Behaviors
             bool runImmediateRepair = true, SuccessionChallengeRecord challenge = null)
         {
             if (collapsedParent == null || successorRebelKingdom == null || successorLeader == null) return null;
+            if (!ReleaseMercenariesFromKingdom(successorRebelKingdom)) return null;
 
             string restoredStringIdBase = collapsedParent.StringId + "_restored"
                 + (challenge == null ? "" : "_challenge_" + challenge.Id);
@@ -3382,7 +3413,6 @@ namespace BellumCivile.Behaviors
             else
                 RebelPolicyHelper.CopyPolicies(successorRebelKingdom, restoredKingdom);
 
-            ReleaseMercenariesFromKingdom(successorRebelKingdom);
             TransferClansToKingdom(successorRebelKingdom, restoredKingdom, successorLeader);
             PreservePromotedRebelForeignWars(successorRebelKingdom, restoredKingdom, collapsedParent);
             DrainAndDestroyRebelKingdom(successorRebelKingdom, restoredKingdom);
@@ -3442,7 +3472,7 @@ namespace BellumCivile.Behaviors
         {
             if (collapsedParent == null || collapsedParent.IsEliminated) return;
 
-            ReleaseMercenariesFromKingdom(collapsedParent);
+            if (!ReleaseMercenariesFromKingdom(collapsedParent)) return;
 
             foreach (Clan clan in collapsedParent.Clans.Where(c => !c.IsUnderMercenaryService).ToList())
             {
@@ -3669,6 +3699,11 @@ namespace BellumCivile.Behaviors
             if (CivilWarConflictBehavior.IsRealmTransferPending(rebelKingdom)
                 || CivilWarConflictBehavior.IsRealmTransferPending(fallbackKingdom)) return false;
             if (rebelKingdom == null) return true;
+            if (!ReleaseMercenariesFromKingdom(rebelKingdom))
+            {
+                if (allowDeferred) QueuePendingRebelCleanup(rebelKingdom, fallbackKingdom);
+                return false;
+            }
             if (reunification) CloseReunifiedRebelForeignWars(rebelKingdom, fallbackKingdom);
 
             return RunWithRulerRepairSuppressed(rebelKingdom, () =>
@@ -3703,7 +3738,7 @@ namespace BellumCivile.Behaviors
                     if (straggler == null || straggler.IsEliminated || straggler.Kingdom != rebelKingdom) continue;
 
                     if (straggler.IsUnderMercenaryService)
-                        ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(straggler, showNotification: false);
+                        ReleaseCivilWarMercenary(straggler, rebelKingdom);
                     else
                         KingdomVisualHelper.ApplyJoinToKingdomPreservingCustomBanner(straggler, resolvedFallback, showNotification: false);
                 }

@@ -48,6 +48,41 @@ namespace BellumCivile
         private static MethodInfo _aiInfluenceWithBypassMethod;
         private static bool _customSpawnsForceNoKingdomScanComplete;
         private static HashSet<string> _customSpawnsForceNoKingdomClanIds;
+        private static bool _mercenaryExitScanComplete;
+        private static FieldInfo _deliberateMercenaryExitField;
+
+        internal static void ExecuteWithMercenarySettlementExit(Action action)
+        {
+            if (action == null) return;
+            if (!_mercenaryExitScanComplete)
+            {
+                _mercenaryExitScanComplete = true;
+                var type = FindLoadedType("LongerMercenaryContracts.SubModule");
+                var field = type?.GetField("IsDeliberateExitInProgress", BindingFlags.Public | BindingFlags.Static);
+                if (field?.FieldType == typeof(bool) && !field.IsInitOnly && !field.IsLiteral)
+                    _deliberateMercenaryExitField = field;
+            }
+
+            var exitField = _deliberateMercenaryExitField;
+            if (exitField == null) { action(); return; }
+            bool previous;
+            try
+            {
+                previous = (bool)exitField.GetValue(null);
+                exitField.SetValue(null, true);
+            }
+            catch (Exception ex)
+            {
+                BellumCivileLogger.Log($"Mercenary settlement compatibility unavailable; error={ex.Message}.");
+                action();
+                return;
+            }
+
+            // Leave contract records intact for the normal influence payout callback.
+            // WalkAwayFromContract would incorrectly penalize an imposed dismissal.
+            try { action(); }
+            finally { exitField.SetValue(null, previous); }
+        }
 
         public static bool IsDiplomacyLoaded
         {

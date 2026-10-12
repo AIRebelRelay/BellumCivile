@@ -758,3 +758,4 @@ Unified cadet branch naming across all creation paths, preventing repeated cultu
 Fixed player-negotiated marriages being blocked when a clan or Crown heir was their house’s last viable successor, while preserving NPC marriage protections and existing compensation costs.
 Fixed older pending Crown successions moving existing children into the heir’s new cadet house; children now remain in their current clan.
 Restricted new ordinary landed inheritance to eligible blood relatives within the realm, with Crown reversion when none remain, and added clearer inheritance previews while preserving legal title hierarchies.
+Fixed civil-war settlement crashes caused by blocked mercenary dismissals, adding Happy’s Improved Mercenaries compatibility and safe settlement retries.

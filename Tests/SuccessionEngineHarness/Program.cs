@@ -124,7 +124,22 @@ internal static class Program
             {
                 CivilWarMercenarySettlementTests.Run(Check);
                 FeudMercenaryTests.Run(Check);
+                MercenarySettlementCompatibilityTests.Run(Check,
+                    args.FirstOrDefault(a => a.StartsWith("--mercenary-mod="))?.Substring("--mercenary-mod=".Length));
                 Console.WriteLine($"{_checks} civil-war mercenary checks passed.");
+            }
+            else if (args.Contains("--civil-war-settlement"))
+            {
+                CivilWarMercenarySettlementTests.Run(Check);
+                MercenarySettlementCompatibilityTests.Run(Check, null);
+                InternalPeaceTests.Run(Check);
+                ReversibleWarScoreTests.Run(Check);
+                TestCivilWarContinuation();
+                TestCivilWarConflictJournal();
+                TestCivilWarCrownTransfer();
+                TestCivilWarRivalry();
+                TestRivalCrownPromotion();
+                Console.WriteLine($"{_checks} civil-war settlement checks passed.");
             }
             else if (args.Contains("--influence-budget"))
             {
@@ -857,6 +872,7 @@ internal static class Program
         TestCivilWarContinuation();
         CivilWarRealmIdentityTests.Run(Check);
         CivilWarMercenarySettlementTests.Run(Check);
+        MercenarySettlementCompatibilityTests.Run(Check, null);
         TestCivilWarConflictJournal();
         TestCivilWarCrownTransfer();
         TestCivilWarRivalry();

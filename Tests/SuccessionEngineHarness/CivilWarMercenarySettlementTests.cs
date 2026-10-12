@@ -8,7 +8,9 @@ using BellumCivile.Behaviors;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 internal static class CivilWarMercenarySettlementTests
 {
@@ -31,9 +33,24 @@ internal static class CivilWarMercenarySettlementTests
     private static readonly HashSet<Clan> Mercenaries = new HashSet<Clan>();
     private static readonly HashSet<Clan> MinorClans = new HashSet<Clan>();
     private static readonly List<string> Events = new List<string>();
-    private static Clan _player, _failJoin, _failDismiss;
+    private static Clan _player, _failJoin, _failDismiss, _throwDismiss;
     private static Action<Clan> _afterJoin, _afterDismiss;
     private static int _captures, _restores;
+    private static int _settlementWrites;
+    private static List<FactionObject> _activeFactions;
+    private static List<Clan> _tribunalClans;
+    private sealed class Store : IDataStore
+    {
+        internal readonly Dictionary<string, object> Values = new Dictionary<string, object>();
+        public bool IsSaving { get; set; } = true;
+        public bool IsLoading => !IsSaving;
+        public bool SyncData<T>(string key, ref T data)
+        {
+            if (IsSaving) Values[key] = data;
+            else if (Values.TryGetValue(key, out var value)) data = (T)value;
+            return true;
+        }
+    }
     private static T Blank<T>() => (T)FormatterServices.GetUninitializedObject(typeof(T));
     private static object Call(object instance, string method, params object[] args) =>
         AccessTools.Method(typeof(CivilWarResolutionBehavior), method).Invoke(instance, args);
@@ -54,11 +71,26 @@ internal static class CivilWarMercenarySettlementTests
     private static bool Capture() { _captures++; return false; }
     private static bool Restore() { _restores++; return false; }
     private static bool NoTitle(ref FeudalTitleRecord __result) { __result = null; return false; }
+    private static bool Strongholds(ref int __result) { __result = 1; return false; }
+    private static bool Tracked(Kingdom preferredKingdom, ref Kingdom __result) { __result = preferredKingdom; return false; }
+    private static bool Write() { _settlementWrites++; return false; }
+    private static bool Remove(FactionObject faction) { _settlementWrites++; _activeFactions.Remove(faction); return false; }
+    private static bool Drain(ref bool __result) { _settlementWrites++; __result = true; return false; }
+    private static bool Decisions(ref MBReadOnlyList<KingdomDecision> __result)
+    { __result = new MBReadOnlyList<KingdomDecision>(new List<KingdomDecision>()); return false; }
+    private static bool Tribunal(List<Clan> losingClans, out bool anyExecuted, out bool anyForgiven, out bool anyExiled, out bool oldKingExecuted)
+    {
+        _tribunalClans = losingClans.ToList();
+        _settlementWrites++;
+        anyExecuted = anyForgiven = anyExiled = oldKingExecuted = false;
+        return false;
+    }
 
     private static bool Dismiss(Clan mercenaryClan)
     {
         var clan = mercenaryClan;
         Events.Add("dismiss:" + clan.StringId);
+        if (clan == _throwDismiss) throw new InvalidOperationException("Injected dismissal exception");
         if (clan == _failDismiss) return false;
         Mercenaries.Remove(clan);
         Realms[clan] = null;
@@ -112,7 +144,7 @@ internal static class CivilWarMercenarySettlementTests
         void Reset()
         {
             Realms.Clear(); Rulers.Clear(); Heads.Clear(); Mercenaries.Clear(); MinorClans.Clear(); Events.Clear();
-            _player = _failJoin = _failDismiss = null; _afterJoin = _afterDismiss = null; _captures = _restores = 0;
+            _player = _failJoin = _failDismiss = _throwDismiss = null; _afterJoin = _afterDismiss = null; _captures = _restores = 0;
         }
         SuccessionChallengeRecord Challenge(Kingdom shell, Kingdom crown, Clan prince, Clan monarch) =>
             new SuccessionChallengeRecord
@@ -229,7 +261,7 @@ internal static class CivilWarMercenarySettlementTests
             _player = House("player", source, mercenary: true); _failDismiss = _player;
             record = Challenge(source, target, prince, monarch);
             Call(resolver, "ResumeChallengeOutcome", record);
-            check(!record.WarCrownTransferred && Realms[prince] == source && record.Failure.Contains("dismissal did not release"),
+            check(!record.WarCrownTransferred && Realms[prince] == source && record.Failure == "Mercenary dismissal pending",
                 "A failed contract dismissal defers recovery before any noble transfer");
             _failDismiss = null;
             Call(resolver, "ResumeChallengeOutcome", record);
@@ -248,6 +280,100 @@ internal static class CivilWarMercenarySettlementTests
             count = Events.Count;
             Call(resolver, "ResumeCollapse", collapse);
             check(Events.Count == count, "Deferred collapse recovery never reabsorbs either side's dismissed mercenaries");
+
+            // Exercise the public entry points too: the previous tests only covered journals.
+            var manager = new FactionManagerBehavior();
+            behaviors.AddBehavior(manager);
+            _activeFactions = (List<FactionObject>)AccessTools.Field(typeof(FactionManagerBehavior), "_activeFactions").GetValue(manager);
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "ResolveTrackedRebelKingdom"), nameof(Tracked));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "CountStrongholds"), nameof(Strongholds));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "TrySettleSatisfiedCivilWarDemand"), nameof(No));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "CompleteCivilWarTracker"), nameof(Write));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "ApplyCivilWarPeaceIfNeeded"), nameof(Write));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "PacifyIdeologies"), nameof(Write));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "CaptureCurrentCivilWarFiefSnapshot"), nameof(Skip));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "DrainAndDestroyRebelKingdom"), nameof(Drain));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "ApplyPacifiedCooldowns"), nameof(Write));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "ActivateCompatibilityRepairWindow"), nameof(Skip));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "ApplyChallengeAwareVictoryRewards"), nameof(Write));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "FlushTribunalReactions"), nameof(Skip));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "TryQueueChallengeTribunal"), nameof(No));
+            Patch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "ApplyPostWarConsequences"), nameof(Tribunal));
+            Patch(AccessTools.Method(typeof(FactionManagerBehavior), "RemoveFaction"), nameof(Remove));
+            Patch(AccessTools.PropertyGetter(typeof(Kingdom), "UnresolvedDecisions"), nameof(Decisions));
+            Patch(AccessTools.Method(typeof(SuccessionChallengeBehavior), "CanWinChallenge"), nameof(Yes));
+            Patch(AccessTools.Method(typeof(SuccessionChallengeBehavior), "CompleteWarOutcome"), nameof(Skip));
+            var pendingField = AccessTools.Field(typeof(CivilWarResolutionBehavior), "_pendingMercenarySettlements");
+            var oldSave = new Store { IsSaving = false };
+            oldSave.Values["BC_PendingMercenarySettlements"] = null;
+            var oldLoaded = new CivilWarResolutionBehavior(); oldLoaded.SyncData(oldSave);
+            check(((List<CivilWarMercenarySettlementRecord>)pendingField.GetValue(oldLoaded)).Count == 0,
+                "Older saves without pending mercenary settlements load with an empty retry list");
+            foreach (int outcome in new[] { 1, 2, 3 })
+            {
+                Reset(); _settlementWrites = 0; _tribunalClans = null; _activeFactions.Clear();
+                resolver = new CivilWarResolutionBehavior();
+                behaviors.Items.RemoveAll(b => b is CivilWarResolutionBehavior); behaviors.AddBehavior(resolver);
+                prince = House("prince", source); monarch = House("queen", target);
+                Rulers[source] = prince; Rulers[target] = monarch;
+                _player = House("player", source, mercenary: true);
+                npc = House("company", source, mercenary: true, minor: true);
+                faction = Faction(prince, target);
+                AccessTools.Field(typeof(FactionObject), "_type").SetValue(faction, FactionType.Glory);
+                _activeFactions.Add(faction);
+                _failDismiss = npc;
+                var cause = new TextObject("{=BC_Result_Landless}Both sides have lost their last strongholds. Neither has been able to enforce its demands.");
+                void Resolve()
+                {
+                    if (outcome == 1) resolver.ResolveRebelVictory(faction, source);
+                    else if (outcome == 2) resolver.ResolveLiegeVictory(faction, source);
+                    else Call(resolver, "ResolveWhitePeace", faction, source, true, cause);
+                }
+                Resolve();
+                check(_settlementWrites == 0 && _activeFactions.Contains(faction) && Realms[prince] == source,
+                    "Blocked initial settlement preserves tracker, peace, tribunals and noble membership: " + outcome);
+                var pending = (List<CivilWarMercenarySettlementRecord>)pendingField.GetValue(resolver);
+                check(pending.Count == 1 && pending[0].Outcome == outcome && Realms[_player] == null,
+                    "A partially dismissed roster retains exactly one pending outcome: " + outcome);
+                Resolve();
+                check(pending.Count == 1 && Events.Count(e => e == "dismiss:player") == 1,
+                    "Repeated blocked settlement does not repeat a successful dismissal: " + outcome);
+                var store = new Store(); resolver.SyncData(store); store.IsSaving = false;
+                var loaded = new CivilWarResolutionBehavior(); loaded.SyncData(store);
+                check(((List<CivilWarMercenarySettlementRecord>)pendingField.GetValue(loaded)).Single().Outcome == outcome
+                    && (outcome != 3 || pending[0].DemandSatisfied && pending[0].Cause == cause),
+                    "SyncData preserves pending outcome and white-peace context: " + outcome);
+                behaviors.Items.RemoveAll(b => b is CivilWarResolutionBehavior); behaviors.AddBehavior(loaded);
+                _failDismiss = null;
+                Call(loaded, "ResumePendingMercenarySettlements");
+                check(_settlementWrites > 0 && !_activeFactions.Contains(faction)
+                    && Realms[_player] == null && Realms[npc] == null
+                    && !Events.Any(e => e.StartsWith("CONVERTED:")) && pending.Count == 0,
+                    "Loaded retry completes initial settlement without absorbing mercenaries: " + outcome);
+                if (outcome == 2)
+                    check(_tribunalClans != null && !_tribunalClans.Contains(_player) && !_tribunalClans.Contains(npc),
+                        "Dismissed mercenaries never enter the loyalist tribunal after their service flags clear");
+                count = _settlementWrites;
+                Call(loaded, "ResumePendingMercenarySettlements");
+                check(count == _settlementWrites, "Completed pending settlement does not replay rewards or bookkeeping: " + outcome);
+            }
+
+            Reset();
+            _player = House("blocked_player", source, mercenary: true); _failDismiss = _player;
+            check(!Move(_player, source, target) && Realms[_player] == source && !Events.Any(e => e.StartsWith("CONVERTED:")),
+                "A no-op dismissal cannot fall through to noble transfer");
+            _failDismiss = null; _throwDismiss = _player;
+            check(!Move(_player, source, target) && Realms[_player] == source,
+                "A departure exception is contained without converting the mercenary");
+
+            _throwDismiss = null; _failDismiss = _player;
+            harmony.Unpatch(AccessTools.Method(typeof(CivilWarResolutionBehavior), "DrainAndDestroyRebelKingdom"),
+                HarmonyPatchType.Prefix, harmony.Id);
+            check(!(bool)Call(resolver, "DrainAndDestroyRebelKingdom", source, target, true, true)
+                && Realms[_player] == source
+                && ((List<string>)AccessTools.Field(typeof(CivilWarResolutionBehavior), "_pendingRebelCleanupOrder")
+                    .GetValue(resolver)).Contains(source.StringId),
+                "Blocked final cleanup retains the occupied shell and queues a later drain");
         }
         finally
         {
