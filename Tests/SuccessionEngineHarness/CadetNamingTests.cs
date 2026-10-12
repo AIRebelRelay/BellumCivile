@@ -207,6 +207,7 @@ internal static class CadetNamingTests
         var texts = (IDictionary)AccessTools.Field(typeof(LocalizedTextManager), "_gameTextDictionary").GetValue(null);
         var translations = new Dictionary<string, string> {
             ["BC_CadetName_Vlandia"] = "de {ROOT_NAME}", ["BC_CadetName_Aserai"] = "Beni {ROOT_NAME}",
+            ["BC_CadetName_Battania"] = "fen {ROOT_NAME}",
             ["BC_CadetName_CastlePattern"] = "Chateau de {ROOT_NAME}",
             ["BC_DynasticHeiress_CadetName"] = "{DYNASTY_NAME} / {BRANCH_NAME}",
             ["BC_Test_CadetPlace"] = "Rovalt traduit" };
@@ -238,6 +239,43 @@ internal static class CadetNamingTests
                 "Native castle suffix remains a fallback for untranslated settlements");
             check(((TextObject)Call("CleanSettlementName", Text("Chateaubriand"))).ToString() == "Chateaubriand",
                 "Translated cleanup does not remove unrelated name fragments");
+
+            // Traditional Chinese prefixes use a middle dot without a following space (PR #2).
+            texts["BC_CadetName_Vlandia"] = "\u6234\u00b7{ROOT_NAME}";
+            texts["BC_CadetName_Battania"] = "\u82ac\u00b7{ROOT_NAME}";
+            texts["BC_CadetName_Aserai"] = "\u5df4\u52aa\u00b7{ROOT_NAME}";
+            texts["BC_DynasticHeiress_CadetName"] = "{DYNASTY_NAME}\u00b7{BRANCH_NAME}";
+            Language("BellumCadetPunctuationTestLanguage");
+            string merocRoot = "\u6885\u6d1b\u514b", pethrosRoot = "\u4f69\u7279\u7f85\u65af", cortainRoot = "\u79d1\u723e\u6cf0";
+            string merocName = "\u6234\u00b7" + merocRoot, cortainName = "\u6234\u00b7" + cortainRoot;
+            foreach (var pair in new[] {
+                Tuple.Create("\u6234\u00b7", merocRoot),
+                Tuple.Create("\u82ac\u00b7", "\u70cf\u842c"),
+                Tuple.Create("\u5df4\u52aa\u00b7", "\u62c9\u7dad") })
+            {
+                check(Family(pair.Item1 + pair.Item2).PrimaryRoot.ToString() == pair.Item2,
+                    "Localized punctuation prefix is stripped without whitespace: " + pair.Item1);
+                check(Family(pair.Item1 + pair.Item1 + pair.Item2).Name.ToString() == pair.Item1 + pair.Item2,
+                    "Repeated localized punctuation prefix collapses to one: " + pair.Item1);
+                check(Family(pair.Item1 + " " + pair.Item2).PrimaryRoot.ToString() == pair.Item2,
+                    "Localized punctuation prefix also accepts a following space: " + pair.Item1);
+                check(Family(pair.Item1).Name.ToString() == pair.Item1,
+                    "A prefix without a surname is left intact: " + pair.Item1);
+            }
+            var chineseMeroc = Family(merocName);
+            check(Combine(Family(pethrosRoot), chineseMeroc).Name.ToString() == pethrosRoot + "\u00b7" + merocRoot,
+                "Chinese dynastic names omit the second family's cultural prefix");
+            check(Combine(Family(merocRoot), chineseMeroc).Name.ToString() == merocRoot,
+                "Bare and prefixed Chinese forms of the same family are deduplicated");
+            check(Combine(Combine(chineseMeroc, Family(pethrosRoot)), Family(cortainName)).Name.ToString()
+                == merocName + "\u00b7" + pethrosRoot + "\u00b7" + cortainRoot,
+                "Third Chinese family component is appended without another cultural prefix");
+            check(Family(pethrosRoot + "\u00b7" + merocName).Name.ToString() == pethrosRoot + "\u00b7" + merocName,
+                "Unknown surnames are not split at internal punctuation or prefix-like text");
+            foreach (string name in new[] { "deyMeroc", "fenUvain", "BanuRawi", "\u6234" + merocRoot })
+                check(Family(name).Name.ToString() == name,
+                    "Unrecognized or unseparated word prefixes remain intact in Chinese: " + name);
+
             Language("English");
             check(numbered.Name.ToString() == "dey Rovalt II", "The same name follows a language switch back without renaming the clan");
             check(compound.Name.ToString() == "dey Meroc-Pethros-Rovalt", "Extended compounds also follow the switch back to English");
