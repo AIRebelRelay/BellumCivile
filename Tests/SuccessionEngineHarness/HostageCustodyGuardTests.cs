@@ -59,6 +59,7 @@ internal static class HostageCustodyGuardTests
             check(!(bool)Call("PreservesCustody", roster, filtered)
                 && (bool)Call("PreservesCustody", roster, roster.CloneRosterData()), "Party commit detects removed hostage");
             check(!(bool)Call("PreservesCustody", null, roster), "Party commit detects unauthorized hostage addition");
+            HostageDungeonCommitTests.Run(check, harmony, hostageTroop, Troop(_otherHostage), ordinary, Troop(Empty<Hero>()));
             var item = new SetPrisonerFreeBarterable(_hostage, null, null, null);
             var data = Empty<BarterData>();
             AccessTools.Field(typeof(BarterData), "_barterables").SetValue(data, new System.Collections.Generic.List<Barterable>());

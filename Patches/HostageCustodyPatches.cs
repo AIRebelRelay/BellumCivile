@@ -65,10 +65,11 @@ namespace BellumCivile.Patches
     [HarmonyPatch(typeof(PartyScreenLogic), nameof(PartyScreenLogic.DoneLogic))]
     internal static class HostagePartyCommitGuardPatch
     {
-        private static bool Prefix(PartyScreenLogic __instance, ref bool __result)
+        private static bool Prefix(PartyScreenLogic __instance, PartyScreenData ____initialData, ref bool __result)
         {
-            if (HostageCustodyGuard.PreservesCustody(__instance.LeftOwnerParty?.PrisonRoster, __instance.PrisonerRosters[0])
-                && HostageCustodyGuard.PreservesCustody(__instance.RightOwnerParty?.PrisonRoster, __instance.PrisonerRosters[1])) return true;
+            // Dungeon screens omit the left owner; live owner rosters may already contain pending edits.
+            if (HostageCustodyGuard.PreservesCustody(____initialData.LeftPrisonerRoster, __instance.PrisonerRosters[0])
+                && HostageCustodyGuard.PreservesCustody(____initialData.RightPrisonerRoster, __instance.PrisonerRosters[1])) return true;
             __result = false;
             return false;
         }
