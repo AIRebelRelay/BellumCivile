@@ -5469,6 +5469,7 @@
     <string id="BC_TitleRoot_Anglicized_bc_title_kingdom_empire_s" text="the Southern Calradians" />
     <string id="BC_TitleRoot_Anglicized_bc_title_kingdom_empire_w" text="the Western Calradians" />
     <string id="BC_TitleRoot_Anglicized_bc_title_kingdom_nord" text="the Nords" />
+    <string id="BC_TitleRoot_Anglicized_bc_title_kingdom_nord2" text="Rhodok" />
     <string id="BC_TitleRoot_Anglicized_county_ailtadruin" text="Ailta Druin" />
     <string id="BC_TitleRoot_Anglicized_county_akkan" text="Akkan" />
     <string id="BC_TitleRoot_Anglicized_county_aleshoriyya" text="Al-Eshoriyya" />
@@ -5553,6 +5554,7 @@
     <string id="BC_TitleRoot_Bannerkings_bc_title_kingdom_empire_w" text="Dytikoi Calradoi" />
     <string id="BC_TitleRoot_Bannerkings_bc_title_kingdom_khuzait" text="Quzayt" />
     <string id="BC_TitleRoot_Bannerkings_bc_title_kingdom_nord" text="Nordmanna" />
+    <string id="BC_TitleRoot_Bannerkings_bc_title_kingdom_nord2" text="Rhodok" />
     <string id="BC_TitleRoot_Bannerkings_bc_title_kingdom_sturgia" text="Sturgiskyy" />
     <string id="BC_TitleRoot_Bannerkings_bc_title_kingdom_vlandia" text="Wilundinga" />
     <string id="BC_TitleRoot_Bannerkings_county_ailtadruin" text="Ailta Druin" />
@@ -5639,6 +5641,7 @@
     <string id="BC_TitleRoot_Immersive_bc_title_kingdom_empire_w" text="Dytikōn Kalradōn" />
     <string id="BC_TitleRoot_Immersive_bc_title_kingdom_khuzait" text="Quzayt" />
     <string id="BC_TitleRoot_Immersive_bc_title_kingdom_nord" text="Nordmanna" />
+    <string id="BC_TitleRoot_Immersive_bc_title_kingdom_nord2" text="Rhodok" />
     <string id="BC_TitleRoot_Immersive_bc_title_kingdom_sturgia" text="Sturgova" />
     <string id="BC_TitleRoot_Immersive_bc_title_kingdom_vlandia" text="Valandorum" />
     <string id="BC_TitleRoot_Immersive_county_ailtadruin" text="Ailta Druin" />
@@ -6921,6 +6924,48 @@
     <string id="BC_TitleStyle_Immersive_kingdom_empire_w_Kingdom_nobleRank" text="Patrikios" />
     <string id="BC_TitleStyle_Immersive_kingdom_empire_w_Kingdom_titleFormat" text="{TITLE_NOUN} tōn {TITLE_NAME}" />
     <string id="BC_TitleStyle_Immersive_kingdom_empire_w_Kingdom_titleName" text="Autokrateia" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_femaleRank" text="Vrifrou" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_heldTitleFormat" text="{DISPLAY_TITLE} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_heroNameFormat" text="{DISPLAY_TITLE} {HERO_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_maleRank" text="Vriherre" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_titleFormat" text="{TITLE_NOUN} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_titleName" text="Vriherreschaft" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_County_femaleRank" text="Gravin" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_County_heldTitleFormat" text="{DISPLAY_TITLE} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_County_heroNameFormat" text="{DISPLAY_TITLE} {HERO_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_County_maleRank" text="Grave" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_County_titleFormat" text="{TITLE_NOUN} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_County_titleName" text="Graveschaft" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Duchy_femaleRank" text="Kunigin" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Duchy_heldTitleFormat" text="{DISPLAY_TITLE} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Duchy_heroNameFormat" text="{DISPLAY_TITLE} {HERO_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Duchy_maleRank" text="Kunic" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Duchy_titleFormat" text="{TITLE_NOUN} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Duchy_titleName" text="Kunicriich" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_childRank" text="Edelinc" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleChildRank" text="Edelfrou" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleHeirRank" text="Edelfrou" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleNobleRank" text="Lhandsfrou" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleRank" text="Vronenentin" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_heirRank" text="Edelinc" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_heldTitleFormat" text="{DISPLAY_TITLE} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_heroNameFormat" text="{DISPLAY_TITLE} {HERO_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_maleRank" text="Vronenent" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_nobleRank" text="Lhandsherre" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_titleFormat" text="{TITLE_NOUN} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_titleName" text="Vronenentriich" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_childRank" text="Edelinc" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleChildRank" text="Edelfrou" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleHeirRank" text="Edelfrou" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleNobleRank" text="Lhandsfrou" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleRank" text="Hougekunigin" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_heirRank" text="Edelinc" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_heldTitleFormat" text="{DISPLAY_TITLE} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_heroNameFormat" text="{DISPLAY_TITLE} {HERO_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_maleRank" text="Hougekunic" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_nobleRank" text="Lhandsherre" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_titleFormat" text="{TITLE_NOUN} {TITLE_NAME}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_titleName" text="Hougekunicriich" />
     <string id="BC_Integration_VoteUnavailable" text="This vote or its requested choice is no longer available, or this house has already promised its vote." />
     <string id="BC_Integration_IllegitimateHeir" text="This person is excluded from hereditary inheritance by illegitimacy." />
     <string id="BC_EstatePreview_Beneficiary" text="{HEIR} of {HOUSE}" />

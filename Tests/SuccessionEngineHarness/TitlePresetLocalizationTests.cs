@@ -8,6 +8,7 @@ using System.Xml;
 using BellumCivile;
 using BellumCivile.Behaviors;
 using HarmonyLib;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Localization;
 using TaleWorlds.ModuleManager;
 
@@ -81,6 +82,24 @@ internal static class TitlePresetLocalizationTests
                     && declaredRoots.All(entry => (string)Names(config)[entry.Key] == entry.Value),
                     preset + ": all shipped title roots load without identity changes");
 
+                configField.SetValue(null, config);
+                var rhodokRoot = new TextObject((string)Names(config)["bc_title_kingdom_nord2"]);
+                check(rhodokRoot.GetID().StartsWith("BC_TitleRoot_") && rhodokRoot.ToString() == "Rhodok"
+                    && english[rhodokRoot.GetID()] == "Rhodok",
+                    preset + ": Rhodok has a localized territorial root without a rank");
+                Type display = typeof(FeudalTitleRecord).Assembly.GetType("BellumCivile.FeudalTitleDisplayHelper", true);
+                var rhodokRealm = (TextObject)AccessTools.Method(display, "FormatRealmName")
+                    .Invoke(null, new object[] { FeudalTitleType.Kingdom, rhodokRoot, null, null, "rhodok" });
+                string rhodokTitle = (string)AccessTools.Method(display, "FormatTitleName",
+                    new[] { typeof(FeudalTitleType), typeof(string), typeof(Clan), typeof(Kingdom), typeof(string) })
+                    .Invoke(null, new object[] { FeudalTitleType.Kingdom, rhodokRoot.Value, null, null, "rhodok" });
+                string expectedRhodok = preset == "anglicized" ? "Kingdom of Rhodok" : "Hougekunicriich Rhodok";
+                check(rhodokRealm.ToString() == expectedRhodok && rhodokTitle == expectedRhodok,
+                    preset + ": realm and hierarchy agree on " + expectedRhodok);
+                check(((TextObject)rhodokRealm.Attributes["TITLE_NAME"]).GetID() == rhodokRoot.GetID(),
+                    preset + ": realm display preserves Rhodok's nested localization key");
+                Translate(rhodokRoot.GetID(), "Translated Rhodok");
+
                 var styles = (IList)AccessTools.Field(Config, "_styles").GetValue(config);
                 object vlandian = styles.Cast<object>().First(style => Field(style, "CultureRef") == "Vlandia");
                 var ranks = (IList)AccessTools.Field(vlandian.GetType(), "Ranks").GetValue(vlandian);
@@ -97,6 +116,8 @@ internal static class TitlePresetLocalizationTests
                 Translate(rootText.GetID(), "Translated " + preset);
                 Translate(label.GetID(), "Preset " + preset);
                 Language("BellumPresetTestLanguage");
+                check(rhodokRealm.ToString().Contains("Translated Rhodok"),
+                    preset + ": Rhodok realm root follows a language switch without rebuilding the title");
                 check(rootText.ToString() == "Translated " + preset, preset + ": loaded Crown root translates");
                 check(label.ToString() == "Preset " + preset, preset + ": loaded preset label translates");
                 check(new[] { noun, male, female }.All(raw => new TextObject(raw).ToString().StartsWith("Translated ")),
@@ -207,6 +228,11 @@ internal static class TitlePresetLocalizationTests
                 [renamed.TitleId] = renamed.Name;
             AccessTools.Method(typeof(FeudalTitleBehavior), "ApplyConfiguredTitleNames").Invoke(behavior, new object[] { "localization test" });
             check(vlandia.Name == "{=FjwRsf1C}Vlandia", "Existing unkeyed Crown root picks up the preset's native translation token");
+            var rhodok = (FeudalTitleRecord)titles["bc_title_kingdom_nord2"];
+            check(rhodok.Name == "{=BC_TitleRoot_Anglicized_bc_title_kingdom_nord2}Rhodok"
+                && rhodok.DeFactoHolderClanId == "holder" && rhodok.DeJureHolderClanId == "legal_holder"
+                && rhodok.CapitalSettlementId == "capital" && rhodok.AssociatedKingdomId == "realm",
+                "Existing Rhodok title picks up the rank-free root without changing ownership or hierarchy");
             check(vlandia.DeFactoHolderClanId == "holder" && vlandia.DeJureHolderClanId == "legal_holder"
                 && vlandia.CapitalSettlementId == "capital" && vlandia.AssociatedKingdomId == "realm",
                 "Localizing an existing title leaves holders, capital and realm intact");

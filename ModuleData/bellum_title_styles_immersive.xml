@@ -4,6 +4,7 @@
   <!-- Optional Rank heroNameFormat tokens are {DISPLAY_TITLE}, {HERO_NAME}, and {HELD_TITLE}.
        Examples: heroNameFormat="{DISPLAY_TITLE} &#xB7; {HERO_NAME}"
        or heroNameFormat="{HERO_NAME}, {HELD_TITLE}". -->
+  <TitleName id="bc_title_kingdom_nord2" name="{=BC_TitleRoot_Immersive_bc_title_kingdom_nord2}Rhodok" />
   <TitleName id="bc_title_kingdom_vlandia" name="{=BC_TitleRoot_Immersive_bc_title_kingdom_vlandia}Valandorum" />
   <TitleName id="duchy_ebor" name="{=BC_TitleRoot_Immersive_duchy_ebor}Eboraci" />
   <TitleName id="duchy_svadia" name="{=BC_TitleRoot_Immersive_duchy_svadia}Svadiae" />
@@ -92,138 +93,6 @@
   <TitleName id="county_sarapia" name="{=BC_TitleRoot_Immersive_county_sarapia}Sarapion" />
   <TitleName id="county_zeos" name="{=BC_TitleRoot_Immersive_county_zeos}Zeon" />
   <!-- Cultural and kingdom-specific rank terminology. change culture to rulerCulture if you want the ruler to determine the full terminology of the realm-->
-  <TitleStyle culture="Empire_n">
-    <Rank tier="Empire"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_titleName}Imperium"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_maleRank}Imperator"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleRank}Imperatrix"
-          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_heirRank}Kaisar"
-          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleHeirRank}Kaisarissa"
-          childRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_childRank}Porphyrogennetos"
-          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleChildRank}Porphyrogenneta"
-          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_nobleRank}Patrikios"
-          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleNobleRank}Patrikia"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Kingdom"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_titleName}Exarchatus"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_maleRank}Exarchos"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleRank}Exarchissa"
-          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_heirRank}Kaisar"
-          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleHeirRank}Kaisarissa"
-          childRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_childRank}Porphyrogennetos"
-          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleChildRank}Porphyrogenneta"
-          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_nobleRank}Patrikios"
-          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleNobleRank}Patrikia"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Duchy"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_titleName}Doukaton"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_maleRank}Doux"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_femaleRank}Doukissa"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="County"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_County_titleName}Thema"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_County_maleRank}Strategos"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_County_femaleRank}Strategina"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_County_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_County_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Barony"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_titleName}Toparchia"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_maleRank}Archon"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_femaleRank}Archontissa"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-  </TitleStyle>
-  <TitleStyle culture="Empire_s">
-    <Rank tier="Empire"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_titleName}Imperium"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_maleRank}Imperator"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleRank}Imperatrix"
-          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_heirRank}Kaisar"
-          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleHeirRank}Kaisarissa"
-          childRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_childRank}Porphyrogennetos"
-          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleChildRank}Porphyrogenneta"
-          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_nobleRank}Patrikios"
-          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleNobleRank}Patrikia"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Kingdom"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_titleName}Exarchatus"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_maleRank}Exarchos"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleRank}Exarchissa"
-          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_heirRank}Kaisar"
-          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleHeirRank}Kaisarissa"
-          childRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_childRank}Porphyrogennetos"
-          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleChildRank}Porphyrogenneta"
-          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_nobleRank}Patrikios"
-          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleNobleRank}Patrikia"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Duchy"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_titleName}Doukaton"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_maleRank}Doux"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_femaleRank}Doukissa"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="County"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_County_titleName}Thema"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_County_maleRank}Strategos"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_County_femaleRank}Strategina"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_County_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_County_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Barony"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_titleName}Toparchia"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_maleRank}Archon"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_femaleRank}Archontissa"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-  </TitleStyle>
-  <TitleStyle culture="Empire_w">
-    <Rank tier="Empire"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_titleName}Imperium"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_maleRank}Imperator"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleRank}Imperatrix"
-          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_heirRank}Kaisar"
-          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleHeirRank}Kaisarissa"
-          childRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_childRank}Porphyrogennetos"
-          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleChildRank}Porphyrogenneta"
-          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_nobleRank}Patrikios"
-          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleNobleRank}Patrikia"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Kingdom"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_titleName}Exarchatus"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_maleRank}Exarchos"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleRank}Exarchissa"
-          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_heirRank}Kaisar"
-          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleHeirRank}Kaisarissa"
-          childRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_childRank}Porphyrogennetos"
-          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleChildRank}Porphyrogenneta"
-          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_nobleRank}Patrikios"
-          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleNobleRank}Patrikia"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Duchy"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_titleName}Doukaton"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_maleRank}Doux"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_femaleRank}Doukissa"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="County"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_County_titleName}Thema"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_County_maleRank}Strategos"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_County_femaleRank}Strategina"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_County_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_County_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-    <Rank tier="Barony"
-          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_titleName}Toparchia"
-          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_maleRank}Archon"
-          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_femaleRank}Archontissa"
-          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
-          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
-  </TitleStyle>
   <TitleStyle culture="Empire">
     <Rank tier="Empire"
           titleName="{=BC_TitleStyle_Immersive_culture_Empire_Empire_titleName}Imperium"
@@ -573,6 +442,170 @@
           femaleRank="{=BC_TitleStyle_Immersive_culture_Nord_Barony_femaleRank}Hersirkona"
           titleFormat="{=BC_TitleStyle_Immersive_culture_Nord_Barony_titleFormat}{TITLE_NOUN} {TITLE_NAME}"
           heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Nord_Barony_heldTitleFormat}{DISPLAY_TITLE} {TITLE_NAME}" />
+  </TitleStyle>
+   <!-- Mod supported cultures. -->
+  <TitleStyle culture="Rhodok">
+    <Rank tier="Empire"
+          titleName="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_titleName}Vronenentriich"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_maleRank}Vronenent"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleRank}Vronenentin"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_heirRank}Edelinc"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleHeirRank}Edelfrou"
+          childRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_childRank}Edelinc"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleChildRank}Edelfrou"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_nobleRank}Lhandsherre"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleNobleRank}Lhandsfrou"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_titleFormat}{TITLE_NOUN} {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_heldTitleFormat}{DISPLAY_TITLE} {TITLE_NAME}"
+          heroNameFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Empire_heroNameFormat}{DISPLAY_TITLE} {HERO_NAME}" />
+    <Rank tier="Kingdom"
+          titleName="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_titleName}Hougekunicriich"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_maleRank}Hougekunic"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleRank}Hougekunigin"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_heirRank}Edelinc"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleHeirRank}Edelfrou"
+          childRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_childRank}Edelinc"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleChildRank}Edelfrou"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_nobleRank}Lhandsherre"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleNobleRank}Lhandsfrou"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_titleFormat}{TITLE_NOUN} {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_heldTitleFormat}{DISPLAY_TITLE} {TITLE_NAME}"
+          heroNameFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_heroNameFormat}{DISPLAY_TITLE} {HERO_NAME}" />
+    <Rank tier="Duchy" titleName="{=BC_TitleStyle_Immersive_culture_Rhodok_Duchy_titleName}Kunicriich" maleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Duchy_maleRank}Kunic" femaleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Duchy_femaleRank}Kunigin" titleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Duchy_titleFormat}{TITLE_NOUN} {TITLE_NAME}" heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Duchy_heldTitleFormat}{DISPLAY_TITLE} {TITLE_NAME}" heroNameFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Duchy_heroNameFormat}{DISPLAY_TITLE} {HERO_NAME}" />
+    <Rank tier="County" titleName="{=BC_TitleStyle_Immersive_culture_Rhodok_County_titleName}Graveschaft" maleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_County_maleRank}Grave" femaleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_County_femaleRank}Gravin" titleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_County_titleFormat}{TITLE_NOUN} {TITLE_NAME}" heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_County_heldTitleFormat}{DISPLAY_TITLE} {TITLE_NAME}" heroNameFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_County_heroNameFormat}{DISPLAY_TITLE} {HERO_NAME}" />
+    <Rank tier="Barony" titleName="{=BC_TitleStyle_Immersive_culture_Rhodok_Barony_titleName}Vriherreschaft" maleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Barony_maleRank}Vriherre" femaleRank="{=BC_TitleStyle_Immersive_culture_Rhodok_Barony_femaleRank}Vrifrou" titleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Barony_titleFormat}{TITLE_NOUN} {TITLE_NAME}" heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Barony_heldTitleFormat}{DISPLAY_TITLE} {TITLE_NAME}" heroNameFormat="{=BC_TitleStyle_Immersive_culture_Rhodok_Barony_heroNameFormat}{DISPLAY_TITLE} {HERO_NAME}" />
+  </TitleStyle>
+  <TitleStyle culture="Empire_n">
+    <Rank tier="Empire"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_titleName}Imperium"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_maleRank}Imperator"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleRank}Imperatrix"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_heirRank}Kaisar"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleHeirRank}Kaisarissa"
+          childRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_childRank}Porphyrogennetos"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleChildRank}Porphyrogenneta"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_nobleRank}Patrikios"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleNobleRank}Patrikia"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Empire_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Kingdom"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_titleName}Exarchatus"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_maleRank}Exarchos"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleRank}Exarchissa"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_heirRank}Kaisar"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleHeirRank}Kaisarissa"
+          childRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_childRank}Porphyrogennetos"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleChildRank}Porphyrogenneta"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_nobleRank}Patrikios"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleNobleRank}Patrikia"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Duchy"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_titleName}Doukaton"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_maleRank}Doux"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_femaleRank}Doukissa"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Duchy_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="County"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_County_titleName}Thema"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_County_maleRank}Strategos"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_County_femaleRank}Strategina"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_County_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_County_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Barony"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_titleName}Toparchia"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_maleRank}Archon"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_femaleRank}Archontissa"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_n_Barony_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+  </TitleStyle>
+  <TitleStyle culture="Empire_s">
+    <Rank tier="Empire"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_titleName}Imperium"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_maleRank}Imperator"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleRank}Imperatrix"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_heirRank}Kaisar"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleHeirRank}Kaisarissa"
+          childRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_childRank}Porphyrogennetos"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleChildRank}Porphyrogenneta"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_nobleRank}Patrikios"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleNobleRank}Patrikia"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Empire_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Kingdom"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_titleName}Exarchatus"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_maleRank}Exarchos"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleRank}Exarchissa"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_heirRank}Kaisar"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleHeirRank}Kaisarissa"
+          childRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_childRank}Porphyrogennetos"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleChildRank}Porphyrogenneta"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_nobleRank}Patrikios"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleNobleRank}Patrikia"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Duchy"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_titleName}Doukaton"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_maleRank}Doux"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_femaleRank}Doukissa"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Duchy_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="County"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_County_titleName}Thema"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_County_maleRank}Strategos"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_County_femaleRank}Strategina"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_County_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_County_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Barony"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_titleName}Toparchia"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_maleRank}Archon"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_femaleRank}Archontissa"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_s_Barony_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+  </TitleStyle>
+  <TitleStyle culture="Empire_w">
+    <Rank tier="Empire"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_titleName}Imperium"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_maleRank}Imperator"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleRank}Imperatrix"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_heirRank}Kaisar"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleHeirRank}Kaisarissa"
+          childRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_childRank}Porphyrogennetos"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleChildRank}Porphyrogenneta"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_nobleRank}Patrikios"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleNobleRank}Patrikia"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Empire_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Kingdom"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_titleName}Exarchatus"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_maleRank}Exarchos"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleRank}Exarchissa"
+          heirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_heirRank}Kaisar"
+          femaleHeirRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleHeirRank}Kaisarissa"
+          childRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_childRank}Porphyrogennetos"
+          femaleChildRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleChildRank}Porphyrogenneta"
+          nobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_nobleRank}Patrikios"
+          femaleNobleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleNobleRank}Patrikia"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Duchy"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_titleName}Doukaton"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_maleRank}Doux"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_femaleRank}Doukissa"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Duchy_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="County"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_County_titleName}Thema"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_County_maleRank}Strategos"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_County_femaleRank}Strategina"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_County_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_County_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
+    <Rank tier="Barony"
+          titleName="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_titleName}Toparchia"
+          maleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_maleRank}Archon"
+          femaleRank="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_femaleRank}Archontissa"
+          titleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_titleFormat}{TITLE_NOUN} tōn {TITLE_NAME}"
+          heldTitleFormat="{=BC_TitleStyle_Immersive_culture_Empire_w_Barony_heldTitleFormat}{DISPLAY_TITLE} tōn {TITLE_NAME}" />
   </TitleStyle>
   <!-- Court terminology uses the same culture/kingdom/rulerCulture selectors as ranks.-->
   <!--<TitleStyle culture="Empire">
