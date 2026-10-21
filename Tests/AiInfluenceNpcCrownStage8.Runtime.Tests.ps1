@@ -57,8 +57,9 @@ $a=Slot $k $r
 $attached=[bool]$attach.Invoke($courtType::Current,
     [object[]]@($a,[BellumCivile.CourtTermContext]::new($k)))
 $extra=$api::TryStageNpcTreasonIntent($k,$r,$other,'fifth')
-Check ($attached -and $extra.Accepted -and
-    $api::GetNpcTreasonIntent($k,'one').Status -eq 'court_announced') 'attached_ticket_releases_pending_slot'
+Check ($attached) 'first_staged_intent_attached_to_free_crown_slot'
+Check ($api::GetNpcTreasonIntent($k,'one').Status -eq 'court_announced') 'native_crown_attachment_is_visible'
+Check ($extra.Accepted -and $extra.Reason -eq 'staged_not_scheduled') 'attached_ticket_releases_pending_slot'
 Check ($a.ObjectiveData.TargetId -eq 'target-8' -and
     $courtType::Current.NotificationCount -eq 1) 'native_agenda_assignment_exactly_once'
 
