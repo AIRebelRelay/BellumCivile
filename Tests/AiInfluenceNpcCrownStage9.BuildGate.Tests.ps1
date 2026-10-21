@@ -42,3 +42,6 @@ finally {
     }
 }
 Write-Host 'STAGE9_BUILD_GATE_NEGATIVE_PASS — no authentic game assemblies available; real net472 compilation is UNVERIFIED.'
+# All expected negative child exit codes were asserted. Do not leak the last code 22
+# to GitHub Actions as if this successful negative-suite run had failed.
+exit 0
