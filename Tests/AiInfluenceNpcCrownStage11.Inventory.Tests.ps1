@@ -16,6 +16,7 @@ $sourceFiles = @(
 Add-Type -Path @($sourceFiles | ForEach-Object { Join-Path $root $_ }) -ErrorAction Stop
 $k = [TaleWorlds.CampaignSystem.Kingdom]::new()
 $k.StringId = 'realm-11'
+[TaleWorlds.CampaignSystem.Kingdom]::All.Add($k) # Native lifecycle scans registered campaign kingdoms.
 $r = [TaleWorlds.CampaignSystem.Clan]::new()
 $r.StringId = 'ruler-11'; $r.Kingdom = $k
 $r.Leader = [TaleWorlds.CampaignSystem.Hero]::new()
@@ -65,9 +66,8 @@ $Day::CurrentDay=19.25
 $review = $courtType.GetMethod('MaintainNpcTreasonLifecycle', [Reflection.BindingFlags]'Instance, NonPublic')
 [void]$review.Invoke($courtType::Current, @())
 $closed = $api::GetNpcTreasonIntents($k)[1]
-$attachedAfterReview = $api::GetNpcTreasonIntents($k)[0]
 Check ($closed.Status -eq 'cancelled_automatic_disabled' -and
-    $attachedAfterReview.Status -eq 'court_deliberating') ("terminal_tombstone_visible_without_touching_attached_agenda; closed=" + $closed.Status + "; attached=" + $attachedAfterReview.Status)
+    $api::GetNpcTreasonIntents($k)[0].Status -eq 'court_deliberating') 'terminal_tombstone_visible_without_touching_attached_agenda'
 [BellumCivile.BellumCivileOptions]::EnableAutomaticTreasonIndictments = $true
 $mapField = $courtType.GetField('_npcTreasonIntents', [Reflection.BindingFlags]'Instance, NonPublic')
 $map = $mapField.GetValue($courtType::Current)
