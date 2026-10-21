@@ -46,3 +46,19 @@ Failure is intentionally explicit, including `missing_game_folder`, `missing_ref
 - No native save/load, game tick, player or NPC court agenda gameplay proof.
 - Bellum 1.4.5 migration also blocked separately by Royal Peace/Claim Feud semantic P0, Bellum Bridge 4-to-5 argument gate ABI, and other political/event routes.
 - This step is **build verification tooling only**, not resolution of those incompatibilities. No merges, releases, or installation instructions were issued.
+
+## 2026-10-21 follow-up: user-owned assembly reference bundle located on Google Drive
+The owner correctly recalled a private folder [Mount and Blade 2: DLLs](https://drive.google.com/drive/folders/1-YFfrsfB7qV0GZwNcHt-gB8iRDQb7PkV), with four files uploaded to Drive **2026-09-18**. Downloaded locally for read-only inspection and verified as PE32+ x64 Mono/.NET Windows DLLs:
+
+| Filename | Size in bytes | SHA-256 |
+| --- | ---: | --- |
+| `SandBox.dll` | 1,331,672 | `587c6e94c425745c1478f632f3b66226ff8298666cb27e8e6d9a62488df5956a` |
+| `TaleWorlds.CampaignSystem.dll` | 5,469,656 | `1f8e33e2ed73e6ec653d7629180afb70649ddc6e5bd1657a802a264efda1c3ae` |
+| `TaleWorlds.Core.dll` | 501,720 | `3e5cece8ca42faf3fdde27632519ed2a6f86d1ec6d1a742867729f00001689bf` |
+| `TaleWorlds.Library.dll` | 270,296 | `ab4ff23e94a6f4b6f293d0cb4333cae731a0499063fe4a8b6c6a3770de32c4e5` |
+
+UTF-16 strings in `TaleWorlds.CampaignSystem.dll` contain `v1.4.8`, and `TaleWorlds.Library.dll` contains `v1.4.8.119303`. These are **supporting version clues, not cryptographic proof that every binary is exactly the game's installed 1.4.8 build**. PE Windows `FileVersion` and `ProductVersion` string resources show generic `1.0.0.0` / `1.0.0` for the checked files, so a version-only gate reliant on these generic resource values can fail closed even on plausible target DLLs. The existing Stage 9 script's version logic was **not altered** during this discovery.
+
+The shipping `BellumCivile.csproj` declares **26 explicit HintPath DLL references**. Only four exact filenames are present in this Drive folder: **22 references remain missing**, including Harmony, UIExtenderEx, SandBox.View, TaleWorlds.Localization, TaleWorlds.SaveSystem, TaleWorlds.MountAndBlade, and multiple GauntletUI/ViewModelCollection assemblies. MCM NuGet compile dependency is additional, not one of the 26. Therefore **a full Bellum 1.4.8 build is still BLOCKED** with the currently located bundle. The four DLLs are enough for selected binary inspection, not production linking.
+
+**Change boundary:** documentation only. No proprietary DLL uploaded or redistributed to GitHub, no code/build settings changed, no build or live-game validation claimed. Do not treat the existing positive synthetic CI as production compilation.
