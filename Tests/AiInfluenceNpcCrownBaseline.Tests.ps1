@@ -43,7 +43,7 @@ $nominate = Section $executive 'public bool TryNominateTreason(' 'private Kingdo
 $openTerm = Section $court 'private void OpenTerm(' 'private void Advance(' 'open term'
 $advance = Section $executive 'private void AdvanceExecutive(' 'private static bool MatchesExecutive(' 'advance executive'
 $playerCrown = Section $player 'private bool FilePlayerCrownBusiness(' 'internal bool TryPlayerCouncilBusiness(' 'player crown filing'
-$playerTreason = Section $player 'internal bool TryPlayerTreasonBusiness(' '\n    }' 'player treason action'
+$playerTreason = $player.Substring($player.IndexOf('internal bool TryPlayerTreasonBusiness('))
 
 Require ($indictGate.Contains('bool readOnly = false') -and
     $indictGate.Contains('IsRejectedExpulsionLocked(kingdom, targetClan, relation, readOnly)') -and
@@ -57,14 +57,14 @@ Require ($nominate.Contains('proposer != realm.RulingClan || proposer != Clan.Pl
     $nominate.Contains('CanRulerIndictClan(realm, target, false, out explanation, true)')) 'npc_nomination_currently_not_publicly_authorized'
 
 Require ($playerCrown.Contains('NewPlayerCrownBusiness(realm)') -and
-    InOrder $playerCrown @('_agendas.Add(agenda)', 'Advance(agenda, Campaign.Current.GetCampaignBehavior<IdeologyBehavior>())') -and
+    (InOrder $playerCrown @('_agendas.Add(agenda)', 'Advance(agenda, Campaign.Current.GetCampaignBehavior<IdeologyBehavior>())')) -and
     $playerTreason.Contains('return FilePlayerCrownBusiness(realm, motion)')) 'direct_player_crown_can_file_immediately'
 
 Require ($openTerm.Contains('existing?.IsFiled == true || existing?.IsUnopened == true') -and
     $openTerm.Contains('realm.RulingClan == Clan.PlayerClan') -and
-    InOrder $openTerm @('AssignPriorityDecree(agenda)', 'AssignPriorityRoyalPeace(agenda)', 'MaintainCouncilVacancyPriority(realm)', '_objectiveSelector.SelectBatch')) 'native_crown_priority_and_existing_agenda_protected'
+    (InOrder $openTerm @('AssignPriorityDecree(agenda)', 'AssignPriorityRoyalPeace(agenda)', 'MaintainCouncilVacancyPriority(realm)', '_objectiveSelector.SelectBatch'))) 'native_crown_priority_and_existing_agenda_protected'
 
-Require (InOrder $advance @('TryPay(agenda, decision.GetProposalInfluenceCost())', 'ideology.FileAgendaTreasonVote(') -and
+Require ((InOrder $advance @('TryPay(agenda, decision.GetProposalInfluenceCost())', 'ideology.FileAgendaTreasonVote(')) -and
     $advance.Contains('if (!agenda.SessionDate.IsPast) return;') -and
     $advance.Contains('if (kind == CourtExecutiveRules.Treason)')) 'native_treason_filing_waits_and_charges_once'
 
