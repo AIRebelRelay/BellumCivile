@@ -7,6 +7,8 @@ on:
     paths:
       - 'Tests/AiInfluenceNpcCrownBaseline.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage6.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage6.Runtime.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage6.Stubs.cs'
       - 'NpcCrownTreasonIntentRecord.cs'
       - 'Behaviors/CourtNpcTreasonIntents.cs'
       - '.github/workflows/ai-influence-npc-crown-baseline.yml'
@@ -37,3 +39,6 @@ jobs:
       - name: Stage 6 ticket codec and admission regression
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownStage6.Tests.ps1
+      - name: Stage 6 isolated compiled API behavior and save roundtrip
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage6.Runtime.Tests.ps1
