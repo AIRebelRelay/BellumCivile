@@ -1,0 +1,33 @@
+name: AI Influence NPC Crown Baseline
+
+on:
+  push:
+    branches:
+      - 'feature/1.4.5-ai-influence-npc-crown'
+    paths:
+      - 'Tests/AiInfluenceNpcCrownBaseline.Tests.ps1'
+      - '.github/workflows/ai-influence-npc-crown-baseline.yml'
+      - 'BellumIntegration*.cs'
+      - 'Behaviors/Court*'
+      - 'Behaviors/IdeologyBehavior.cs'
+      - 'Behaviors/ExpulsionDeliberationBehavior.cs'
+      - 'CourtAgendaRecord.cs'
+      - 'CourtExecutiveObjectiveSource.cs'
+      - 'IntegrationSnapshots.cs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baseline source contract
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownBaseline.Tests.ps1
+      - name: Existing Bellum executive scheduler regression
+        shell: pwsh
+        run: ./Tests/CourtExecutiveScheduler.Tests.ps1
