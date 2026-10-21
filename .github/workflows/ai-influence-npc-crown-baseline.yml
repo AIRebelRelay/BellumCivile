@@ -14,6 +14,7 @@ on:
       - 'Tests/AiInfluenceNpcCrownStage8.Runtime.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage8.Source.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage9.BuildGate.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage11.Inventory.Tests.ps1'
       - 'scripts/Verify-Bellum148Build.ps1'
       - 'Behaviors/CourtNpcTreasonLifecycle.cs'
       - 'Tests/AiInfluenceNpcCrownStage7.Source.Tests.ps1'
@@ -69,6 +70,10 @@ jobs:
       - name: Stage 8 compiled lifecycle and tombstone replay regressions
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownStage8.Runtime.Tests.ps1
+      - name: Stage 11 persisted read-only Crown inventory and mock reload
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage11.Inventory.Tests.ps1
+
       - name: Stage 9 reject missing and synthetic game builds
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownStage9.BuildGate.Tests.ps1

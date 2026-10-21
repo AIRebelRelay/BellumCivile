@@ -24,6 +24,21 @@ namespace BellumCivile.Behaviors
             _npcTreasonClosures = _npcTreasonClosures ?? new Dictionary<string, string>();
         }
 
+        // Safe enumeration from Bellum's persisted ticket map; never expose mutable save storage.
+        // Reuse the existing exact-ID read path to preserve native Court/closure semantics.
+        internal IReadOnlyList<NpcCrownTreasonIntentSnapshot> GetNpcTreasonIntents(Kingdom realm)
+        {
+            var result = new List<NpcCrownTreasonIntentSnapshot>();
+            if (realm == null || _npcTreasonIntents == null) return result;
+            foreach (string externalId in _npcTreasonIntents.Keys.OrderBy(id => id, StringComparer.Ordinal))
+            {
+                NpcCrownTreasonIntentSnapshot snapshot = GetNpcTreasonIntent(realm, externalId);
+                if (snapshot != null)
+                    result.Add(snapshot);
+            }
+            return result;
+        }
+
         internal NpcCrownTreasonIntentSnapshot GetNpcTreasonIntent(
             Kingdom realm, string externalIntentId)
         {
