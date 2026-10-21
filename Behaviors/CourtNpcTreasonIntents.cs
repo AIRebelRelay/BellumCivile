@@ -17,7 +17,9 @@ namespace BellumCivile.Behaviors
         private void SyncNpcTreasonIntents(IDataStore dataStore)
         {
             dataStore.SyncData("BC_CourtNpcTreasonIntents_v1", ref _npcTreasonIntents);
+            dataStore.SyncData("BC_CourtNpcTreasonAgendaIds_v1", ref _npcTreasonAgendaIds);
             _npcTreasonIntents = _npcTreasonIntents ?? new Dictionary<string, string>();
+            _npcTreasonAgendaIds = _npcTreasonAgendaIds ?? new Dictionary<string, string>();
         }
 
         internal NpcCrownTreasonIntentSnapshot GetNpcTreasonIntent(
@@ -31,7 +33,7 @@ namespace BellumCivile.Behaviors
                 && _npcTreasonIntents.TryGetValue(externalIntentId, out packed)
                 && NpcTreasonIntentCodec.TryRead(externalIntentId, packed, out snapshot)
                 && string.Equals(snapshot.RealmId, realm.StringId, StringComparison.Ordinal)
-                ? snapshot : null;
+                ? DescribeNpcTreasonIntent(snapshot) : null;
         }
 
         internal NpcCrownTreasonIntentSubmission TryStageNpcTreasonIntent(
@@ -55,7 +57,8 @@ namespace BellumCivile.Behaviors
                     || previous.RulerClanId != rulerClan.StringId
                     || previous.TargetClanId != targetClan.StringId)
                     return Rejected("external_intent_id_collision");
-                return new NpcCrownTreasonIntentSubmission(true, "already_staged", previous);
+                return new NpcCrownTreasonIntentSubmission(true, "already_staged",
+                    GetNpcTreasonIntent(realm, externalIntentId));
             }
 
             if (!ValidRealm(realm) || rulerClan == null || rulerClan != realm.RulingClan

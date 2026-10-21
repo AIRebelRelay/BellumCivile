@@ -13,6 +13,7 @@ namespace TaleWorlds.CampaignSystem
         public string StringId;
         public bool IsEliminated;
         public Clan RulingClan;
+        public List<Clan> Clans = new List<Clan>();
     }
     public sealed class Clan
     {
@@ -38,13 +39,22 @@ namespace TaleWorlds.CampaignSystem
         public bool Writing = true;
         public Dictionary<string, string> Serialized;
         public string Key;
+        public Dictionary<string, Dictionary<string, string>> Saved =
+            new Dictionary<string, Dictionary<string, string>>();
         public void SyncData(string key, ref Dictionary<string, string> data)
         {
             Key = key;
             if (Writing)
-                Serialized = data == null ? null : new Dictionary<string, string>(data);
+            {
+                Saved[key] = data == null ? null : new Dictionary<string, string>(data);
+                if (key == "BC_CourtNpcTreasonIntents_v1") Serialized = Saved[key];
+            }
             else
-                data = Serialized == null ? null : new Dictionary<string, string>(Serialized);
+            {
+                Dictionary<string, string> source;
+                data = Saved.TryGetValue(key, out source) && source != null
+                    ? new Dictionary<string, string>(source) : null;
+            }
         }
     }
     public sealed class Campaign

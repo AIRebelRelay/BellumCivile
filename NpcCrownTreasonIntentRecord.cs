@@ -12,9 +12,11 @@ namespace BellumCivile
         public string TargetClanId { get; }
         public double SubmittedDay { get; }
         public string Status { get; }
+        public string CourtAgendaId { get; }
 
         internal NpcCrownTreasonIntentSnapshot(string intentId, string realmId,
-            string rulerClanId, string targetClanId, double submittedDay, string status)
+            string rulerClanId, string targetClanId, double submittedDay, string status,
+            string courtAgendaId = null)
         {
             ExternalIntentId = intentId;
             RealmId = realmId;
@@ -22,6 +24,7 @@ namespace BellumCivile
             TargetClanId = targetClanId;
             SubmittedDay = submittedDay;
             Status = status;
+            CourtAgendaId = courtAgendaId;
         }
     }
 

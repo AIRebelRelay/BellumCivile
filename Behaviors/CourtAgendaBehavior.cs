@@ -436,6 +436,7 @@ namespace BellumCivile.Behaviors
                         agenda.State = CourtAgendaState.AwaitingPlayerDecision;
                         continue;
                     }
+                    if (TryAttachStagedNpcTreason(agenda, context)) continue;
                 }
                 bool playerLed = owner != null && sponsor == Clan.PlayerClan;
                 if (!playerLed && ShouldStartCourtCrisis(owner, realm)) { agenda.State = CourtAgendaState.Crisis; continue; }

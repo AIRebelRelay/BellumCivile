@@ -9,6 +9,10 @@ on:
       - 'Tests/AiInfluenceNpcCrownStage6.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage6.Runtime.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage6.Stubs.cs'
+      - 'Tests/AiInfluenceNpcCrownStage7.Stubs.cs'
+      - 'Tests/AiInfluenceNpcCrownStage7.Runtime.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage7.Source.Tests.ps1'
+      - 'Behaviors/CourtNpcTreasonAssignment.cs'
       - 'NpcCrownTreasonIntentRecord.cs'
       - 'Behaviors/CourtNpcTreasonIntents.cs'
       - '.github/workflows/ai-influence-npc-crown-baseline.yml'
@@ -42,3 +46,9 @@ jobs:
       - name: Stage 6 isolated compiled API behavior and save roundtrip
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownStage6.Runtime.Tests.ps1
+      - name: Stage 7 Crown priority and native ownership source contract
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage7.Source.Tests.ps1
+      - name: Stage 7 compiled isolated agenda assignment and save roundtrip
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage7.Runtime.Tests.ps1

@@ -7,8 +7,10 @@ function Check($ok, $name) {
 $sourceFiles = @(
     'NpcCrownTreasonIntentRecord.cs',
     'Behaviors/CourtNpcTreasonIntents.cs',
+    'Behaviors/CourtNpcTreasonAssignment.cs',
     'BellumIntegrationNpcCrown.cs',
-    'Tests/AiInfluenceNpcCrownStage6.Stubs.cs'
+    'Tests/AiInfluenceNpcCrownStage6.Stubs.cs',
+    'Tests/AiInfluenceNpcCrownStage7.Stubs.cs'
 )
 $paths = @($sourceFiles | ForEach-Object { Join-Path $root $_ })
 Add-Type -Path $paths -ErrorAction Stop
@@ -54,7 +56,8 @@ $save = [TaleWorlds.CampaignSystem.FakeNpcCrownStore]::new()
 $sync = $CourtType.GetMethod('SyncNpcTreasonIntents',
     [Reflection.BindingFlags]'Instance, NonPublic')
 [void]$sync.Invoke($CourtType::Current, @($save))
-Check ($save.Key -eq 'BC_CourtNpcTreasonIntents_v1' -and
+Check ($save.Saved.ContainsKey('BC_CourtNpcTreasonIntents_v1') -and
+    $save.Saved.ContainsKey('BC_CourtNpcTreasonAgendaIds_v1') -and
     $save.Serialized.Count -eq 1) 'ticket_serialized_under_new_registered_dictionary_key'
 $CourtType::Current = $CourtType::new()
 $save.Writing = $false
