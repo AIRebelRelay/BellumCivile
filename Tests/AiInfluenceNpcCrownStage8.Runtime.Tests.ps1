@@ -21,7 +21,7 @@ $attach = $courtType.GetMethod('TryAttachStagedNpcTreason',[Reflection.BindingFl
 $sync = $courtType.GetMethod('SyncNpcTreasonIntents',[Reflection.BindingFlags]'Instance, NonPublic')
 function NewCourt { $courtType::Current = $courtType::new() }
 function ReviewAt([double]$day) {
-    $Day::CurrentDay = $day
+    [TaleWorlds.CampaignSystem.CampaignTime]::CurrentDay = $day
     [void]$review.Invoke($courtType::Current, @())
 }
 function Slot($k,$r) {
