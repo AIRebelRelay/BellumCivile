@@ -12,6 +12,8 @@ on:
       - 'Tests/AiInfluenceNpcCrownStage7.Stubs.cs'
       - 'Tests/AiInfluenceNpcCrownStage7.Runtime.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage7.Source.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownCompileItems.Tests.ps1'
+      - 'BellumCivile.csproj'
       - 'Behaviors/CourtNpcTreasonAssignment.cs'
       - 'NpcCrownTreasonIntentRecord.cs'
       - 'Behaviors/CourtNpcTreasonIntents.cs'
@@ -52,3 +54,6 @@ jobs:
       - name: Stage 7 compiled isolated agenda assignment and save roundtrip
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownStage7.Runtime.Tests.ps1
+      - name: Exclude isolated stub classes from the shipping Bellum DLL
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownCompileItems.Tests.ps1

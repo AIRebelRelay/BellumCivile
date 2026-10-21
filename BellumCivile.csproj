@@ -15,6 +15,9 @@
     <EmbeddedResource Include="ModuleData\bellum_laws.xml" />
     <Compile Remove="Tests\CourtRedesignHarness\**\*.cs" />
     <Compile Remove="Tests\SuccessionEngineHarness\**\*.cs" />
+    <!-- Compile isolated API stubs only through Add-Type tests, never into game DLL. -->
+    <Compile Remove="Tests\AiInfluenceNpcCrownStage6.Stubs.cs" />
+    <Compile Remove="Tests\AiInfluenceNpcCrownStage7.Stubs.cs" />
   </ItemGroup>
 
   <ItemGroup>
