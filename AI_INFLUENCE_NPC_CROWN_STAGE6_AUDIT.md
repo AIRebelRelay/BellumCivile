@@ -39,3 +39,14 @@ Expected from Stage 6 source/codec tests: `PASS STAGE6_NPC_CROWN` and `STAGE6_NP
 Expected if an integration caller voluntarily invokes this API in game: `AIInfluence NPC Crown intent staged; ... status=staged_not_scheduled; state_changes=false`. This is a new **log message** but not proof of assignment. **No game code from Bridge calls it yet.**
 Full Bellum compilation requires real Bannerlord 1.4.8 TaleWorlds assemblies and project `GameFolder`; isolated GitHub source contract tests do not replace compiled or live save evidence.
 No release or merge to `main` until gameplay and save migration verified.
+
+## Stage 6 CI and surgical diff result (2026-10-21)
+- [CI run 39571660911](https://github.com/AIRebelRelay/BellumCivile/actions/runs/39571660911): **success**, Stage 5 baseline, existing Court Executive Scheduler, source contract and pure codec passed.
+- [CI run 39572095557](https://github.com/AIRebelRelay/BellumCivile/actions/runs/39572095557): **success**, plus *compiled* Stage 6 C# implementation against isolated fake TaleWorlds types. The exercised source files are the actual `NpcCrownTreasonIntentRecord.cs`, `BellumIntegrationNpcCrown.cs` and `Behaviors/CourtNpcTreasonIntents.cs`.
+- Isolated compiled runtime regression: 13 positive and negative assertions. Exact stage, idempotent replay, conflicting target rejection, durable store mock serialize+restore, replay after restore, Bellum MCM toggle, player ruler exclusion, decree-floor exclusion, Bellum preflight rejection, campaign thread guard, per-realm bound, and zero native Court execution in the stub environment all passed.
+- Pure codec/source regression: 11 assertions, including malformed save payload and unknown state failure, preflight readOnly, existing SaveDefiner Dictionary registration, no Court scheduling methods.
+- Existing Stage 5 baseline and upstream `Tests/CourtExecutiveScheduler.Tests.ps1` passed.
+- **Audit of diff from Stage 5 HEAD:** one insertion in `Behaviors/CourtAgendaBehavior.cs` (`SyncNpcTreasonIntents(dataStore);`); 3 new production C# files; 1 narrow workflow edit; 3 new test files; this report. `IdeologyBehavior`, `CourtExecutiveAgendas`, `BellumCivileSaveDefiner`, `CourtAgendaRecord`, `OpenTerm`, Bellum `main`, and other repositories are unchanged.
+- No production caller invokes this new API yet; `staged_not_scheduled` is **not equivalent to nominated/queued/expelled**.
+- The compilation is an **isolated C# stub compile**, NOT a Bannerlord 1.4.8 real-assembly compile. The persistence test uses a fake `IDataStore`, NOT Bannerlord game saves.
+- Stage gate for downstream NPC court scheduling: **BLOCKED** pending native Bellum load/save/build and separately audited assignment-to-agenda implementation. Do not merge to `main` yet.
