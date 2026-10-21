@@ -107,6 +107,7 @@ namespace BellumCivile.Behaviors
             dataStore.SyncData("BC_CourtMandateSettledUntil", ref _mandateSettledUntil);
             _mandateSettledUntil = _mandateSettledUntil ?? new Dictionary<string, CampaignTime>();
             dataStore.SyncData("BC_CourtAgendas", ref _agendas);
+            SyncNpcTreasonIntents(dataStore);
             dataStore.SyncData("BC_CourtProtectionOffers", ref _protectionOffers);
             dataStore.SyncData("BC_CourtTitleDeliveries", ref _titleDeliveries);
             dataStore.SyncData("BC_CourtRallies", ref _rallies);

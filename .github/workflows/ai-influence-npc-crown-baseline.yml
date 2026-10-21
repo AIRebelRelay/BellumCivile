@@ -6,6 +6,9 @@ on:
       - 'feature/1.4.5-ai-influence-npc-crown'
     paths:
       - 'Tests/AiInfluenceNpcCrownBaseline.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage6.Tests.ps1'
+      - 'NpcCrownTreasonIntentRecord.cs'
+      - 'Behaviors/CourtNpcTreasonIntents.cs'
       - '.github/workflows/ai-influence-npc-crown-baseline.yml'
       - 'BellumIntegration*.cs'
       - 'Behaviors/Court*'
@@ -31,3 +34,6 @@ jobs:
       - name: Existing Bellum executive scheduler regression
         shell: pwsh
         run: ./Tests/CourtExecutiveScheduler.Tests.ps1
+      - name: Stage 6 ticket codec and admission regression
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage6.Tests.ps1
