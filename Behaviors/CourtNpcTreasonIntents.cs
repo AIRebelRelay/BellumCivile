@@ -18,8 +18,10 @@ namespace BellumCivile.Behaviors
         {
             dataStore.SyncData("BC_CourtNpcTreasonIntents_v1", ref _npcTreasonIntents);
             dataStore.SyncData("BC_CourtNpcTreasonAgendaIds_v1", ref _npcTreasonAgendaIds);
+            dataStore.SyncData("BC_CourtNpcTreasonClosures_v1", ref _npcTreasonClosures);
             _npcTreasonIntents = _npcTreasonIntents ?? new Dictionary<string, string>();
             _npcTreasonAgendaIds = _npcTreasonAgendaIds ?? new Dictionary<string, string>();
+            _npcTreasonClosures = _npcTreasonClosures ?? new Dictionary<string, string>();
         }
 
         internal NpcCrownTreasonIntentSnapshot GetNpcTreasonIntent(
@@ -57,8 +59,13 @@ namespace BellumCivile.Behaviors
                     || previous.RulerClanId != rulerClan.StringId
                     || previous.TargetClanId != targetClan.StringId)
                     return Rejected("external_intent_id_collision");
-                return new NpcCrownTreasonIntentSubmission(true, "already_staged",
-                    GetNpcTreasonIntent(realm, externalIntentId));
+                var previousState = GetNpcTreasonIntent(realm, externalIntentId);
+                if (previousState == null) return Rejected("corrupt_ticket");
+                if (_npcTreasonClosures != null
+                    && _npcTreasonClosures.ContainsKey(externalIntentId))
+                    return new NpcCrownTreasonIntentSubmission(false,
+                        previousState.Status, previousState);
+                return new NpcCrownTreasonIntentSubmission(true, "already_staged", previousState);
             }
 
             if (!ValidRealm(realm) || rulerClan == null || rulerClan != realm.RulingClan
@@ -84,12 +91,7 @@ namespace BellumCivile.Behaviors
 
             if (_npcTreasonIntents.Count >= MaxNpcTreasonIntents)
                 return Rejected("intent_capacity_reached");
-            int existingForRealm = _npcTreasonIntents.Count(entry =>
-            {
-                NpcCrownTreasonIntentSnapshot ticket;
-                return NpcTreasonIntentCodec.TryRead(entry.Key, entry.Value, out ticket)
-                    && ticket.RealmId == realm.StringId;
-            });
+            int existingForRealm = PendingNpcTreasonIntentCount(realm.StringId);
             if (existingForRealm >= MaxNpcTreasonPerRealm)
                 return Rejected("realm_intent_capacity_reached");
 

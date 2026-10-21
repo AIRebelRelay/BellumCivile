@@ -343,6 +343,7 @@ namespace BellumCivile.Behaviors
             var manager = Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>();
             var ideology = Campaign.Current.GetCampaignBehavior<IdeologyBehavior>();
             if (manager == null || ideology == null) return;
+            MaintainNpcTreasonLifecycle();
             foreach (var agenda in _agendas.ToList())
                 if (!ValidRealm(agenda.Realm) && (agenda.IsUnopened || agenda.IsFiled)) Cancel(agenda, "realm_invalid");
 

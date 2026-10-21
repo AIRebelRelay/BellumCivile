@@ -10,6 +10,7 @@ namespace TaleWorlds.CampaignSystem
     }
     public sealed class Kingdom
     {
+        public static readonly List<Kingdom> All = new List<Kingdom>();
         public string StringId;
         public bool IsEliminated;
         public Clan RulingClan;
@@ -28,7 +29,9 @@ namespace TaleWorlds.CampaignSystem
     public struct CampaignTime
     {
         public double ToDays;
-        public static CampaignTime Now { get { return new CampaignTime { ToDays = 17.25 }; } }
+        public static double CurrentDay = 17.25;
+        public const int DaysInYear = 84;
+        public static CampaignTime Now { get { return new CampaignTime { ToDays = CurrentDay }; } }
     }
     public interface IDataStore
     {
@@ -79,6 +82,7 @@ namespace BellumCivile
     public static class BellumCivileOptions
     {
         public static bool EnableAutomaticTreasonIndictments = true;
+        public static float CourtTermDays = 84f;
     }
     public static class BellumCivileLogger
     {

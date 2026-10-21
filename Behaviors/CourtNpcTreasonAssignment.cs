@@ -12,6 +12,12 @@ namespace BellumCivile.Behaviors
 
         private NpcCrownTreasonIntentSnapshot DescribeNpcTreasonIntent(NpcCrownTreasonIntentSnapshot ticket)
         {
+            string closed;
+            if (ticket != null && _npcTreasonClosures != null
+                && _npcTreasonClosures.TryGetValue(ticket.ExternalIntentId, out closed))
+                return new NpcCrownTreasonIntentSnapshot(ticket.ExternalIntentId, ticket.RealmId,
+                    ticket.RulerClanId, ticket.TargetClanId, ticket.SubmittedDay,
+                    IsNpcTreasonTerminalReason(closed) ? closed : "corrupt_terminal_state");
             string agendaId;
             if (ticket == null || _npcTreasonAgendaIds == null
                 || !_npcTreasonAgendaIds.TryGetValue(ticket.ExternalIntentId, out agendaId))
@@ -53,6 +59,7 @@ namespace BellumCivile.Behaviors
                 NpcCrownTreasonIntentSnapshot ticket;
                 if (NpcTreasonIntentCodec.TryRead(pair.Key, pair.Value, out ticket)
                     && ticket.RealmId == realm.StringId
+                    && (_npcTreasonClosures == null || !_npcTreasonClosures.ContainsKey(pair.Key))
                     && (_npcTreasonAgendaIds == null || !_npcTreasonAgendaIds.ContainsKey(pair.Key)))
                     pending.Add(ticket);
             }

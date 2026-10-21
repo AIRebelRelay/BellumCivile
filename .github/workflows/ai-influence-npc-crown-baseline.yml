@@ -11,6 +11,9 @@ on:
       - 'Tests/AiInfluenceNpcCrownStage6.Stubs.cs'
       - 'Tests/AiInfluenceNpcCrownStage7.Stubs.cs'
       - 'Tests/AiInfluenceNpcCrownStage7.Runtime.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage8.Runtime.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage8.Source.Tests.ps1'
+      - 'Behaviors/CourtNpcTreasonLifecycle.cs'
       - 'Tests/AiInfluenceNpcCrownStage7.Source.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownCompileItems.Tests.ps1'
       - 'BellumCivile.csproj'
@@ -57,3 +60,10 @@ jobs:
       - name: Exclude isolated stub classes from the shipping Bellum DLL
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownCompileItems.Tests.ps1
+
+      - name: Stage 8 lifecycle contract and tick boundary
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage8.Source.Tests.ps1
+      - name: Stage 8 compiled lifecycle and tombstone replay regressions
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage8.Runtime.Tests.ps1

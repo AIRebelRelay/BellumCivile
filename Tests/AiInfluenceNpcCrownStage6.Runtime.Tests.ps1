@@ -8,6 +8,7 @@ $sourceFiles = @(
     'NpcCrownTreasonIntentRecord.cs',
     'Behaviors/CourtNpcTreasonIntents.cs',
     'Behaviors/CourtNpcTreasonAssignment.cs',
+    'Behaviors/CourtNpcTreasonLifecycle.cs',
     'BellumIntegrationNpcCrown.cs',
     'Tests/AiInfluenceNpcCrownStage6.Stubs.cs',
     'Tests/AiInfluenceNpcCrownStage7.Stubs.cs'

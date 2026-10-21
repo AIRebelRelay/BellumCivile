@@ -13,6 +13,7 @@ try {
     }
     foreach ($required in @('Behaviors/CourtNpcTreasonAssignment.cs',
                              'Behaviors/CourtNpcTreasonIntents.cs',
+                             'Behaviors/CourtNpcTreasonLifecycle.cs',
                              'BellumIntegrationNpcCrown.cs',
                              'NpcCrownTreasonIntentRecord.cs')) {
         if ($items -notcontains $required) { throw "FAIL: production source excluded: $required" }
