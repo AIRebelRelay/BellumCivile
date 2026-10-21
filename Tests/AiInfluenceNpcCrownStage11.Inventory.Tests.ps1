@@ -65,8 +65,9 @@ $Day::CurrentDay=19.25
 $review = $courtType.GetMethod('MaintainNpcTreasonLifecycle', [Reflection.BindingFlags]'Instance, NonPublic')
 [void]$review.Invoke($courtType::Current, @())
 $closed = $api::GetNpcTreasonIntents($k)[1]
+$attachedAfterReview = $api::GetNpcTreasonIntents($k)[0]
 Check ($closed.Status -eq 'cancelled_automatic_disabled' -and
-    $api::GetNpcTreasonIntents($k)[0].Status -eq 'court_deliberating') 'terminal_tombstone_visible_without_touching_attached_agenda'
+    $attachedAfterReview.Status -eq 'court_deliberating') ("terminal_tombstone_visible_without_touching_attached_agenda; closed=" + $closed.Status + "; attached=" + $attachedAfterReview.Status)
 [BellumCivile.BellumCivileOptions]::EnableAutomaticTreasonIndictments = $true
 $mapField = $courtType.GetField('_npcTreasonIntents', [Reflection.BindingFlags]'Instance, NonPublic')
 $map = $mapField.GetValue($courtType::Current)
