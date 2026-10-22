@@ -744,11 +744,17 @@ namespace BellumCivile.Behaviors
             // Finalize provenance only after the award/fallback, home-realm return
             // and temporary-shell cleanup. UI notifications are not the authority.
             // A failed/incomplete resolution remains invisible to Bridge readers.
-            war.RecordFinalOutcome(outcome, resultKind, titleAwardApplied,
+            bool finalOutcomeRecorded = war.RecordFinalOutcome(outcome, resultKind, titleAwardApplied,
                 title?.DeJureHolderClanId, title?.DeFactoHolderClanId,
                 parent != null && !parent.IsEliminated ? parent.StringId : string.Empty,
                 parent != null && !parent.IsEliminated
                     ? "returned_to_realm" : "independent_promotion_attempted");
+            BellumCivileLogger.Log(
+                $"Claim feud final outcome provenance; war={war.WarId}; recorded={finalOutcomeRecorded}; " +
+                $"outcome={war.FinalOutcome}; result_kind={war.FinalResultKind}; " +
+                $"title_award_applied={war.FinalTitleAwardApplied}; de_jure={war.FinalTitleDeJureHolderClanId}; " +
+                $"de_facto={war.FinalTitleDeFactoHolderClanId}; return_realm={war.FinalReturnKingdomId}; " +
+                $"destination={war.FinalDestinationKind}.");
             if (!realmPeaceExecuting)
                 ConflictOutcomeBehavior.Current?.Publish(resultNotice, resultKind,
                     string.IsNullOrEmpty(claimConsequence) ? destinationText : claimConsequence + "\n\n" + destinationText);
