@@ -108,7 +108,7 @@ namespace BellumCivile
         // The single authoritative result is recorded only after title settlement and
         // temporary-kingdom cleanup. Unlike PendingResolutionOutcome it survives reload.
         // Old saves leave the optional result fields unset and are never backfilled.
-        public bool RecordFinalOutcome(
+        internal bool RecordFinalOutcome(
             ClaimFeudWarOutcome outcome,
             string resultKind,
             bool titleAwardApplied,
