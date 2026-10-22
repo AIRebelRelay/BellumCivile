@@ -35,7 +35,7 @@ Check (!$assign.Contains('QueueExpulsionVote(') -and
     !$assign.Contains('Harmony') -and
     $executive.Contains('FileAgendaTreasonVote(agenda.Realm')) 'native_filing_payment_vote_ownership_preserved'
 
-// Stage 15: distinct native NPC Crown caller without altering any ordinary court notice.
+# Stage 15: distinct native NPC Crown caller without altering any ordinary court notice.
 $playerFlow = Read 'Behaviors/CourtAgendaPlayerFlow.cs'
 Check ($assign.Contains('NotifyNpcCrownAgenda(agenda);') -and
     !$assign.Contains('NotifyAgenda(agenda);')) 'exact_npc_crown_notice_uses_distinct_origin'
