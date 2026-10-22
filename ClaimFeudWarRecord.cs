@@ -25,6 +25,14 @@ namespace BellumCivile
         [SaveableField(17)] private bool _claimantHasControlledObjective;
         [SaveableField(18)] private int _pendingResolutionOutcome;
         [SaveableField(19)] private string _pendingResolutionReason;
+        // Optional on historical saves; zero/absent means no authoritative final result.
+        [SaveableField(20)] private int _finalOutcome;
+        [SaveableField(21)] private string _finalResultKind;
+        [SaveableField(22)] private bool _finalTitleAwardApplied;
+        [SaveableField(23)] private string _finalTitleDeJureHolderClanId;
+        [SaveableField(24)] private string _finalTitleDeFactoHolderClanId;
+        [SaveableField(25)] private string _finalReturnKingdomId;
+        [SaveableField(26)] private string _finalDestinationKind;
 
         public string WarId => _warId;
         public string FeudRecordId => _feudRecordId;
@@ -45,6 +53,21 @@ namespace BellumCivile
         public bool ClaimantHasControlledObjective => _claimantHasControlledObjective;
         public ClaimFeudWarOutcome PendingResolutionOutcome => (ClaimFeudWarOutcome)_pendingResolutionOutcome;
         public string PendingResolutionReason => _pendingResolutionReason;
+        public bool HasFinalOutcome => !_isActive
+            && _finalOutcome != (int)ClaimFeudWarOutcome.None
+            && !string.IsNullOrWhiteSpace(_finalResultKind);
+        public ClaimFeudWarOutcome FinalOutcome => HasFinalOutcome
+            ? (ClaimFeudWarOutcome)_finalOutcome : ClaimFeudWarOutcome.None;
+        public string FinalResultKind => HasFinalOutcome ? _finalResultKind : string.Empty;
+        public bool FinalTitleAwardApplied => HasFinalOutcome && _finalTitleAwardApplied;
+        public string FinalTitleDeJureHolderClanId => HasFinalOutcome
+            ? _finalTitleDeJureHolderClanId ?? string.Empty : string.Empty;
+        public string FinalTitleDeFactoHolderClanId => HasFinalOutcome
+            ? _finalTitleDeFactoHolderClanId ?? string.Empty : string.Empty;
+        public string FinalReturnKingdomId => HasFinalOutcome
+            ? _finalReturnKingdomId ?? string.Empty : string.Empty;
+        public string FinalDestinationKind => HasFinalOutcome
+            ? _finalDestinationKind ?? string.Empty : string.Empty;
 
         public ClaimFeudWarRecord(
             string warId,
@@ -80,6 +103,32 @@ namespace BellumCivile
             _claimantHasControlledObjective = false;
             _pendingResolutionOutcome = (int)ClaimFeudWarOutcome.None;
             _pendingResolutionReason = string.Empty;
+        }
+
+        // The single authoritative result is recorded only after title settlement and
+        // temporary-kingdom cleanup. Unlike PendingResolutionOutcome it survives reload.
+        // Old saves leave the optional result fields unset and are never backfilled.
+        internal bool RecordFinalOutcome(
+            ClaimFeudWarOutcome outcome,
+            string resultKind,
+            bool titleAwardApplied,
+            string deJureHolderClanId,
+            string deFactoHolderClanId,
+            string returnKingdomId,
+            string destinationKind)
+        {
+            if (_isActive || _finalOutcome != (int)ClaimFeudWarOutcome.None
+                || outcome == ClaimFeudWarOutcome.None || string.IsNullOrWhiteSpace(resultKind))
+                return false;
+
+            _finalResultKind = resultKind;
+            _finalTitleAwardApplied = titleAwardApplied;
+            _finalTitleDeJureHolderClanId = deJureHolderClanId ?? string.Empty;
+            _finalTitleDeFactoHolderClanId = deFactoHolderClanId ?? string.Empty;
+            _finalReturnKingdomId = returnKingdomId ?? string.Empty;
+            _finalDestinationKind = destinationKind ?? string.Empty;
+            _finalOutcome = (int)outcome;
+            return true;
         }
 
         public void SetActive(bool active)
