@@ -37,6 +37,21 @@ namespace BellumCivile.Behaviors
                 ticket.RulerClanId, ticket.TargetClanId, ticket.SubmittedDay, status, agendaId);
         }
 
+        // Ephemeral, Bellum-owned exact ticket identity only during its native notice call.
+        // Not synchronized to a save and never exported as an authoritative vote outcome.
+        private Kingdom _activeNpcCrownAnnouncementRealm;
+        private NpcCrownTreasonIntentSnapshot _activeNpcCrownAnnouncement;
+
+        internal NpcCrownTreasonIntentSnapshot GetActiveNpcCrownAnnouncement(Kingdom realm)
+        {
+            NpcCrownTreasonIntentSnapshot ticket = _activeNpcCrownAnnouncement;
+            return realm != null && ReferenceEquals(realm, _activeNpcCrownAnnouncementRealm)
+                && ticket != null && ticket.RealmId == realm.StringId
+                && ticket.Status == "court_announced"
+                && !string.IsNullOrWhiteSpace(ticket.CourtAgendaId)
+                ? ticket : null;
+        }
+
         // OpenTerm calls this only for a fresh NPC Crown slot AFTER native Decree,
         // Royal Peace and Council vacancy reservations, BEFORE automatic selection.
         private bool TryAttachStagedNpcTreason(CourtAgendaRecord agenda, CourtTermContext context)
@@ -83,7 +98,19 @@ namespace BellumCivile.Behaviors
                 if (_npcTreasonAgendaIds == null)
                     _npcTreasonAgendaIds = new Dictionary<string, string>();
                 _npcTreasonAgendaIds.Add(ticket.ExternalIntentId, agenda.IntegrationId);
-                NotifyNpcCrownAgenda(agenda);
+                // The saved ticket already links the external ID to this exact native agenda.
+                // Expose the association only while the dedicated Show call is on the stack.
+                _activeNpcCrownAnnouncement = GetNpcTreasonIntent(realm, ticket.ExternalIntentId);
+                _activeNpcCrownAnnouncementRealm = realm;
+                try
+                {
+                    NotifyNpcCrownAgenda(agenda);
+                }
+                finally
+                {
+                    _activeNpcCrownAnnouncement = null;
+                    _activeNpcCrownAnnouncementRealm = null;
+                }
                 BellumCivileLogger.Log("AIInfluence NPC Crown intent attached; realm="
                     + realm.StringId + "; ruler=" + agenda.Sponsor.StringId
                     + "; target=" + ticket.TargetClanId + "; id=" + ticket.ExternalIntentId

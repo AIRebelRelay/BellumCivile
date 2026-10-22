@@ -15,6 +15,7 @@ on:
       - 'Tests/AiInfluenceNpcCrownStage8.Source.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage9.BuildGate.Tests.ps1'
       - 'Tests/AiInfluenceNpcCrownStage11.Inventory.Tests.ps1'
+      - 'Tests/AiInfluenceNpcCrownStage16.NoticeContext.Tests.ps1'
       - 'scripts/Verify-Bellum148Build.ps1'
       - 'Behaviors/CourtNpcTreasonLifecycle.cs'
       - 'Tests/AiInfluenceNpcCrownStage7.Source.Tests.ps1'
@@ -74,6 +75,9 @@ jobs:
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownStage11.Inventory.Tests.ps1
 
+      - name: Stage 16 exact in-flight NPC Crown native notice token
+        shell: pwsh
+        run: ./Tests/AiInfluenceNpcCrownStage16.NoticeContext.Tests.ps1
       - name: Stage 9 reject missing and synthetic game builds
         shell: pwsh
         run: ./Tests/AiInfluenceNpcCrownStage9.BuildGate.Tests.ps1

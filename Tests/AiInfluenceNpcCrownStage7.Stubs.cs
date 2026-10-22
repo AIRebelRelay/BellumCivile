@@ -85,7 +85,17 @@ namespace BellumCivile.Behaviors
         public int NotificationCount;
         private IEnumerable<CourtAgendaRecord> IntegrationRecords() { return _agendas; }
         private void NotifyAgenda(CourtAgendaRecord agenda) { NotificationCount++; }
-        private void NotifyNpcCrownAgenda(CourtAgendaRecord agenda) { NotificationCount++; }
+        public NpcCrownTreasonIntentSnapshot LastNoticeToken;
+        public NpcCrownTreasonIntentSnapshot WrongRealmNoticeToken;
+        public bool ThrowDuringNpcCrownNotice;
+        private void NotifyNpcCrownAgenda(CourtAgendaRecord agenda)
+        {
+            NotificationCount++;
+            LastNoticeToken = BellumIntegration.GetActiveNpcCrownAnnouncement(agenda.Realm);
+            WrongRealmNoticeToken = BellumIntegration.GetActiveNpcCrownAnnouncement(new Kingdom { StringId = agenda.Realm.StringId });
+            if (ThrowDuringNpcCrownNotice)
+                throw new InvalidOperationException("simulated_native_notice_error");
+        }
         public void AddAgendaForTest(CourtAgendaRecord agenda) { _agendas.Add(agenda); }
     }
 }

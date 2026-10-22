@@ -32,6 +32,18 @@ namespace BellumCivile
                 ?? new List<NpcCrownTreasonIntentSnapshot>();
         }
 
+        /// <summary>
+        /// Return the exact native NPC Crown announcement ticket ONLY during its
+        /// synchronous dedicated native notice. Null at all other times, including
+        /// before attachment, after delivery, or if Bellum suppresses the notice.
+        /// This is not a persisted/public event receipt or proof of expulsion.
+        /// </summary>
+        public static NpcCrownTreasonIntentSnapshot GetActiveNpcCrownAnnouncement(Kingdom realm)
+        {
+            BellumIntegrationBehavior.RequireCampaignThread();
+            return CourtAgendaBehavior.Current?.GetActiveNpcCrownAnnouncement(realm);
+        }
+
         /// <summary>Read a durable staging ticket. null means absent or mismatched realm.</summary>
         public static NpcCrownTreasonIntentSnapshot GetNpcTreasonIntent(
             Kingdom realm, string externalIntentId)
