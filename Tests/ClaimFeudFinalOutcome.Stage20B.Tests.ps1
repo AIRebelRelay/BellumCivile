@@ -13,6 +13,19 @@ if ($record -notmatch 'public bool HasFinalOutcome' -or $record -notmatch 'inter
 if ($behavior -notmatch 'public IReadOnlyList<ClaimFeudFinalOutcomeSnapshot> GetFinalizedWarOutcomes\(') {
     throw 'Missing dedicated read-only projection (do not expose mutable war list).'
 }
+# Stage20E: WarId is a stable feud key, not a unique occurrence ID.
+# A later feud between the same houses for the same title reuses WarId;
+# its persistent StartedDay must be available on the detached snapshot.
+if ($behavior -notmatch 'public float StartedDay \{ get; \}') {
+    throw 'Stage20E: final outcome snapshot hides the persistent StartedDay.'
+}
+if ($behavior -notmatch 'StartedDay = war\.StartedDay;') {
+    throw 'Stage20E: StartedDay snapshot must use the existing saved record value.'
+}
+if ($behavior -notmatch 'WarId = war\.WarId;') {
+    throw 'Stage20E: legacy WarId must remain unchanged.'
+}
+
 $start = $behavior.IndexOf('        private void ResolveWar(')
 $end = $behavior.IndexOf('        private void RecordYearlyOutcome(', $start)
 if ($start -lt 0 -or $end -le $start) { throw 'ResolveWar boundary missing.' }
