@@ -135,7 +135,7 @@ namespace BellumCivile {
 '@
 # Compile the real record with minimal TaleWorlds stubs. Merged C# snippets
 # must not have 'using' directives after the first namespace declaration.
-$recordForCompile = [regex]::Replace($record, '(?m)^using [^;]+;\\r?\\n', '')
+$recordForCompile = [regex]::Replace($record, '(?m)^using [^;]+;\r?\n', '')
 Add-Type -TypeDefinition ($stubs + $outcomes + $recordForCompile + $cases) -ErrorAction Stop
 [BellumCivile.Stage20BChecks]::Run()
 Write-Host 'PASS Stage20B: save IDs, code ordering, legacy default, immutable outcome, claimant/holder/white-peace/invalid/parent cases.'
