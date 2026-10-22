@@ -7,7 +7,7 @@ $behavior = Get-Content (Join-Path $root 'Behaviors/ClaimFeudWarBehavior.cs') -R
 $ids = [regex]::Matches($record, '\[SaveableField\((\d+)\)\]') | ForEach-Object { [int]$_.Groups[1].Value }
 if ($ids.Count -ne ($ids | Sort-Object -Unique).Count) { throw 'Duplicate ClaimFeudWarRecord save field ID.' }
 foreach ($id in 1..26) { if ($id -notin $ids) { throw "Missing ClaimFeudWarRecord save field $id." } }
-if ($record -notmatch 'public bool HasFinalOutcome' -or $record -notmatch 'public bool RecordFinalOutcome\(') {
+if ($record -notmatch 'public bool HasFinalOutcome' -or $record -notmatch 'internal bool RecordFinalOutcome\(') {
     throw 'Missing explicit immutable result stamp.'
 }
 if ($behavior -notmatch 'public IReadOnlyList<ClaimFeudFinalOutcomeSnapshot> GetFinalizedWarOutcomes\(') {
@@ -37,6 +37,7 @@ if ($resolve -notmatch 'title\?\.DeJureHolderClanId' -or $resolve -notmatch 'tit
 $stubs = @'
 using System;
 using System.Linq;
+using TaleWorlds.SaveSystem;
 namespace TaleWorlds.SaveSystem {
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class SaveableFieldAttribute : Attribute {
@@ -132,6 +133,9 @@ namespace BellumCivile {
     }
 }
 '@
-Add-Type -TypeDefinition ($stubs + $outcomes + $record + $cases) -ErrorAction Stop
+# Compile the real record with minimal TaleWorlds stubs. Merged C# snippets
+# must not have 'using' directives after the first namespace declaration.
+$recordForCompile = [regex]::Replace($record, '(?m)^using [^;]+;\\r?\\n', '')
+Add-Type -TypeDefinition ($stubs + $outcomes + $recordForCompile + $cases) -ErrorAction Stop
 [BellumCivile.Stage20BChecks]::Run()
 Write-Host 'PASS Stage20B: save IDs, code ordering, legacy default, immutable outcome, claimant/holder/white-peace/invalid/parent cases.'
