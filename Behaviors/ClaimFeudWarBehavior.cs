@@ -97,6 +97,9 @@ namespace BellumCivile.Behaviors
         public sealed class ClaimFeudFinalOutcomeSnapshot
         {
             public string WarId { get; }
+            // Saved launch day distinguishes repeated historical episodes sharing WarId.
+            // It is read-only metadata, never a replacement for Bellum's WarId.
+            public float StartedDay { get; }
             public string FeudRecordId { get; }
             public string ParentKingdomId { get; }
             public string ClaimantKingdomId { get; }
@@ -115,6 +118,7 @@ namespace BellumCivile.Behaviors
             internal ClaimFeudFinalOutcomeSnapshot(ClaimFeudWarRecord war)
             {
                 WarId = war.WarId;
+                StartedDay = war.StartedDay;
                 FeudRecordId = war.FeudRecordId;
                 ParentKingdomId = war.ParentKingdomId;
                 ClaimantKingdomId = war.ClaimantKingdomId;
