@@ -92,6 +92,53 @@ namespace BellumCivile.Behaviors
             return _wars.Where(war => war != null && war.IsActive).ToList();
         }
 
+        // Detached, non-saveable projection for external read-only integrations.
+        // Only fully settled, source-backed outcomes are visible; older saves stay quiet.
+        public sealed class ClaimFeudFinalOutcomeSnapshot
+        {
+            public string WarId { get; }
+            public string FeudRecordId { get; }
+            public string ParentKingdomId { get; }
+            public string ClaimantKingdomId { get; }
+            public string HolderKingdomId { get; }
+            public string TargetTitleId { get; }
+            public string ClaimantLeaderClanId { get; }
+            public string HolderLeaderClanId { get; }
+            public ClaimFeudWarOutcome Outcome { get; }
+            public string ResultKind { get; }
+            public bool TitleAwardApplied { get; }
+            public string TitleDeJureHolderClanId { get; }
+            public string TitleDeFactoHolderClanId { get; }
+            public string ReturnKingdomId { get; }
+            public string DestinationKind { get; }
+
+            internal ClaimFeudFinalOutcomeSnapshot(ClaimFeudWarRecord war)
+            {
+                WarId = war.WarId;
+                FeudRecordId = war.FeudRecordId;
+                ParentKingdomId = war.ParentKingdomId;
+                ClaimantKingdomId = war.ClaimantKingdomId;
+                HolderKingdomId = war.HolderKingdomId;
+                TargetTitleId = war.TargetTitleId;
+                ClaimantLeaderClanId = war.ClaimantLeaderClanId;
+                HolderLeaderClanId = war.HolderLeaderClanId;
+                Outcome = war.FinalOutcome;
+                ResultKind = war.FinalResultKind;
+                TitleAwardApplied = war.FinalTitleAwardApplied;
+                TitleDeJureHolderClanId = war.FinalTitleDeJureHolderClanId;
+                TitleDeFactoHolderClanId = war.FinalTitleDeFactoHolderClanId;
+                ReturnKingdomId = war.FinalReturnKingdomId;
+                DestinationKind = war.FinalDestinationKind;
+            }
+        }
+
+        public IReadOnlyList<ClaimFeudFinalOutcomeSnapshot> GetFinalizedWarOutcomes()
+        {
+            EnsureCollectionsInitialized();
+            return _wars.Where(war => war != null && war.HasFinalOutcome)
+                .Select(war => new ClaimFeudFinalOutcomeSnapshot(war)).ToList();
+        }
+
         public bool HasActiveWarForFeud(string feudRecordId)
         {
             if (string.IsNullOrWhiteSpace(feudRecordId))
@@ -600,6 +647,7 @@ namespace BellumCivile.Behaviors
             ConflictOutcomeBehavior.Capture(resultNotice, "TITLE", new TextObject("{=!}" + (title == null ? war.TargetTitleId : FeudalTitleDisplayHelper.FormatTitleName(title))));
             string resultKind = "feud_peace";
             string claimConsequence = null;
+            bool titleAwardApplied = false;
             if (title == null || !title.IsActive)
             {
                 resultKind = "ended";
@@ -621,6 +669,7 @@ namespace BellumCivile.Behaviors
                     out string claimantAwardResult))
                 {
                     feud?.SetState(ClaimFeudState.Settled);
+                    titleAwardApplied = true;
                     resultKind = "feud_claimant";
                     ConflictOutcomeBehavior.Capture(resultNotice, "NEW_HOLDER", claimant.Leader?.Name ?? claimant.Name);
                 }
@@ -641,6 +690,7 @@ namespace BellumCivile.Behaviors
                 feud?.SetState(ClaimFeudState.Settled);
                 if (applied)
                 {
+                    titleAwardApplied = true;
                     resultKind = claimantDefaulted ? "feud_default" : "feud_holder";
                     claimConsequence = new TextObject(feud?.ClaimStrength == FeudalClaimStrength.Strong && claimant.Leader?.IsAlive == true
                         ? "{=BC_Result_ClaimWeakened}The defeated house's claim has been weakened."
@@ -691,6 +741,14 @@ namespace BellumCivile.Behaviors
             string destinationText = parent != null && !parent.IsEliminated
                 ? new TextObject("{=BC_Result_FeudReturn}The surviving houses have returned to {REALM}.").SetTextVariable("REALM", parent.Name).ToString()
                 : new TextObject("{=BC_Result_FeudIndependent}With their former realm gone, surviving houses that could establish themselves now stand independently.").ToString();
+            // Finalize provenance only after the award/fallback, home-realm return
+            // and temporary-shell cleanup. UI notifications are not the authority.
+            // A failed/incomplete resolution remains invisible to Bridge readers.
+            war.RecordFinalOutcome(outcome, resultKind, titleAwardApplied,
+                title?.DeJureHolderClanId, title?.DeFactoHolderClanId,
+                parent != null && !parent.IsEliminated ? parent.StringId : string.Empty,
+                parent != null && !parent.IsEliminated
+                    ? "returned_to_realm" : "independent_promotion_attempted");
             if (!realmPeaceExecuting)
                 ConflictOutcomeBehavior.Current?.Publish(resultNotice, resultKind,
                     string.IsNullOrEmpty(claimConsequence) ? destinationText : claimConsequence + "\n\n" + destinationText);
