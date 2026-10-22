@@ -85,6 +85,7 @@ namespace BellumCivile.Behaviors
         public int NotificationCount;
         private IEnumerable<CourtAgendaRecord> IntegrationRecords() { return _agendas; }
         private void NotifyAgenda(CourtAgendaRecord agenda) { NotificationCount++; }
+        private void NotifyNpcCrownAgenda(CourtAgendaRecord agenda) { NotificationCount++; }
         public void AddAgendaForTest(CourtAgendaRecord agenda) { _agendas.Add(agenda); }
     }
 }

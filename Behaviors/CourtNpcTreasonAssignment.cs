@@ -83,7 +83,7 @@ namespace BellumCivile.Behaviors
                 if (_npcTreasonAgendaIds == null)
                     _npcTreasonAgendaIds = new Dictionary<string, string>();
                 _npcTreasonAgendaIds.Add(ticket.ExternalIntentId, agenda.IntegrationId);
-                NotifyAgenda(agenda);
+                NotifyNpcCrownAgenda(agenda);
                 BellumCivileLogger.Log("AIInfluence NPC Crown intent attached; realm="
                     + realm.StringId + "; ruler=" + agenda.Sponsor.StringId
                     + "; target=" + ticket.TargetClanId + "; id=" + ticket.ExternalIntentId

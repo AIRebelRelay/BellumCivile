@@ -34,4 +34,17 @@ Check (!$assign.Contains('QueueExpulsionVote(') -and
     !$assign.Contains('AddDecisionAsModAction(') -and
     !$assign.Contains('Harmony') -and
     $executive.Contains('FileAgendaTreasonVote(agenda.Realm')) 'native_filing_payment_vote_ownership_preserved'
+
+// Stage 15: distinct native NPC Crown caller without altering any ordinary court notice.
+$playerFlow = Read 'Behaviors/CourtAgendaPlayerFlow.cs'
+Check ($assign.Contains('NotifyNpcCrownAgenda(agenda);') -and
+    !$assign.Contains('NotifyAgenda(agenda);')) 'exact_npc_crown_notice_uses_distinct_origin'
+Check ($playerFlow.Contains('[MethodImpl(MethodImplOptions.NoInlining)]') -and
+    $playerFlow.Contains('private void NotifyNpcCrownAgenda(CourtAgendaRecord agenda)')) 'native_notice_caller_stack_frame_is_distinct'
+$shared = [regex]::Match($playerFlow,'(?s)private void NotifyAgenda\(CourtAgendaRecord agenda\)\s*\{(?<body>.*?)\r?\n        \}')
+$crownNotice = [regex]::Match($playerFlow,'(?s)private void NotifyNpcCrownAgenda\(CourtAgendaRecord agenda\)\s*\{(?<body>.*?)\r?\n        \}')
+Check ($shared.Success -and $crownNotice.Success -and
+    ($shared.Groups['body'].Value -ceq $crownNotice.Groups['body'].Value)) 'generic_and_exact_crown_notice_bodies_are_identical'
+Check ([regex]::Matches($playerFlow, 'private void NotifyAgenda\(CourtAgendaRecord agenda\)').Count -eq 1) 'ordinary_shared_court_helper_kept'
+Check ($playerFlow.Contains('BellumCivileNotifications.Show(message, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm);')) 'native_message_still_uses_unmodified_player_scope_filter'
 Write-Host 'STAGE7_NPC_CROWN_SOURCE_PASS; game DLL compile and save still unverified.'

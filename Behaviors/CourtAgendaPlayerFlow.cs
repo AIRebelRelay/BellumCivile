@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameState;
@@ -200,6 +201,19 @@ namespace BellumCivile.Behaviors
         }
 
         private void NotifyAgenda(CourtAgendaRecord agenda)
+        {
+            BellumCivileLogger.Log($"Player court agenda updated; realm={agenda.Realm.StringId}; faction={agenda.Faction?.Type.ToString() ?? "Crown"}; state={agenda.State}; policy={agenda.PolicyId}; session={agenda.SessionDate.ToDays}; nominationDeadline={agenda.NominationDeadline.ToDays}; crisisRestrained={agenda.OrdinaryCrisisRestrained}.");
+            var message = new TextObject("{=BC_CourtAgendaUpdated}Court of {REALM}:\n{AGENDA}");
+            message.SetTextVariable("REALM", agenda.Realm.Name);
+            message.SetTextVariable("AGENDA", DescribeAgenda(agenda.Realm, agenda.Faction));
+            BellumCivileNotifications.Show(message, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm);
+        }
+
+        // Dedicated NPC Crown caller identity for the existing Bridge notification observer.
+        // NoInlining preserves a distinguishable source frame through Harmony's Show postfix.
+        // The native message, scope gating and display remain identical to NotifyAgenda.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void NotifyNpcCrownAgenda(CourtAgendaRecord agenda)
         {
             BellumCivileLogger.Log($"Player court agenda updated; realm={agenda.Realm.StringId}; faction={agenda.Faction?.Type.ToString() ?? "Crown"}; state={agenda.State}; policy={agenda.PolicyId}; session={agenda.SessionDate.ToDays}; nominationDeadline={agenda.NominationDeadline.ToDays}; crisisRestrained={agenda.OrdinaryCrisisRestrained}.");
             var message = new TextObject("{=BC_CourtAgendaUpdated}Court of {REALM}:\n{AGENDA}");
