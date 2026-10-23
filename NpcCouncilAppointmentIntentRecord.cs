@@ -35,11 +35,14 @@ namespace BellumCivile
     {
         public string Office { get; }
         public IReadOnlyList<string> CandidateClanIds { get; }
+        public bool CanOmitCandidate { get; }
 
-        internal NpcCouncilAppointmentOptionSnapshot(string office, IReadOnlyList<string> candidates)
+        internal NpcCouncilAppointmentOptionSnapshot(string office, IReadOnlyList<string> candidates,
+            bool canOmitCandidate)
         {
             Office = office;
             CandidateClanIds = candidates ?? new string[0];
+            CanOmitCandidate = canOmitCandidate;
         }
     }
 

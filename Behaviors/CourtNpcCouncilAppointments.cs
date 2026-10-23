@@ -183,8 +183,14 @@ namespace BellumCivile.Behaviors
                     .OrderBy(id => id, StringComparer.Ordinal)
                     .ToList();
                 if (candidates.Count > 0)
+                {
+                    // Generic motions are valid only when Bellum's own automatic
+                    // nominee passes the same native evaluation as the named ones.
+                    bool canOmitCandidate = SelectNpcCouncilCandidate(
+                        context, owner, source, office, null) != null;
                     result.Add(new NpcCouncilAppointmentOptionSnapshot(
-                        office.ToString(), candidates.AsReadOnly()));
+                        office.ToString(), candidates.AsReadOnly(), canOmitCandidate));
+                }
             }
             return result.AsReadOnly();
         }

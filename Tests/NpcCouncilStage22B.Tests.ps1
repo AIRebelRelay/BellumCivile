@@ -54,6 +54,10 @@ Check ($optionsApi.Contains('GetNpcCouncilAppointmentOptions(') -and
     $optionsApi.Contains('BellumIntegrationBehavior.RequireCampaignThread();')) 'native_capability_readback_campaign_thread'
 Check ($native.Contains('NpcCouncilAdmissionReason(realm, sponsor, faction, office)') -and
     $native.Contains('private string NpcCouncilAdmissionReason(')) 'same_fences_for_capability_and_submission'
+Check ($native.Contains('canOmitCandidate = SelectNpcCouncilCandidate(') -and
+    $native.Contains('office, null) != null;')) 'unnamed_motion_allowed_only_for_native_viable_default'
+$optionRecord = Read 'NpcCouncilAppointmentIntentRecord.cs'
+Check ($optionRecord.Contains('public bool CanOmitCandidate { get; }')) 'native_option_snapshot_records_generic_nomination_eligibility'
 Check ($native.Contains('SelectNpcCouncilCandidate(context, owner, source,') -and
     $native.Contains('CourtCouncilObjectiveSource.OfficeAvailable(context.Council, office)')) 'capability_uses_native_office_candidate_evaluation'
 Check (!$native.Contains('TryStageNpcCouncilAppointmentIntent(realm, sponsor, faction, office,') -and
