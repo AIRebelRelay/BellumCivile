@@ -108,6 +108,7 @@ namespace BellumCivile.Behaviors
             _mandateSettledUntil = _mandateSettledUntil ?? new Dictionary<string, CampaignTime>();
             dataStore.SyncData("BC_CourtAgendas", ref _agendas);
             SyncNpcTreasonIntents(dataStore);
+            SyncNpcCouncilIntents(dataStore);
             dataStore.SyncData("BC_CourtProtectionOffers", ref _protectionOffers);
             dataStore.SyncData("BC_CourtTitleDeliveries", ref _titleDeliveries);
             dataStore.SyncData("BC_CourtRallies", ref _rallies);
@@ -344,6 +345,7 @@ namespace BellumCivile.Behaviors
             var ideology = Campaign.Current.GetCampaignBehavior<IdeologyBehavior>();
             if (manager == null || ideology == null) return;
             MaintainNpcTreasonLifecycle();
+            MaintainNpcCouncilIntentLifecycle();
             foreach (var agenda in _agendas.ToList())
                 if (!ValidRealm(agenda.Realm) && (agenda.IsUnopened || agenda.IsFiled)) Cancel(agenda, "realm_invalid");
 
@@ -404,6 +406,7 @@ namespace BellumCivile.Behaviors
             ideology.BeginCourtTerm(realm);
             ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);
             OpenCrownTerm(realm, manager);
+            FreezeNpcCouncilTerminalResults(realm);
             _agendas.RemoveAll(a => a.Realm == realm && !a.IsFiled && !a.IsUnopened && !a.IsOngoingObjective);
             var factions = manager.GetFactionsInKingdom(realm).Where(f => f.IsIdeology && MemberCount(f) >= 2).ToList();
             var context = new CourtTermContext(realm, policy => CanPropose(realm, policy));
@@ -457,6 +460,7 @@ namespace BellumCivile.Behaviors
                 var sponsor = agenda.Sponsor;
                 bool playerLed = owner != null && sponsor == Clan.PlayerClan;
                 var choice = choices[i];
+                if (TryAttachStagedNpcCouncil(agenda, context, choices, i)) continue;
                 if (choice == null) continue;
                 ((ICourtAgendaObjectiveSource)_objectiveSelector.FindSource(choice.Kind)).ApplySelection(agenda, choice);
                 if (owner == null && sponsor == Clan.PlayerClan && !agenda.IsPolicy)
