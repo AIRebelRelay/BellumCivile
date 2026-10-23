@@ -123,11 +123,9 @@ namespace BellumCivile.Behaviors
             var context = new CourtTermContext(realm, _ => false);
             var owner = new CourtObjectiveOwner(faction, sponsor);
             var source = new CourtCouncilObjectiveSource();
-            var match = source.FindCandidates(context, owner).FirstOrDefault(c =>
-                c.TargetId == office.ToString()
-                && (requestedCandidate == null || c.BeneficiaryId == requestedCandidate.StringId));
-            if (match == null || !source.EvaluateCandidate(context, owner, match).Selectable)
-                return RejectNpcCouncil("candidate_or_office_not_viable");
+            var match = SelectNpcCouncilCandidate(context, owner, source, office,
+                requestedCandidate?.StringId);
+            if (match == null) return RejectNpcCouncil("candidate_or_office_not_viable");
             if (!NpcCouncilAppointmentIntentCodec.ValidId(realm.StringId, 256)
                 || !NpcCouncilAppointmentIntentCodec.ValidId(sponsor.StringId, 256)
                 || (requestedCandidate != null && !NpcCouncilAppointmentIntentCodec.ValidId(requestedCandidate.StringId, 256)))
@@ -140,6 +138,25 @@ namespace BellumCivile.Behaviors
                 + "; id=" + id + "; status=staged_not_scheduled; vote_filed=false.");
             return new NpcCouncilAppointmentIntentSubmission(true, NpcCouncilAppointmentIntentCodec.Staged,
                 GetNpcCouncilAppointmentIntent(realm, id));
+        }
+
+        // An explicit NPC nominee is assessed by Bellum's actual shortlist, support, merit,
+        // office and influence rules, not the autonomous selector's single favorite.
+        private static CourtObjectiveCandidate SelectNpcCouncilCandidate(CourtTermContext context,
+            CourtObjectiveOwner owner, CourtCouncilObjectiveSource source, PrivyCouncilOffice office,
+            string requestedCandidateId)
+        {
+            if (!string.IsNullOrEmpty(requestedCandidateId))
+            {
+                var incumbent = context.Council.Council?.GetOfficeHolder(context.Realm, office);
+                var explicitNomination = new CourtObjectiveCandidate(office.ToString(),
+                    incumbent == null ? "fill" : "replace", requestedCandidateId);
+                return source.EvaluateCandidate(context, owner, explicitNomination).Selectable
+                    ? explicitNomination : null;
+            }
+            return source.FindCandidates(context, owner).FirstOrDefault(choice =>
+                choice.TargetId == office.ToString()
+                && source.EvaluateCandidate(context, owner, choice).Selectable);
         }
 
         // Only occupy the faction's native slot if no other selector winner owns a council motion.
@@ -164,10 +181,8 @@ namespace BellumCivile.Behaviors
                     || !Enum.IsDefined(typeof(PrivyCouncilOffice), ticket.OfficeValue))
                     continue;
                 var office = (PrivyCouncilOffice)ticket.OfficeValue;
-                var candidate = source.FindCandidates(context, owner).FirstOrDefault(c =>
-                    c.TargetId == office.ToString()
-                    && (string.IsNullOrEmpty(ticket.RequestedCandidateClanId)
-                        || c.BeneficiaryId == ticket.RequestedCandidateClanId));
+                var candidate = SelectNpcCouncilCandidate(context, owner, source, office,
+                    ticket.RequestedCandidateClanId);
                 if (candidate == null) continue;
                 var evaluation = source.EvaluateCandidate(context, owner, candidate);
                 if (!evaluation.Selectable) continue;

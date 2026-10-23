@@ -35,6 +35,9 @@ Check ($native.Contains('faction.Leader != sponsor') -and
 Check ($native.Contains('source.FindCandidates(context, owner)') -and
     $native.Contains('source.EvaluateCandidate(context, owner, candidate)') -and
     $native.Contains('!evaluation.Selectable')) 'native_candidate_rules'
+Check ($native.Contains('new CourtObjectiveCandidate(office.ToString(),') -and
+    $native.Contains('source.EvaluateCandidate(context, owner, explicitNomination).Selectable') -and
+    !$native.Contains('requestedCandidate == null || c.BeneficiaryId')) 'explicit_candidate_uses_native_viability_not_auto_favorite'
 Check ($native.Contains('nativeChoices.Where((c, i) => i != ownerIndex)') -and
     $native.Contains('HasCouncilReservation(agenda.Realm, agenda)')) 'batch_council_exclusivity'
 Check ($native.Contains('agenda.State = CourtAgendaState.Announced;') -and
