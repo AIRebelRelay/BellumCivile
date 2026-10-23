@@ -34,7 +34,14 @@ namespace BellumCivile.Behaviors
                 || saved.RealmId != realm.StringId) return null;
             _npcCouncilAgendaIds.TryGetValue(id, out string agendaId);
             if (_npcCouncilClosures.TryGetValue(id, out string closed))
+            {
+                // A terminal PASS must retain the exact nominee after native agenda pruning.
+                const string passPrefix = "court_passed|";
+                if (closed.StartsWith(passPrefix, StringComparison.Ordinal))
+                    return CouncilTicket(saved, "court_passed", agendaId,
+                        closed.Substring(passPrefix.Length));
                 return CouncilTicket(saved, closed, agendaId, null);
+            }
             if (string.IsNullOrEmpty(agendaId)) return saved;
             var agenda = IntegrationRecords().FirstOrDefault(a => a.IntegrationId == agendaId);
             if (agenda == null) return CouncilTicket(saved, "court_missing", agendaId, null);
@@ -212,7 +219,13 @@ namespace BellumCivile.Behaviors
                 var agenda = IntegrationRecords().FirstOrDefault(a => a.IntegrationId == entry.Value);
                 if (agenda == null || agenda.Realm != realm || agenda.IsUnopened
                     || agenda.IsFiled || agenda.IsOngoingObjective) continue;
-                _npcCouncilClosures[entry.Key] = "court_" + agenda.State.ToString().ToLowerInvariant();
+                // Keep the native Passed receipt and the exact appointed candidate
+                // together in the already persisted primitive map (no new save type).
+                string outcome = "court_" + agenda.State.ToString().ToLowerInvariant();
+                if (agenda.State == CourtAgendaState.Passed
+                    && !string.IsNullOrWhiteSpace(agenda.PreferredCouncilCandidate?.StringId))
+                    outcome += "|" + agenda.PreferredCouncilCandidate.StringId;
+                _npcCouncilClosures[entry.Key] = outcome;
             }
         }
 

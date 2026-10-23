@@ -46,6 +46,9 @@ Check ($native.Contains('agenda.State = CourtAgendaState.Announced;') -and
 Check ($court.Contains('FreezeNpcCouncilTerminalResults(realm);') -and
     $native.Contains('agenda.IsUnopened') -and
     $native.Contains('court_" + agenda.State.ToString()')) 'terminal_state_frozen_before_prune'
+Check ($native.Contains('const string passPrefix = "court_passed|"') -and
+    $native.Contains('closed.Substring(passPrefix.Length)') -and
+    $native.Contains('outcome += "|" + agenda.PreferredCouncilCandidate.StringId')) 'passed_result_keeps_exact_nominee_after_save_and_prune'
 Check ($native.Contains('intent_id_collision') -and
     $native.Contains('faction_intent_in_flight') -and
     $native.Contains('cancelled_sponsor_changed')) 'duplicate_and_crown_change_checks'
