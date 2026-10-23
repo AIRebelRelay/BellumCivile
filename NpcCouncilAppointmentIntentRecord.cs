@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Collections.Generic;
 
 namespace BellumCivile
 {
@@ -26,6 +27,19 @@ namespace BellumCivile
             RequestedCandidateClanId = requested ?? string.Empty;
             SelectedCandidateClanId = selected;
             SubmittedDay = day; Status = status; CourtAgendaId = agendaId;
+        }
+    }
+
+    /// <summary>Current read-only NPC faction eligibility, not a scheduled vote.</summary>
+    public sealed class NpcCouncilAppointmentOptionSnapshot
+    {
+        public string Office { get; }
+        public IReadOnlyList<string> CandidateClanIds { get; }
+
+        internal NpcCouncilAppointmentOptionSnapshot(string office, IReadOnlyList<string> candidates)
+        {
+            Office = office;
+            CandidateClanIds = candidates ?? new string[0];
         }
     }
 

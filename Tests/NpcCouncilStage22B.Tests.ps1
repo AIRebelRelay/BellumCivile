@@ -49,6 +49,15 @@ Check ($court.Contains('FreezeNpcCouncilTerminalResults(realm);') -and
 Check ($native.Contains('const string passPrefix = "court_passed|"') -and
     $native.Contains('closed.Substring(passPrefix.Length)') -and
     $native.Contains('outcome += "|" + agenda.PreferredCouncilCandidate.StringId')) 'passed_result_keeps_exact_nominee_after_save_and_prune'
+$optionsApi = Read 'BellumIntegrationNpcCouncil.cs'
+Check ($optionsApi.Contains('GetNpcCouncilAppointmentOptions(') -and
+    $optionsApi.Contains('BellumIntegrationBehavior.RequireCampaignThread();')) 'native_capability_readback_campaign_thread'
+Check ($native.Contains('NpcCouncilAdmissionReason(realm, sponsor, faction, office)') -and
+    $native.Contains('private string NpcCouncilAdmissionReason(')) 'same_fences_for_capability_and_submission'
+Check ($native.Contains('SelectNpcCouncilCandidate(context, owner, source,') -and
+    $native.Contains('CourtCouncilObjectiveSource.OfficeAvailable(context.Council, office)')) 'capability_uses_native_office_candidate_evaluation'
+Check (!$native.Contains('TryStageNpcCouncilAppointmentIntent(realm, sponsor, faction, office,') -and
+    !$optionsApi.Contains('GetNpcCouncilAppointmentOptions(realm, sponsor, faction, externalIntentId)')) 'enumeration_never_stages'
 Check ($native.Contains('intent_id_collision') -and
     $native.Contains('faction_intent_in_flight') -and
     $native.Contains('cancelled_sponsor_changed')) 'duplicate_and_crown_change_checks'

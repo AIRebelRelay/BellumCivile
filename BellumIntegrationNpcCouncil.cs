@@ -19,6 +19,18 @@ namespace BellumCivile
                     requestedCandidate, externalIntentId);
         }
 
+        /// <summary>
+        /// Read-only, actor- and faction-scoped executable Court nomination pairs.
+        /// Does not stage, charge influence, nominate, or open a Court session.
+        /// </summary>
+        public static IReadOnlyList<NpcCouncilAppointmentOptionSnapshot> GetNpcCouncilAppointmentOptions(
+            Kingdom realm, Clan sponsor, FactionObject faction)
+        {
+            BellumIntegrationBehavior.RequireCampaignThread();
+            return CourtAgendaBehavior.Current?.GetNpcCouncilAppointmentOptions(realm, sponsor, faction)
+                ?? new NpcCouncilAppointmentOptionSnapshot[0];
+        }
+
         /// <summary>Exact persisted ticket status; only native Court state can prove an outcome.</summary>
         public static NpcCouncilAppointmentIntentSnapshot GetNpcCouncilAppointmentIntent(
             Kingdom realm, string externalIntentId)

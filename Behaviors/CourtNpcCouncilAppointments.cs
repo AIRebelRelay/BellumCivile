@@ -94,39 +94,8 @@ namespace BellumCivile.Behaviors
                     ? new NpcCouncilAppointmentIntentSubmission(false, current.Status, current)
                     : new NpcCouncilAppointmentIntentSubmission(true, "already_staged", current);
             }
-            if (!ValidRealm(realm) || sponsor == null || sponsor == Clan.PlayerClan || !Eligible(sponsor, realm)
-                || faction == null || !faction.IsIdeology || faction.ParentKingdom != realm
-                || faction.Leader != sponsor || MemberCount(faction) < 2)
-                return RejectNpcCouncil("npc_faction_leader_required");
-            if (!Enum.IsDefined(typeof(PrivyCouncilOffice), office)) return RejectNpcCouncil("invalid_office");
-            var council = Campaign.Current?.GetCampaignBehavior<PrivyCouncilBehavior>();
-            if (council == null || !council.IsOfficeUnlocked(realm, office)
-                || IsCouncilOfficeSettled(realm, office) || HasCouncilReservation(realm)
-                || CouncilAppointmentDeliberationBehavior.Current?.HasPendingAppointment(realm) == true
-                || realm.UnresolvedDecisions.OfType<PrivyCouncilAppointmentDecision>().Any())
-                return RejectNpcCouncil("council_reserved_or_unavailable");
-            if (_npcCouncilIntents.Count >= MaxNpcCouncilIntents)
-                return RejectNpcCouncil("intent_capacity_reached");
-            if (_npcCouncilIntents.Count(entry =>
-            {
-                if (_npcCouncilClosures.ContainsKey(entry.Key)
-                    || _npcCouncilAgendaIds.ContainsKey(entry.Key)
-                    || !NpcCouncilAppointmentIntentCodec.TryRead(entry.Key, entry.Value, out var t))
-                    return false;
-                return t.RealmId == realm.StringId;
-            }) >= MaxNpcCouncilPerRealm) return RejectNpcCouncil("realm_capacity_reached");
-            foreach (var entry in _npcCouncilIntents)
-            {
-                if (_npcCouncilClosures.ContainsKey(entry.Key)
-                    || !NpcCouncilAppointmentIntentCodec.TryRead(entry.Key, entry.Value, out var existing)
-                    || existing.RealmId != realm.StringId || existing.FactionTypeValue != (int)faction.Type)
-                    continue;
-                var prior = GetNpcCouncilAppointmentIntent(realm, entry.Key);
-                if (prior.Status == NpcCouncilAppointmentIntentCodec.Staged
-                    || prior.Status == "court_announced" || prior.Status == "court_deliberating"
-                    || prior.Status == "court_voting")
-                    return RejectNpcCouncil("faction_intent_in_flight");
-            }
+            string admission = NpcCouncilAdmissionReason(realm, sponsor, faction, office);
+            if (admission != null) return RejectNpcCouncil(admission);
             var context = new CourtTermContext(realm, _ => false);
             var owner = new CourtObjectiveOwner(faction, sponsor);
             var source = new CourtCouncilObjectiveSource();
@@ -145,6 +114,79 @@ namespace BellumCivile.Behaviors
                 + "; id=" + id + "; status=staged_not_scheduled; vote_filed=false.");
             return new NpcCouncilAppointmentIntentSubmission(true, NpcCouncilAppointmentIntentCodec.Staged,
                 GetNpcCouncilAppointmentIntent(realm, id));
+        }
+
+        // This is the SAME admission fence used by both intent submission and
+        // read-only capability enumeration. It must not stage or create an agenda.
+        private string NpcCouncilAdmissionReason(Kingdom realm, Clan sponsor,
+            FactionObject faction, PrivyCouncilOffice office)
+        {
+            if (!ValidRealm(realm) || sponsor == null || sponsor == Clan.PlayerClan || !Eligible(sponsor, realm)
+                || faction == null || !faction.IsIdeology || faction.ParentKingdom != realm
+                || faction.Leader != sponsor || MemberCount(faction) < 2)
+                return "npc_faction_leader_required";
+            if (!Enum.IsDefined(typeof(PrivyCouncilOffice), office)) return "invalid_office";
+            var council = Campaign.Current?.GetCampaignBehavior<PrivyCouncilBehavior>();
+            if (council == null || !council.IsOfficeUnlocked(realm, office)
+                || IsCouncilOfficeSettled(realm, office) || HasCouncilReservation(realm)
+                || CouncilAppointmentDeliberationBehavior.Current?.HasPendingAppointment(realm) == true
+                || realm.UnresolvedDecisions.OfType<PrivyCouncilAppointmentDecision>().Any())
+                return "council_reserved_or_unavailable";
+            if (_npcCouncilIntents.Count >= MaxNpcCouncilIntents)
+                return "intent_capacity_reached";
+            if (_npcCouncilIntents.Count(entry =>
+            {
+                if (_npcCouncilClosures.ContainsKey(entry.Key)
+                    || _npcCouncilAgendaIds.ContainsKey(entry.Key)
+                    || !NpcCouncilAppointmentIntentCodec.TryRead(entry.Key, entry.Value, out var t))
+                    return false;
+                return t.RealmId == realm.StringId;
+            }) >= MaxNpcCouncilPerRealm) return "realm_capacity_reached";
+            foreach (var entry in _npcCouncilIntents)
+            {
+                if (_npcCouncilClosures.ContainsKey(entry.Key)
+                    || !NpcCouncilAppointmentIntentCodec.TryRead(entry.Key, entry.Value, out var existing)
+                    || existing.RealmId != realm.StringId || existing.FactionTypeValue != (int)faction.Type)
+                    continue;
+                var prior = GetNpcCouncilAppointmentIntent(realm, entry.Key);
+                if (prior.Status == NpcCouncilAppointmentIntentCodec.Staged
+                    || prior.Status == "court_announced" || prior.Status == "court_deliberating"
+                    || prior.Status == "court_voting")
+                    return "faction_intent_in_flight";
+            }
+            return null;
+        }
+
+        internal IReadOnlyList<NpcCouncilAppointmentOptionSnapshot> GetNpcCouncilAppointmentOptions(
+            Kingdom realm, Clan sponsor, FactionObject faction)
+        {
+            var result = new List<NpcCouncilAppointmentOptionSnapshot>();
+            if (realm == null || sponsor == null || faction == null) return result;
+            if (!NpcCouncilAppointmentIntentCodec.ValidId(realm.StringId, 256)
+                || !NpcCouncilAppointmentIntentCodec.ValidId(sponsor.StringId, 256))
+                return result;
+
+            var context = new CourtTermContext(realm, _ => false);
+            var owner = new CourtObjectiveOwner(faction, sponsor);
+            var source = new CourtCouncilObjectiveSource();
+            foreach (PrivyCouncilOffice office in Enum.GetValues(typeof(PrivyCouncilOffice)))
+            {
+                if (NpcCouncilAdmissionReason(realm, sponsor, faction, office) != null
+                    || !CourtCouncilObjectiveSource.OfficeAvailable(context.Council, office))
+                    continue;
+                var candidates = context.Council.Candidates(office)
+                    .Where(clan => clan != null && NpcCouncilAppointmentIntentCodec.ValidId(clan.StringId, 256))
+                    .Where(clan => SelectNpcCouncilCandidate(context, owner, source,
+                        office, clan.StringId) != null)
+                    .Select(clan => clan.StringId)
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(id => id, StringComparer.Ordinal)
+                    .ToList();
+                if (candidates.Count > 0)
+                    result.Add(new NpcCouncilAppointmentOptionSnapshot(
+                        office.ToString(), candidates.AsReadOnly()));
+            }
+            return result.AsReadOnly();
         }
 
         // An explicit NPC nominee is assessed by Bellum's actual shortlist, support, merit,
