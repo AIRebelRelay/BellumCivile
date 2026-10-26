@@ -29,7 +29,7 @@ Must ($court.Contains('public static void Postfix(ExpelClanFromKingdomDecision _
 
 # Compile the production scope with minimal Clan stub and test real nested IDisposable semantics.
 $stub = 'namespace TaleWorlds.CampaignSystem { public sealed class Clan {} }'
-$types = @(Add-Type -TypeDefinition ($stub + [Environment]::NewLine + $scope) -PassThru)
+$types = @(Add-Type -TypeDefinition ($scope + [Environment]::NewLine + $stub) -PassThru)
 $clan = $types | Where-Object FullName -eq 'TaleWorlds.CampaignSystem.Clan' | Select-Object -First 1
 $api = $types | Where-Object FullName -eq 'BellumCivile.BellumNativeLeaveProvenance' | Select-Object -First 1
 Must ($null -ne $api -and $null -ne $clan) 'real production class compiled in isolated stub harness'
