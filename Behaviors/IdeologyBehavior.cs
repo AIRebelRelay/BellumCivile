@@ -2199,7 +2199,12 @@ namespace BellumCivile.Behaviors
                 ExpulsionRelationHelper.ApplyFriendMemories(kingdom, rulingClan, ruler, targetClan);
 
             if (targetClan.Kingdom == kingdom)
-                ChangeKingdomAction.ApplyByLeaveKingdom(targetClan, false);
+            {
+                using (BellumNativeLeaveProvenance.Enter(targetClan, "player_treason_judgment"))
+                {
+                    ChangeKingdomAction.ApplyByLeaveKingdom(targetClan, false);
+                }
+            }
 
             if (execute && targetLeader != null && !targetLeader.IsDead)
                 ExecuteTreasonSentence(kingdom, targetLeader, ruler);
@@ -2314,7 +2319,12 @@ namespace BellumCivile.Behaviors
                     if (foreignRefuge != null)
                         ChangeKingdomAction.ApplyByJoinToKingdom(targetClan, foreignRefuge);
                     else
-                        ChangeKingdomAction.ApplyByLeaveKingdom(targetClan, false);
+                    {
+                        using (BellumNativeLeaveProvenance.Enter(targetClan, "treason_purge_no_refuge"))
+                        {
+                            ChangeKingdomAction.ApplyByLeaveKingdom(targetClan, false);
+                        }
+                    }
                 }
             }
         }
