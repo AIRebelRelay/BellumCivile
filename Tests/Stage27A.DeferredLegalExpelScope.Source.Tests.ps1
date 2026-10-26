@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $s = Get-Content -LiteralPath (Join-Path (Split-Path $PSScriptRoot -Parent) 'Patches/ExpelClanDecisionPatch.cs') -Raw
 function Must([bool]$ok,[string]$why) { if (-not $ok) { throw "STAGE27A_NATIVE_FAIL: $why" } }
-Must ($s.Contains('[ThreadStatic]')) 'thread-local provenance'
+Must ($s.Contains('[System.ThreadStatic]')) 'thread-local provenance'
 Must ($s.Contains('private static Clan _deferredLegalExpulsionTarget;')) 'exact target scope'
 Must ($s.Contains('public static bool IsCompletingDeferredLegalExpulsionFor(Clan targetClan)')) 'public read-only API'
 Must ($s.Contains('ReferenceEquals(_deferredLegalExpulsionTarget, targetClan)')) 'reference match'
