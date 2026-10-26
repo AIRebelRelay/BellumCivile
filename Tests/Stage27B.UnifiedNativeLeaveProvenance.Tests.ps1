@@ -11,7 +11,7 @@ Must ($scope.Contains('ReferenceEquals(_target, targetClan)')) 'matching uses Cl
 Must ($scope.Contains('public static string ReadOwnerFor(Clan targetClan)')) 'Bridge read-only API'
 Must ($scope.Contains('internal static IDisposable Enter(Clan targetClan, string owner)')) 'native-only scope enter'
 Must ($scope.Contains('private sealed class RestoreScope : IDisposable')) 'scoped restoration helper'
-Must ($scope.Contains('_target = previousTarget;') -and $scope.Contains('_owner = previousOwner;')) 'nested restoration of target AND owner'
+Must ($scope.Contains('_target = _previousTarget;') -and $scope.Contains('_owner = _previousOwner;')) 'nested restoration of target AND owner'
 Must ($scope.Contains('private static Clan _target;') -and $scope.Contains('private static string _owner;')) 'no shared static realm or target hash'
 
 # Every exposed native leave call is guarded EXACTLY at the point of invocation.
