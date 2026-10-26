@@ -22,16 +22,6 @@ namespace BellumCivile.Patches
         private static PropertyInfo _expelPropInfo;
         private static bool _expelReflectionInitialized;
 
-        // This scope attests only the exact native Court fallback call, on this thread
-        // and for this Clan object. It is not an AI Influence intent identifier.
-        [System.ThreadStatic]
-        private static Clan _deferredLegalExpulsionTarget;
-
-        public static bool IsCompletingDeferredLegalExpulsionFor(Clan targetClan)
-        {
-            return targetClan != null && ReferenceEquals(_deferredLegalExpulsionTarget, targetClan);
-        }
-
         public static bool Prefix(ExpelClanFromKingdomDecision __instance, DecisionOutcome chosenOutcome, ref bool __state)
         {
             __state = false;
@@ -118,15 +108,9 @@ namespace BellumCivile.Patches
             if (resolution != UltimatumResolution.Failed || targetClan == null || targetClan.Kingdom != kingdom)
                 return;
 
-            Clan previousDeferredTarget = _deferredLegalExpulsionTarget;
-            _deferredLegalExpulsionTarget = targetClan;
-            try
+            using (BellumNativeLeaveProvenance.Enter(targetClan, "deferred_legal_court"))
             {
                 ChangeKingdomAction.ApplyByLeaveKingdom(targetClan, showNotification: false);
-            }
-            finally
-            {
-                _deferredLegalExpulsionTarget = previousDeferredTarget;
             }
             ApplyExpulsionAftermath(targetClan, sponsorClan, kingdom);
             BellumCivileLogger.Log(
