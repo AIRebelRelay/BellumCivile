@@ -25,6 +25,20 @@ internal static class AiInfluenceForeignLedgerTests
         check(!Owned(civil), "Civil war cannot borrow AII foreign provenance even with same context");
         check(!Owned(null), "Missing war record is never authorized");
 
+        var autonomous = AccessTools.Method(typeof(WarScoreBehavior), "ShouldPreventAutonomousForeignResolution");
+        check(autonomous != null, "Native has an exact ForeignWar-only automatic-peace gate");
+        if (autonomous != null)
+        {
+            bool Block(WarScoreRecord war, bool revampEnabled) =>
+                (bool)autonomous.Invoke(null, new object[] { war, revampEnabled });
+            check(Block(owned, false) && Block(owned, true),
+                "AII-owned record never grants Native automatic peace, even after MCM toggle");
+            check(Block(ordinary, false) && !Block(ordinary, true),
+                "Restored ordinary Bellum foreign war cannot force peace when Revamp OFF");
+            check(!Block(civil, false) && !Block(civil, true),
+                "Civil-war terminal resolution is never captured by ForeignWar-only gate");
+        }
+
         var register = AccessTools.Method(typeof(WarScoreBehavior), "TryRegisterAiInfluenceForeignWar");
         check(register != null, "Opt-in Native API exists but is not invoked by generic war declaration");
         if (register != null)
