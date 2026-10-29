@@ -318,6 +318,11 @@ internal static class Program
                 HostageAdulthoodGuardTests.Run(Check);
                 Console.WriteLine($"{_checks} hostage adulthood checks passed.");
             }
+            else if (args.Contains("--hostage-snapshot"))
+            {
+                HostageReadOnlySnapshotTests.Run(Check);
+                Console.WriteLine($"{_checks} read-only hostage snapshot and legacy pact regressions passed.");
+            }
             else if (args.Contains("--hostage-pacts"))
             {
                 HostagePactRulesTests.Run(Check);
@@ -795,6 +800,7 @@ internal static class Program
         PeaceReconsiderationTests.Run(Check);
         PeaceFeasibilityTests.Run(Check);
         HostagePactRulesTests.Run(Check);
+        HostageReadOnlySnapshotTests.Run(Check);
         HostagePactRecordTests.Run(Check);
         HostagePactDurationTests.Run(Check);
         HostageCustodyGuardTests.Run(Check);
