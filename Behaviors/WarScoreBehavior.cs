@@ -1136,7 +1136,7 @@ namespace BellumCivile.Behaviors
         {
             // An AII-owned foreign record is accounting only. Bellum must not
             // latch terminal score or trigger its automatic foreign-peace fallback.
-            if (IsAiInfluenceForeignLedger(war))
+            if (ShouldPreventAutonomousForeignResolution(war, WarPeaceRevampBehavior.IsRevampEnabled()))
                 return false;
             if (war == null
                 || !war.IsActive
@@ -1171,7 +1171,7 @@ namespace BellumCivile.Behaviors
 
         private bool ResolveQueuedTerminalWarScore(WarScoreRecord war)
         {
-            if (IsAiInfluenceForeignLedger(war))
+            if (ShouldPreventAutonomousForeignResolution(war, WarPeaceRevampBehavior.IsRevampEnabled()))
             {
                 if (war.TerminalResolutionQueued)
                 {
@@ -1630,7 +1630,7 @@ namespace BellumCivile.Behaviors
 
                 case WarScoreConflictType.ForeignWar:
                 default:
-                    if (IsAiInfluenceForeignLedger(war)) return false;
+                    if (ShouldPreventAutonomousForeignResolution(war, WarPeaceRevampBehavior.IsRevampEnabled())) return false;
                     BellumCivileLogger.Log($"War Score forced foreign peace; winner={primary?.StringId}; loser={opposing?.StringId}; score={war.Score:+0.0;-0.0;0.0}; war={war.WarKey}.");
                     TextObject message = new TextObject("{=BC_WarScore_ForcedPeace}With {LOSER_REALM} unable to continue the war, {WINNER_REALM} imposes a settlement and the fighting comes to an end.");
                     message.SetTextVariable("WINNER_REALM", primaryVictory ? primary.Name : opposing.Name);
