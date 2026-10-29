@@ -20,6 +20,16 @@ namespace BellumCivile.Behaviors
                 && war.ContextId.Length > AiForeignLedgerContextPrefix.Length;
         }
 
+        // Source-only policy. Bellum foreign autonomy is denied when Revamp is OFF,
+        // including restored legacy pending wars, without affecting internal conflicts.
+        // AII-owned foreign wars remain accounting-only even if MCM later changes.
+        private static bool ShouldPreventAutonomousForeignResolution(
+            WarScoreRecord war, bool revampEnabled)
+        {
+            return war != null && war.ConflictType == WarScoreConflictType.ForeignWar
+                && (!revampEnabled || IsAiInfluenceForeignLedger(war));
+        }
+
         private bool HasOpenAiInfluenceForeignLedgers()
         {
             return _wars != null && _wars.Any(war => war != null
