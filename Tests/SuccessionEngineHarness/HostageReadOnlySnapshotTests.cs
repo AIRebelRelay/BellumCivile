@@ -103,8 +103,12 @@ internal static class HostageReadOnlySnapshotTests
             "Observations do not add fields to the Native save schema");
         check(AccessTools.Method(behavior, "GetActivePacts") != null
             && AccessTools.Method(behavior, "IsProtectedHostage") != null
-            && AccessTools.Method(behavior, "MaintainCustody") != null,
+            && behavior.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Any(method => method.Name == "MaintainCustody"),
             "Original Native custody, active-pact and maintenance APIs remain intact");
+        check(disabled is IList<HostagePactReadOnlyObservation>
+            && ((IList<HostagePactReadOnlyObservation>)disabled).IsReadOnly,
+            "Snapshot collection cannot be modified or cast to a writable IList");
 
         HostagePactRecordTests.Run(check);
         HostagePactDurationTests.Run(check);
