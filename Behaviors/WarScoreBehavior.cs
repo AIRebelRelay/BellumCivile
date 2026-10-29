@@ -456,6 +456,7 @@ namespace BellumCivile.Behaviors
             ReconcileExistingWars();
             ReconcileInternalConflicts();
             ReconcileReversibleScores();
+            ReconcileAiInfluenceForeignLedgers();
             ProcessQueuedTerminalResolutions();
             ProcessActiveWars();
             ProcessInternalWhitePeaceOpportunities();
@@ -527,7 +528,7 @@ namespace BellumCivile.Behaviors
         {
             if (BellumTreatyTransferContext.IsTreatyTransfer)
                 return;
-            if (!WarPeaceRevampBehavior.IsRevampEnabled()
+            if ((!WarPeaceRevampBehavior.IsRevampEnabled() && !HasOpenAiInfluenceForeignLedgers())
                 || detail != ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail.BySiege
                 || settlement == null
                 || (!settlement.IsTown && !settlement.IsCastle))
@@ -537,13 +538,17 @@ namespace BellumCivile.Behaviors
 
             Kingdom oldKingdom = oldOwner?.Clan?.Kingdom;
             Kingdom newKingdom = newOwner?.Clan?.Kingdom ?? settlement.OwnerClan?.Kingdom;
-            ClearResolvedLandlessPressureAfterSettlementGain(newKingdom);
+            if (WarPeaceRevampBehavior.IsRevampEnabled())
+                ClearResolvedLandlessPressureAfterSettlementGain(newKingdom);
             WarScoreEventType eventType = settlement.IsTown ? WarScoreEventType.TownCaptured : WarScoreEventType.CastleCaptured;
             foreach (var war in GetActiveWars().ToList())
             {
                 var territory = new ClientWarTerritory(war);
-                if (!territory.Opposing(oldKingdom?.StringId, newKingdom?.StringId)) continue;
+                if (!territory.Opposing(oldKingdom?.StringId, newKingdom?.StringId)
+                    || (!WarPeaceRevampBehavior.IsRevampEnabled() && !IsAiInfluenceForeignLedger(war)))
+                    continue;
                 UpdateOccupationScore(war, eventType, newKingdom, oldKingdom, settlement.StringId, debugText: settlement.Name?.ToString() ?? settlement.StringId);
+                if (IsAiInfluenceForeignLedger(war)) continue; // accounting only, never force capitulation
                 Kingdom attacker = ResolveKingdom(war.AttackerKingdomId);
                 Kingdom defender = ResolveKingdom(war.DefenderKingdomId);
                 if (!TryForceFullOccupation(war, attacker, defender))
@@ -553,7 +558,7 @@ namespace BellumCivile.Behaviors
 
         private void OnMapEventEnded(MapEvent mapEvent)
         {
-            if (!WarPeaceRevampBehavior.IsRevampEnabled()
+            if ((!WarPeaceRevampBehavior.IsRevampEnabled() && !HasOpenAiInfluenceForeignLedgers())
                 || mapEvent?.Winner == null
                 || mapEvent.AttackerSide == null
                 || mapEvent.DefenderSide == null)
@@ -580,7 +585,8 @@ namespace BellumCivile.Behaviors
                 foreach (Kingdom loser in losers)
                 {
                     WarScoreRecord war = GetActiveWar(winner, loser);
-                    if (war == null)
+                    if (war == null
+                        || (!WarPeaceRevampBehavior.IsRevampEnabled() && !IsAiInfluenceForeignLedger(war)))
                         continue;
 
                     float delta = SignedDeltaFor(war, winner, score);
@@ -594,13 +600,14 @@ namespace BellumCivile.Behaviors
 
         private void OnVillageLooted(Village village)
         {
-            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+            if (!WarPeaceRevampBehavior.IsRevampEnabled() && !HasOpenAiInfluenceForeignLedgers())
                 return;
 
             Kingdom victim = village?.Settlement?.OwnerClan?.Kingdom;
             Kingdom attacker = village?.Settlement?.LastAttackerParty?.MapFaction as Kingdom;
             WarScoreRecord war = GetActiveWar(attacker, victim);
-            if (war == null)
+            if (war == null
+                || (!WarPeaceRevampBehavior.IsRevampEnabled() && !IsAiInfluenceForeignLedger(war)))
                 return;
 
             float before = war.Score;
@@ -612,13 +619,14 @@ namespace BellumCivile.Behaviors
         private void OnHeroPrisonerTaken(PartyBase captor, Hero prisoner)
         {
             if (HostageCustodyGuard.IsProtected(prisoner)) return;
-            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+            if (!WarPeaceRevampBehavior.IsRevampEnabled() && !HasOpenAiInfluenceForeignLedgers())
                 return;
 
             Kingdom victim = prisoner?.Clan?.Kingdom;
             Kingdom captorKingdom = captor?.MobileParty?.LeaderHero?.Clan?.Kingdom ?? captor?.MapFaction as Kingdom;
             WarScoreRecord war = GetActiveWar(captorKingdom, victim);
-            if (war == null)
+            if (war == null
+                || (!WarPeaceRevampBehavior.IsRevampEnabled() && !IsAiInfluenceForeignLedger(war)))
                 return;
 
             bool ruler = IsWarLeader(victim, prisoner);
@@ -638,6 +646,16 @@ namespace BellumCivile.Behaviors
             {
                 Kingdom attacker = ResolveKingdom(war.AttackerKingdomId);
                 Kingdom defender = ResolveKingdom(war.DefenderKingdomId);
+                if (IsAiInfluenceForeignLedger(war))
+                {
+                    if (CanScoreAiInfluenceForeignLedger(war, attacker, defender))
+                    {
+                        UpdateOccupationScore(war, WarScoreEventType.OccupationUpdated, attacker, defender,
+                            debugText: "AII ledger daily occupation accounting");
+                        ApplyTickingLeverage(war, attacker, defender);
+                    }
+                    continue; // never run Bellum automatic full occupation, landless or terminal resolution
+                }
                 if (!ShouldProcessWar(war, attacker, defender) || !attacker.IsAtWarWith(defender))
                     continue;
 
@@ -1116,6 +1134,10 @@ namespace BellumCivile.Behaviors
 
         private bool QueueTerminalWarScoreResolution(WarScoreRecord war, string reason)
         {
+            // An AII-owned foreign record is accounting only. Bellum must not
+            // latch terminal score or trigger its automatic foreign-peace fallback.
+            if (IsAiInfluenceForeignLedger(war))
+                return false;
             if (war == null
                 || !war.IsActive
                 || war.ResolutionPending
@@ -1149,6 +1171,15 @@ namespace BellumCivile.Behaviors
 
         private bool ResolveQueuedTerminalWarScore(WarScoreRecord war)
         {
+            if (IsAiInfluenceForeignLedger(war))
+            {
+                if (war.TerminalResolutionQueued)
+                {
+                    war.ClearTerminalResolution();
+                    TouchRuntimeRevision();
+                }
+                return false; // never fall through to ResolveTerminalConflict -> MakePeaceAction.Apply
+            }
             if (CivilWarConflictBehavior.IsScoreTransferPending(war)) return false;
             if (war == null || !war.IsActive || !war.TerminalResolutionQueued)
                 return false;
@@ -1599,6 +1630,7 @@ namespace BellumCivile.Behaviors
 
                 case WarScoreConflictType.ForeignWar:
                 default:
+                    if (IsAiInfluenceForeignLedger(war)) return false;
                     BellumCivileLogger.Log($"War Score forced foreign peace; winner={primary?.StringId}; loser={opposing?.StringId}; score={war.Score:+0.0;-0.0;0.0}; war={war.WarKey}.");
                     TextObject message = new TextObject("{=BC_WarScore_ForcedPeace}With {LOSER_REALM} unable to continue the war, {WINNER_REALM} imposes a settlement and the fighting comes to an end.");
                     message.SetTextVariable("WINNER_REALM", primaryVictory ? primary.Name : opposing.Name);
