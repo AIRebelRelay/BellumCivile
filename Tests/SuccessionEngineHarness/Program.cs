@@ -292,6 +292,12 @@ internal static class Program
                 StartingClientageTests.Run(Check);
                 Console.WriteLine($"{_checks} starting clientage checks passed.");
             }
+            else if (args.Contains("--ai-foreign-ledger"))
+            {
+                AiInfluenceForeignLedgerTests.Run(Check);
+                ReversibleWarScoreTests.Run(Check);
+                Console.WriteLine($"{_checks} AII foreign ledger isolation and score regressions passed.");
+            }
             else if (args.Contains("--client-liberation"))
             {
                 ClientLiberationResolveTests.Run(Check);
@@ -804,6 +810,7 @@ internal static class Program
         CourtDynamicPolicyTests.Run(Check);
         TitleTenurePresentationTests.Run(Check);
         ReversibleWarScoreTests.Run(Check);
+        AiInfluenceForeignLedgerTests.Run(Check);
         FeudObjectiveTickingTests.Run(Check);
         PeaceReadinessTests.Run(Check);
         PeaceCouncilReadinessTests.Run(Check);
