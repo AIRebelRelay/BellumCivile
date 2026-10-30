@@ -134,6 +134,7 @@ namespace BellumCivile.Behaviors
             _agendas = _agendas ?? new List<CourtAgendaRecord>();
             SyncReactionHistory(dataStore);
             SyncCourtTerminalEvictionReceipts(dataStore);
+            SyncCourtPolicyVotePublicProvenance(dataStore);
             RestoreIntegrationIds();
             _nextTerms = _nextTerms ?? new Dictionary<string, CampaignTime>();
             _reconsiderAfter = _reconsiderAfter ?? new Dictionary<string, CampaignTime>();
@@ -673,6 +674,7 @@ namespace BellumCivile.Behaviors
             BellumCivileNotifications.Show(message, obsoleteMandate ? BellumNotificationColors.Politics
                 : passed ? BellumNotificationColors.Success : BellumNotificationColors.Danger, primaryKingdom: realm);
             BellumCivileLogger.Log($"Court agenda concluded; realm={realm.StringId}; policy={policy.StringId}; result={agenda.State}; paid={agenda.PaidInfluence}.");
+            RecordCourtPolicyVotePublicProvenance(agenda, policy, abolish, passed, obsoleteMandate);
         }
     }
 }
