@@ -76,6 +76,79 @@ namespace BellumCivile.Behaviors
             }
         }
 
+        // Read-only campaign-thread inventory. The archive is never consumed here:
+        // a future Bridge stage must prove its spool is durably written before ACK.
+        internal CourtTerminalEvictionInventorySnapshot GetTerminalEvictionInventory(Kingdom realm)
+        {
+            if (realm == null || string.IsNullOrWhiteSpace(realm.StringId))
+                return CourtTerminalEvictionInventorySnapshot.Unavailable(realm?.StringId);
+
+            var pending = new List<CourtTerminalEvictionReceiptSnapshot>();
+            int invalid = 0;
+            foreach (var pair in _courtTerminalReceipts.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+            {
+                string payloadRealm;
+                if (!TryReadCourtTerminalPayload(pair.Key, pair.Value, out payloadRealm))
+                {
+                    invalid++;
+                    continue;
+                }
+                if (!string.Equals(payloadRealm, realm.StringId, StringComparison.Ordinal)) continue;
+                pending.Add(new CourtTerminalEvictionReceiptSnapshot(
+                    pair.Key, payloadRealm, pair.Value));
+            }
+
+            return new CourtTerminalEvictionInventorySnapshot(
+                realm.StringId, true, pending.AsReadOnly(), _courtTerminalReceipts.Count,
+                invalid, _courtTerminalEvictionOverflow);
+        }
+
+        private static bool TryReadCourtTerminalPayload(string id, string payload, out string realmId)
+        {
+            realmId = null;
+            Guid parsed;
+            if (!Guid.TryParseExact(id, "N", out parsed)
+                || string.IsNullOrEmpty(payload) || payload.Length > 16384) return false;
+
+            string[] fields = payload.Split('|');
+            if (fields.Length != 13 || !string.Equals(fields[0], "v1", StringComparison.Ordinal))
+                return false;
+
+            var decoded = new string[12];
+            try
+            {
+                var utf8 = new UTF8Encoding(false, true);
+                for (int i = 1; i <= 11; i++)
+                {
+                    if (fields[i].Length > 8192) return false;
+                    decoded[i] = utf8.GetString(Convert.FromBase64String(fields[i]));
+                    if (decoded[i].Length > 2048) return false;
+                }
+            }
+            catch (FormatException) { return false; }
+            catch (DecoderFallbackException) { return false; }
+
+            CourtAgendaState agendaState;
+            CourtObjectiveState objectiveState;
+            CourtObjectiveCredit credit;
+            if (!Enum.TryParse(decoded[7], false, out agendaState)
+                || !Enum.IsDefined(typeof(CourtAgendaState), agendaState)
+                || !Enum.TryParse(decoded[8], false, out objectiveState)
+                || !Enum.IsDefined(typeof(CourtObjectiveState), objectiveState)
+                || objectiveState == CourtObjectiveState.Selected
+                || objectiveState == CourtObjectiveState.Active
+                || !Enum.TryParse(decoded[9], false, out credit)
+                || !Enum.IsDefined(typeof(CourtObjectiveCredit), credit)) return false;
+
+            double day;
+            if (!double.TryParse(fields[12], NumberStyles.Float, CultureInfo.InvariantCulture, out day)
+                || double.IsNaN(day) || double.IsInfinity(day) || day < 0) return false;
+            if (string.IsNullOrWhiteSpace(decoded[1])) return false;
+
+            realmId = decoded[1];
+            return true;
+        }
+
         private static string PackTerminalReceipt(CourtAgendaRecord agenda)
         {
             CourtObjectiveRecord objective = agenda.ObjectiveData;
