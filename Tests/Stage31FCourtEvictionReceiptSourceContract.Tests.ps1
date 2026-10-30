@@ -34,15 +34,12 @@ Check (-not $store.Contains('.GetObjective(') -and
     -not $store.Contains('.SettleCancellation(') -and
     -not $store.Contains('record.State =') -and
     -not $store.Contains('agenda.State =')) 'archive_does_not_mutate_native_agenda_or_objective'
-Check ($court.IndexOf('CaptureEvictedCourtTerminals(_recentResults.Where(') -ge 0 -and
-    $court.IndexOf('CaptureEvictedCourtTerminals(_recentResults.Where(') -lt
-    $court.IndexOf('_recentResults.RemoveAll(')) 'before_recent_history_expiry'
-Check ($court.IndexOf('CaptureEvictedCourtTerminals(_agendas.Where(a => !ValidRealm(a.Realm)') -ge 0 -and
-    $court.IndexOf('CaptureEvictedCourtTerminals(_agendas.Where(a => !ValidRealm(a.Realm)') -lt
-    $court.IndexOf('_agendas.RemoveAll(a => !ValidRealm(a.Realm)')) 'before_invalid_realm_eviction'
-Check ($court.IndexOf('CaptureEvictedCourtTerminals(_agendas.Where(a => a.Realm == realm') -ge 0 -and
-    $court.IndexOf('CaptureEvictedCourtTerminals(_agendas.Where(a => a.Realm == realm') -lt
-    $court.IndexOf('_agendas.RemoveAll(a => a.Realm == realm')) 'before_term_rollover_eviction'
+$recent = [regex]::Match($court, 'CaptureEvictedCourtTerminals\(\s*_recentResults\.Where\(')
+Check ($recent.Success -and $recent.Index -lt $court.IndexOf('_recentResults.RemoveAll(')) 'before_recent_history_expiry'
+$invalid = [regex]::Match($court, 'CaptureEvictedCourtTerminals\(\s*_agendas\.Where\(a => !ValidRealm\(a\.Realm\)')
+Check ($invalid.Success -and $invalid.Index -lt $court.IndexOf('_agendas.RemoveAll(a => !ValidRealm(a.Realm)')) 'before_invalid_realm_eviction'
+$term = [regex]::Match($court, 'CaptureEvictedCourtTerminals\(\s*_agendas\.Where\(a => a\.Realm == realm')
+Check ($term.Success -and $term.Index -lt $court.IndexOf('_agendas.RemoveAll(a => a.Realm == realm')) 'before_term_rollover_eviction'
 Check ($claim.IndexOf('CaptureEvictedCourtTerminals(_claimGrace.Where(a => a.ResultApplied)') -ge 0 -and
     $claim.IndexOf('CaptureEvictedCourtTerminals(_claimGrace.Where(a => a.ResultApplied)') -lt
     $claim.IndexOf('_claimGrace.RemoveAll(a => a.ResultApplied);')) 'before_claim_grace_eviction'
@@ -50,8 +47,7 @@ Check ($rally.IndexOf('CaptureEvictedCourtTerminals(_rallies.Where(') -ge 0 -and
     $rally.IndexOf('CaptureEvictedCourtTerminals(_rallies.Where(') -lt
     $rally.IndexOf('_rallies.RemoveAll(a => a.ResultApplied')) 'before_rally_eviction'
 Check ($court.Contains('FreezeNpcCouncilTerminalResults(realm);') -and
-    $court.IndexOf('FreezeNpcCouncilTerminalResults(realm);') -lt
-    $court.IndexOf('CaptureEvictedCourtTerminals(_agendas.Where(a => a.Realm == realm')) 'council_intent_tombstones_remain_first'
+    $court.IndexOf('FreezeNpcCouncilTerminalResults(realm);') -lt $term.Index) 'council_intent_tombstones_remain_first'
 Check ($api.Contains('GetCourtAgendas(Kingdom realm)') -and
     -not $api.Contains('GetCourtTerminalEvictionReceipts(')) 'no_premature_bridge_public_api_or_ack'
 Check ($record.Contains('[SaveableField(51)] internal string IntegrationId') -and
