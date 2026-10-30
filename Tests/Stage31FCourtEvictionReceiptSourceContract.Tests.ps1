@@ -22,6 +22,8 @@ Check ($court.Contains('SyncCourtTerminalEvictionReceipts(dataStore);') -and
 Check ($store.Contains('if (agenda.ResultApplied != true || agenda.ObjectiveData?.IsTerminal != true) continue;')) 'final_native_result_only'
 Check ($store.Contains('if (_courtTerminalReceipts.ContainsKey(agenda.IntegrationId)) continue;')) 'idempotent_on_same_agenda_id'
 Check ($store.Contains('_courtTerminalReceipts.Add(agenda.IntegrationId, PackTerminalReceipt(agenda));')) 'immutable_primitive_payload_once'
+Check ($store.Contains('status=record_error') -and
+    $store.Contains('status=capture_error')) 'one_bad_record_does_not_stop_other_receipts_or_court_cleanup'
 Check ($store.Contains('if (_courtTerminalReceipts.Count >= MaxCourtTerminalReceipts)') -and
     $store.Contains('_courtTerminalEvictionOverflow++;') -and
     $store.Contains('status=overflow') -and
