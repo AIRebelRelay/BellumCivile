@@ -43,8 +43,9 @@ Check ($council.Contains('council_appointment_unverified') -and
 Check ($activity.Contains('activity_partial_execution') -and
     $activity.Contains('CourtSessionEvents.Report(plan, agenda.Faction, agenda.Realm);') -and
     $activity.Contains('bool changed = plan.Targets.Any(')) 'activity_finality_is_partial_target_scoped'
-Check ($report.Contains('CourtSessionEventReports') -and
-    $report.Contains('public') -eq $false) 'session_event_narratives_are_not_public_provenance'
+Check ($report.Contains('internal static class CourtSessionEventReports') -and
+    $report.Contains('internal static TextObject Narrative(string id)') -and
+    -not $report.Contains('public enum CourtEventAudience')) 'session_event_narratives_are_not_public_provenance'
 Check ($record.Contains('[SaveableField(51)] internal string IntegrationId') -and
     $objective.Contains('public enum CourtObjectiveCredit { None, Sponsor, FulfilledElsewhere }')) 'stable_source_id_and_credit_retained'
 Check ($archive.Contains('private const int MaxCourtTerminalReceipts = 1024;') -and
