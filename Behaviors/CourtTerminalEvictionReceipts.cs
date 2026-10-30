@@ -23,7 +23,7 @@ namespace BellumCivile.Behaviors
         }
 
         // Must run while the record is still in its native owner collection.
-        // Do not call GetObjective(), Finish(), TryClaimResult(), or the scheduler here.
+        // No read-side refresh, result mutation, reward claiming, or scheduling.
         private void CaptureEvictedCourtTerminals(IEnumerable<CourtAgendaRecord> records, string source)
         {
             try
