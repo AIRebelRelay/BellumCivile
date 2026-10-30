@@ -42,6 +42,13 @@ namespace BellumCivile
         public double SessionDay { get; }
         public double ResultVisibleUntilDay { get; }
         public bool ResultApplied { get; }
+        // Optional terminal provenance from the existing saved objective, never inferred
+        // from a CourtAgendaState that may also describe a procedural outcome.
+        public CourtObjectiveState? ObjectiveState { get; }
+        public CourtObjectiveCredit? ObjectiveCredit { get; }
+        public string ObjectiveResultReason { get; }
+        public bool ObjectiveTerminal { get; }
+        public string CancellationReason { get; }
 
         internal CourtAgendaSnapshot(CourtAgendaRecord record)
         {
@@ -51,6 +58,14 @@ namespace BellumCivile
             ActionId = record.ObjectiveData?.ActionId; Abolish = record.Abolish;
             State = record.State; SessionDay = record.SessionDate.ToDays;
             ResultVisibleUntilDay = record.ResultVisibleUntil.ToDays; ResultApplied = record.ResultApplied;
+            // Keep old saves with no objective unknown; never call Refresh/GetObjective
+            // from a snapshot because that can change the record's objective data.
+            var objective = record.ObjectiveData;
+            ObjectiveState = objective == null ? (CourtObjectiveState?)null : objective.State;
+            ObjectiveCredit = objective == null ? (CourtObjectiveCredit?)null : objective.Credit;
+            ObjectiveResultReason = objective?.ResultReason;
+            ObjectiveTerminal = objective?.IsTerminal == true;
+            CancellationReason = record.CancellationReason;
         }
     }
 }
