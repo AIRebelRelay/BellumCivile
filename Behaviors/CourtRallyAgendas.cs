@@ -102,6 +102,7 @@ namespace BellumCivile.Behaviors
                 if(now>a.ObjectiveData.DeadlineDay){FinishRally(a,-2,"term_expired");continue;}
                 r.Members.RemoveAll(c => !Eligible(c,a.Realm) || !a.Faction.Members.Contains(c));
             }
+            CaptureEvictedCourtTerminals(_rallies.Where(a => a.ResultApplied && CampaignTime.Now.ToDays>a.ObjectiveData.DeadlineDay+1), "rally_cleanup");
             if(_rallies.RemoveAll(a => a.ResultApplied && CampaignTime.Now.ToDays>a.ObjectiveData.DeadlineDay+1)>0) _rallyIndex=null;
         }
         private void FinishRally(CourtAgendaRecord a,int outcome,string reason)
