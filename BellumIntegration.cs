@@ -26,5 +26,17 @@ namespace BellumCivile
             BellumIntegrationBehavior.RequireCampaignThread();
             return CourtAgendaBehavior.Current?.GetIntegrationSnapshots(realm) ?? new CourtAgendaSnapshot[0];
         }
+
+        /// <summary>
+        /// Internal diagnostic evidence of already-evicted Court results.
+        /// Contains private technical provenance; NOT a public event feed.
+        /// No receipt is acknowledged or removed by this read-only method.
+        /// </summary>
+        public static CourtTerminalEvictionInventorySnapshot GetCourtTerminalEvictionInventory(Kingdom realm)
+        {
+            BellumIntegrationBehavior.RequireCampaignThread();
+            return CourtAgendaBehavior.Current?.GetTerminalEvictionInventory(realm)
+                ?? CourtTerminalEvictionInventorySnapshot.Unavailable(realm?.StringId);
+        }
     }
 }
