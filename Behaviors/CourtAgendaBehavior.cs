@@ -133,6 +133,7 @@ namespace BellumCivile.Behaviors
             _decreeCases = _decreeCases ?? new List<CourtDecreeCase>();
             _agendas = _agendas ?? new List<CourtAgendaRecord>();
             SyncReactionHistory(dataStore);
+            SyncCourtTerminalEvictionReceipts(dataStore);
             RestoreIntegrationIds();
             _nextTerms = _nextTerms ?? new Dictionary<string, CampaignTime>();
             _reconsiderAfter = _reconsiderAfter ?? new Dictionary<string, CampaignTime>();
@@ -325,6 +326,9 @@ namespace BellumCivile.Behaviors
         private void Tick()
         {
             MigratePlayerCrownBusiness();
+            CaptureEvictedCourtTerminals(
+                _recentResults.Where(a => a == null || !a.ResultVisibleUntil.IsFuture || !ReactionApproval(a).HasValue),
+                "recent_expiry");
             _recentResults.RemoveAll(a => a == null || !a.ResultVisibleUntil.IsFuture || !ReactionApproval(a).HasValue);
             FreezeExistingSchedules();
             // Resolve expired objectives before OpenTerm cleans up or selects replacement business.
@@ -394,6 +398,9 @@ namespace BellumCivile.Behaviors
             var livingRealms = new HashSet<string>(Kingdom.All.Where(ValidRealm).Select(k => k.StringId));
             PruneChallengeWindows(livingRealms);
             foreach (string key in _nextTerms.Keys.Where(k => !livingRealms.Contains(k)).ToList()) _nextTerms.Remove(key);
+            CaptureEvictedCourtTerminals(
+                _agendas.Where(a => !ValidRealm(a.Realm) && !a.IsFiled && !a.IsUnopened),
+                "invalid_realm_cleanup");
             _agendas.RemoveAll(a => !ValidRealm(a.Realm) && !a.IsFiled && !a.IsUnopened);
             SettleClosedExecutiveObjectives();
             foreach (var agenda in _agendas) agenda.GetObjective();
@@ -407,6 +414,9 @@ namespace BellumCivile.Behaviors
             ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);
             OpenCrownTerm(realm, manager);
             FreezeNpcCouncilTerminalResults(realm);
+            CaptureEvictedCourtTerminals(
+                _agendas.Where(a => a.Realm == realm && !a.IsFiled && !a.IsUnopened && !a.IsOngoingObjective),
+                "open_term_cleanup");
             _agendas.RemoveAll(a => a.Realm == realm && !a.IsFiled && !a.IsUnopened && !a.IsOngoingObjective);
             var factions = manager.GetFactionsInKingdom(realm).Where(f => f.IsIdeology && MemberCount(f) >= 2).ToList();
             var context = new CourtTermContext(realm, policy => CanPropose(realm, policy));
