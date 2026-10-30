@@ -30,6 +30,8 @@ namespace BellumCivile.Behaviors
             {
                 foreach (CourtAgendaRecord agenda in records.ToList())
                 {
+                    try
+                    {
                     if (agenda == null) continue;
                     if (agenda.ResultApplied != true || agenda.ObjectiveData?.IsTerminal != true) continue;
                     if (string.IsNullOrWhiteSpace(agenda.IntegrationId)
@@ -58,6 +60,12 @@ namespace BellumCivile.Behaviors
                         + "; objective_state=" + agenda.ObjectiveData.State
                         + "; pending=" + _courtTerminalReceipts.Count.ToString(CultureInfo.InvariantCulture)
                         + "; public_event=false; delivery_claim=false");
+                    }
+                    catch (Exception ex)
+                    {
+                        BellumCivileLogger.Log("BC_COURT_TERMINAL_EVICTION status=record_error"
+                            + "; source=" + source + "; delivery_claim=false; " + ex);
+                    }
                 }
             }
             catch (Exception ex)
