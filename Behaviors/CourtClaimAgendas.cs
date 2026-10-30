@@ -159,6 +159,7 @@ namespace BellumCivile.Behaviors
                 if (ours) plan.PendingAllocation = pending;
                 plan.Members?.RemoveAll(c => !Eligible(c, agenda.Realm) || !agenda.Faction.Members.Contains(c));
             }
+            CaptureEvictedCourtTerminals(_claimGrace.Where(a => a.ResultApplied), "claim_grace_cleanup");
             _claimGrace.RemoveAll(a => a.ResultApplied);
         }
 
