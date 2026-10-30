@@ -38,5 +38,17 @@ namespace BellumCivile
             return CourtAgendaBehavior.Current?.GetTerminalEvictionInventory(realm)
                 ?? CourtTerminalEvictionInventorySnapshot.Unavailable(realm?.StringId);
         }
+
+        /// <summary>
+        /// Read-only join of an evicted terminal receipt with Native-authored
+        /// realm-court policy-vote provenance. Does not publish or acknowledge.
+        /// Caller must run on the active campaign thread.
+        /// </summary>
+        public static CourtPolicyVoteProvenanceJoinSnapshot GetCourtPolicyVoteProvenanceJoin(Kingdom realm)
+        {
+            BellumIntegrationBehavior.RequireCampaignThread();
+            return CourtAgendaBehavior.Current?.GetPolicyVoteProvenanceJoin(realm)
+                ?? CourtPolicyVoteProvenanceJoinSnapshot.Unavailable(realm?.StringId);
+        }
     }
 }
