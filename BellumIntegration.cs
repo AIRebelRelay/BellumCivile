@@ -50,5 +50,15 @@ namespace BellumCivile
             return CourtAgendaBehavior.Current?.GetPolicyVoteProvenanceJoin(realm)
                 ?? CourtPolicyVoteProvenanceJoinSnapshot.Unavailable(realm?.StringId);
         }
+        /// <summary>
+        /// Exact historical NPC Hero.StringIds for already joined Native Court policy
+        /// vote results. Read-only and private realm-court audience, NOT public news.
+        /// </summary>
+        public static CourtPolicyVoteAudienceJoinSnapshot GetCourtPolicyVoteAudienceJoin(Kingdom realm)
+        {
+            BellumIntegrationBehavior.RequireCampaignThread();
+            return CourtAgendaBehavior.Current?.GetPolicyVoteAudienceJoin(realm)
+                ?? CourtPolicyVoteAudienceJoinSnapshot.Unavailable(realm?.StringId);
+        }
     }
 }
