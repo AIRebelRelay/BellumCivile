@@ -26,13 +26,34 @@ namespace BellumCivile.Behaviors
                 ?? new Dictionary<string, string>();
         }
 
+        // The before/after native proof-ID delta binds the saved audience to THIS
+        // Conclude invocation, even when an older identical motion resolved today.
+        internal ISet<string> SnapshotPolicyVoteProofIds()
+            => _courtPolicyVotePublicProvenance == null ? null
+                : new HashSet<string>(_courtPolicyVotePublicProvenance.Keys, StringComparer.Ordinal);
+
         // Called once from the *actual* KingdomPolicyDecision.ApplyChosenOutcome postfix,
         // after Conclude has authored the independent Stage31K vote provenance.
         // It uses the already captured pre-resolution ballot, not today's realm roster.
-        internal void CapturePolicyVoteAudience(KingdomPolicyDecision decision, bool passed)
+        internal void CapturePolicyVoteAudience(KingdomPolicyDecision decision, bool passed,
+            ISet<string> proofIdsBefore)
         {
             try
             {
+                if (proofIdsBefore == null || _courtPolicyVotePublicProvenance == null)
+                {
+                    LogPolicyAudienceHeld("missing_before_conclude_proof_snapshot");
+                    return;
+                }
+                string[] createdProofIds = _courtPolicyVotePublicProvenance.Keys
+                    .Where(id => !proofIdsBefore.Contains(id)).Take(2).ToArray();
+                if (createdProofIds.Length != 1)
+                {
+                    LogPolicyAudienceHeld("no_unique_new_proof_for_conclude");
+                    return;
+                }
+                string createdProofId = createdProofIds[0];
+
                 Kingdom realm = decision?.Kingdom;
                 PolicyObject policy = decision?.Policy;
                 Clan sponsor = decision?.ProposerClan;
@@ -43,7 +64,7 @@ namespace BellumCivile.Behaviors
                 }
 
                 bool abolish = PolicyDeliberationBehavior.ResolvePolicyAbolish(decision);
-                CourtAgendaRecord agenda = _agendas.LastOrDefault(a => a.Realm == realm
+                CourtAgendaRecord agenda = _agendas.SingleOrDefault(a => a.IntegrationId == createdProofId && a.Realm == realm
                     && a.PolicyId == policy.StringId && a.Sponsor == sponsor && a.Abolish == abolish
                     && a.IsPolicy && a.ResultApplied);
                 if (agenda == null || string.IsNullOrWhiteSpace(agenda.IntegrationId)
