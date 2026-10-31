@@ -52,6 +52,7 @@ namespace BellumCivile.Patches
             bool isPolicyActive = kingdom.ActivePolicies.Contains(policy);
             bool motionSucceeded = isPolicyActive != abolish;
             CourtAgendaBehavior.Current?.Conclude(kingdom, policy, __instance.ProposerClan, abolish, motionSucceeded, __state);
+            CourtAgendaBehavior.Current?.CapturePolicyVoteAudience(__instance, motionSucceeded);
             BellumCivileLogger.Log(
                 $"Policy vote concluded; kingdom={kingdom.StringId}; policy={policy.StringId}; proposer={__instance.ProposerClan?.StringId ?? "null"}; " +
                 $"motion={(abolish ? "repeal" : "enact")}; result={(isPolicyActive ? "active" : "inactive")}; " +
