@@ -68,6 +68,15 @@ namespace BellumCivile.Behaviors
                     return;
                 }
 
+                // Conclude writes the proof synchronously in this resolution call.
+                // An older ResultApplied agenda with the same realm/policy/sponsor
+                // must never inherit a new ballot just because its proof still exists.
+                if (proof.VoteDay != CampaignTime.Now.ToDays)
+                {
+                    LogPolicyAudienceHeld("stale_or_foreign_vote_proof");
+                    return;
+                }
+
                 if (_courtPolicyVoteAudience.ContainsKey(agenda.IntegrationId))
                     return; // Idempotent. Never rewrite historical membership.
 
