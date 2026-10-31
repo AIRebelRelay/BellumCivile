@@ -78,4 +78,11 @@ Check ($capture.Contains('proof.VoteDay != CampaignTime.Now.ToDays') -and
     $capture.IndexOf('proof.VoteDay != CampaignTime.Now.ToDays') -lt
     $capture.IndexOf('TryGetRecordedParticipants(decision')) -and
     $capture.Contains('TryReadVoteProof(agenda.IntegrationId, source, out proof)')) 'never_bind_current_ballot_to_old_resultapplied_agenda_proof'
+Check ($capture.Contains('SnapshotPolicyVoteProofIds()') -and
+    $capture.Contains('new HashSet<string>(_courtPolicyVotePublicProvenance.Keys, StringComparer.Ordinal)') -and
+    $capture.Contains('!proofIdsBefore.Contains(id)') -and
+    $capture.Contains('createdProofIds.Length != 1') -and
+    $capture.Contains('a.IntegrationId == createdProofId') -and
+    $resolution.Contains('ISet<string> proofIdsBefore = court?.SnapshotPolicyVoteProofIds();') -and
+    $resolution.Contains('court?.CapturePolicyVoteAudience(__instance, motionSucceeded, proofIdsBefore);')) 'must_bind_only_the_unique_proof_created_by_this_conclude_call'
 Write-Host 'STAGE32C_SOURCE_CONTRACT_PASS -- static only; run compiler and named-NPC in-game regression before release.'
