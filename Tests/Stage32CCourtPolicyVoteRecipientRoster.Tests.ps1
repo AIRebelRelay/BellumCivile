@@ -26,10 +26,10 @@ Check ($vote.Contains('if (decision == null || possibleOutcomes == null || chose
     $vote.Contains('VoteSnapshots[decision] = alignments;') -and
     $vote.Contains('VoteSnapshots.Remove(decision);') -and
     $vote.Contains('GetAlignment(')) 'shared_vote_tracker_existing_semantics_preserved'
-Check ($resolution.Contains('CourtAgendaBehavior.Current?.Conclude(') -and
-    $resolution.Contains('CourtAgendaBehavior.Current?.CapturePolicyVoteAudience(__instance, motionSucceeded);') -and
-    $resolution.IndexOf('CourtAgendaBehavior.Current?.CapturePolicyVoteAudience(') -gt
-    $resolution.IndexOf('CourtAgendaBehavior.Current?.Conclude(')) 'capture_after_native_vote_conclusion_only'
+Check ($resolution.Contains('court?.Conclude(') -and
+    $resolution.Contains('court?.CapturePolicyVoteAudience(__instance, motionSucceeded, proofIdsBefore);') -and
+    $resolution.IndexOf('court?.CapturePolicyVoteAudience(') -gt
+    $resolution.IndexOf('court?.Conclude(')) 'capture_after_native_vote_conclusion_only'
 Check ($capture.Contains('SyncData("BC_CourtPolicyVoteAudience_v1"') -and
     $capture.Contains('SyncData("BC_CourtPolicyVoteAudienceOverflow_v1"') -and
     $court.Contains('SyncCourtPolicyVoteAudience(dataStore);') -and
