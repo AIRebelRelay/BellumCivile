@@ -56,6 +56,21 @@ namespace BellumCivile.Patches
             VoteSnapshots[decision] = alignments;
         }
 
+        // Read-only access to the exact pre-resolution ballot snapshot. Unknown
+        // decisions have no historical audience; never reconstruct from realm.Clans
+        // or the winning outcome's SupporterList alone (losers/abstainers are lost).
+        internal static bool TryGetRecordedParticipants(KingdomDecision decision,
+            out IReadOnlyList<Clan> participants)
+        {
+            participants = new Clan[0];
+            Dictionary<Clan, KingdomVoteAlignment> alignments;
+            if (decision == null || !VoteSnapshots.TryGetValue(decision, out alignments)
+                || alignments.Count == 0) return false;
+
+            participants = new List<Clan>(alignments.Keys).AsReadOnly();
+            return true;
+        }
+
         internal static KingdomVoteAlignment GetAlignment(
             KingdomDecision decision,
             DecisionOutcome chosenOutcome,
