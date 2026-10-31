@@ -135,6 +135,7 @@ namespace BellumCivile.Behaviors
             SyncReactionHistory(dataStore);
             SyncCourtTerminalEvictionReceipts(dataStore);
             SyncCourtPolicyVotePublicProvenance(dataStore);
+            SyncCourtPolicyVoteAudience(dataStore);
             RestoreIntegrationIds();
             _nextTerms = _nextTerms ?? new Dictionary<string, CampaignTime>();
             _reconsiderAfter = _reconsiderAfter ?? new Dictionary<string, CampaignTime>();
