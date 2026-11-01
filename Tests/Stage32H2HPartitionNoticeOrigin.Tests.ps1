@@ -57,7 +57,7 @@ Check ($cross.Contains('PartitionNoticeOriginScope.Begin(') -and
 # EstateInheritancePolicy.BuildProjection may produce separate sovereign and
 # ordinary shares for the SAME heir / recipient. A name-pair key collides.
 $projection = Read-Source 'EstateInheritancePolicy.cs'
-Check (($projection.Split('record.Shares.Add(share);').Length -ge 3) -and
+Check (([regex]::Matches($projection, [regex]::Escape('record.Shares.Add(share);')).Count -ge 2) -and
     $cross.Contains('record.Shares.IndexOf(share)') -and
     $cross.Contains('shareIndex < 0 ? null : "estate-share:"') -and
     $cross.Contains('shareIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)') -and
