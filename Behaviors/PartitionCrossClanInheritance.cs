@@ -424,7 +424,12 @@ namespace BellumCivile.Behaviors
                 message.SetTextVariable("ESTATE", DescribeDeliveredEstate(share, titles, recipient));
                 message.SetTextVariable("REALM", recipient.Kingdom?.Name
                     ?? new TextObject("{=BC_EstateInheritance_NoRealm}an independent house"));
-                string exactNoticeKey = noticeKey ?? ("estate-share:" + heir?.StringId + ":" + recipient?.StringId);
+                // The same heir can own a sovereign and a domestic share in this estate.
+                // Use the saved list slot, not (heir,recipient), which can collide.
+                int shareIndex = record.Shares == null ? -1 : record.Shares.IndexOf(share);
+                string exactNoticeKey = noticeKey
+                    ?? (shareIndex < 0 ? null : "estate-share:"
+                        + shareIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 using (PartitionNoticeOriginScope.Begin(record.Deceased?.StringId, record.Source?.StringId,
                     heir?.StringId, recipient?.StringId, executor, exactNoticeKey))
                     BellumCivileNotifications.Show(message, BellumNotificationColors.Inheritance,
