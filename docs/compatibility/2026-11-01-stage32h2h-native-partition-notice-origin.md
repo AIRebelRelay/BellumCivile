@@ -62,3 +62,16 @@ Positive: ordinary cadet/sovereign, crown heir/sovereign, cross-clan delivered s
 - **Live observation before GO:** Native `created ...`, `Cross-clan death estate delivered`, `partition completed with fewer cadets than planned`; Bridge `BELLUM_NOTIFY_CAPTURE`/`BELLUM_SIDECAR_NOTIFY` should remain unchanged for the old build. There is intentionally **no new H2H game log**, and the current Bridge does not yet consume the new getter. Next separately reviewed Bridge read-only diagnostics should compare exact per-notice ID against Native completed receipt without changing source writer or ACK.
 
 **Release status:** Native-only candidate / no release GO / game and compiled API not validated.
+
+## Stage32H2H Windows verification runner (2026-11-01 follow-up)
+
+Added `Tests/Stage32H2HVerifyWindows.ps1` **only to the Native feature branch**. It invokes the repo's EXISTING `scripts/Verify-Bellum148Build.ps1` (preflight then build); specifically requires installed **Bannerlord 1.4.8**, not 1.4.5/1.5.5. It checks branch name, known source ancestor, clean tracked worktree, pwsh 7+, git, dotnet, real GameFolder, then runs eight source/isolated C# regression tests before the strict shipping build. It never deploys a DLL or runs a game/save. It writes `STAGE32H2H_VERIFY_PASS` only if every invoked test and the genuine 1.4.8 build pass; other outcomes `STAGE32H2H_VERIFY_FAIL`. The transcript is recorded under the Windows system Temp directory in `AIInfluence-Bellum-H2H-QA`.
+
+From the exact H2H branch on a Windows host with real Bannerlord 1.4.8 binaries:
+
+```powershell
+pwsh -NoProfile -File .\Tests\Stage32H2HVerifyWindows.ps1 -GameFolder "C:\path\to\installed\Bannerlord-1.4.8"
+```
+
+If PASS, also verify in-game ordinary/crown/cross-clan/mixed notifications; compare `BELLUM_NOTIFY_CAPTURE` / `BELLUM_SIDECAR_NOTIFY`, save S1→S2→S1 and the no-duplicate behavior. The H2I Bellum Bridge RED branch remains untouched and **still blocked** until this runner actually passes. Authoring environment has no `pwsh`, `dotnet`, `mono`, `csc`, `mcs`, or game references; zero tests/builds have run here. Do **not** interpret runner creation as a test PASS.
+
