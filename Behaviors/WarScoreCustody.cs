@@ -17,9 +17,11 @@ namespace BellumCivile.Behaviors
 
         private void RemoveCustodyScore(Hero prisoner)
         {
-            if (prisoner == null || !WarPeaceRevampBehavior.IsRevampEnabled()) return;
+            bool revampEnabled = WarPeaceRevampBehavior.IsRevampEnabled();
+            if (prisoner == null || (!revampEnabled && !HasOpenAiInfluenceForeignLedgers())) return;
             foreach (var war in GetActiveWars())
             {
+                if (!revampEnabled && !IsAiInfluenceForeignLedger(war)) continue;
                 float previous = war.Score, previousCustody = war.PrisonerScore;
                 war.RemovePrisoner(prisoner.StringId, C.WarScorePrisonerCap);
                 if (Math.Abs(previousCustody - war.PrisonerScore) < .0001f) continue;
@@ -31,13 +33,15 @@ namespace BellumCivile.Behaviors
 
         private void ReconcileReversibleScores()
         {
-            if (!WarPeaceRevampBehavior.IsRevampEnabled()) return;
+            bool revampEnabled = WarPeaceRevampBehavior.IsRevampEnabled();
+            if (!revampEnabled && !HasOpenAiInfluenceForeignLedgers()) return;
             // One prisoner scan per reconciliation, not one full hero scan per war.
             var prisoners = Hero.AllAliveHeroes.Where(h => h.IsPrisoner && !HostageCustodyGuard.IsProtected(h))
                 .Select(h => new { Hero = h, Captor = RetainedTreatyPrisonerBehavior.GetCaptorKingdom(h), Victim = h.Clan?.Kingdom })
                 .Where(p => p.Captor != null && p.Victim != null && p.Captor != p.Victim).ToList();
             foreach (var war in GetActiveWars())
             {
+                if (!revampEnabled && !IsAiInfluenceForeignLedger(war)) continue;
                 if (CivilWarConflictBehavior.IsScoreTransferPending(war)) continue;
                 var current = new Dictionary<string, float>();
                 foreach (var p in prisoners)
@@ -56,7 +60,8 @@ namespace BellumCivile.Behaviors
                     debugText: "current opposing custody reconciled");
                 QueueTerminalWarScoreResolution(war, "prisoner custody reconciled");
             }
-            Campaign.Current?.GetCampaignBehavior<ClaimFeudWarBehavior>()?.ReconcileObjectiveControlScores();
+            if (revampEnabled)
+                Campaign.Current?.GetCampaignBehavior<ClaimFeudWarBehavior>()?.ReconcileObjectiveControlScores();
         }
     }
 }
