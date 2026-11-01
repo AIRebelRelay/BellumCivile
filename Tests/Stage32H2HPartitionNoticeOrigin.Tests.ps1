@@ -54,6 +54,16 @@ Check ($cross.Contains('PartitionNoticeOriginScope.Begin(') -and
     $cross.Contains('record.Deceased?.StringId') -and
     $cross.Contains('ShowEstateInheritanceMessage(record, share, titles);')) 'cross_clan_share_with_its_native_estate'
 
+# EstateInheritancePolicy.BuildProjection may produce separate sovereign and
+# ordinary shares for the SAME heir / recipient. A name-pair key collides.
+$projection = Read-Source 'EstateInheritancePolicy.cs'
+Check (($projection.Split('record.Shares.Add(share);').Length -ge 3) -and
+    $cross.Contains('record.Shares.IndexOf(share)') -and
+    $cross.Contains('shareIndex < 0 ? null : "estate-share:"') -and
+    $cross.Contains('shareIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)') -and
+    (-not $cross.Contains('"estate-share:" + heir?.StringId'))) 'cross_clan_multiple_shares_same_heir_distinct_saved_index'
+
+
 Check ($mixed.Contains('pending.DeadLeaderId, "mixed", "mixed-share:" + i') -and
     $mixed.Contains('ShowEstateInheritanceMessage(estate, share, titles, "mixed", "mixed-share:" + i)') -and
     $mixed.Contains('batch.TryAnnounce("mixed-share:" + i')) 'mixed_share_exact_existing_index_marker'
