@@ -55,9 +55,11 @@ namespace BellumCivile.Behaviors
                     if (promotion != null)
                     {
                         summary?.RecordSovereignPartition(promotion.Successor, package.RootTitle);
-                        ShowSovereignPartitionMessage(parent, recipient, share.Heir, package, realm, promotion.Successor, titles);
+                        ShowSovereignPartitionMessage(parent, recipient, share.Heir, package, realm, promotion.Successor, titles,
+                            pending.DeadLeaderId, "crown", "heir:" + share.Heir.StringId);
                     }
-                    else ShowPartitionMessage(parent, recipient, share.Heir, package, realm, titles);
+                    else ShowPartitionMessage(parent, recipient, share.Heir, package, realm, titles,
+                        pending.DeadLeaderId, "crown", "heir:" + share.Heir.StringId);
                 }, out reason)) return false;
             }
             if (!batch.TryAnnounce("treasury", () => summary?.RecordPartitionGoldTransfer(
