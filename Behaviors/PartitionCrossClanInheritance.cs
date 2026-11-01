@@ -406,7 +406,8 @@ namespace BellumCivile.Behaviors
             ShowEstateInheritanceMessage(record, share, titles);
         }
 
-        private static void ShowEstateInheritanceMessage(CrossClanEstateRecord record, CrossClanEstateShare share, FeudalTitleBehavior titles)
+        private static void ShowEstateInheritanceMessage(CrossClanEstateRecord record, CrossClanEstateShare share,
+            FeudalTitleBehavior titles, string executor = "cross_clan", string noticeKey = null)
         {
             var recipient = share.Recipient;
             var heir = share.Heir;
@@ -423,8 +424,11 @@ namespace BellumCivile.Behaviors
                 message.SetTextVariable("ESTATE", DescribeDeliveredEstate(share, titles, recipient));
                 message.SetTextVariable("REALM", recipient.Kingdom?.Name
                     ?? new TextObject("{=BC_EstateInheritance_NoRealm}an independent house"));
-                BellumCivileNotifications.Show(message, BellumNotificationColors.Inheritance,
-                    primaryKingdom: record.Realm, primaryClan: recipient, secondaryClan: record.Source);
+                string exactNoticeKey = noticeKey ?? ("estate-share:" + heir?.StringId + ":" + recipient?.StringId);
+                using (PartitionNoticeOriginScope.Begin(record.Deceased?.StringId, record.Source?.StringId,
+                    heir?.StringId, recipient?.StringId, executor, exactNoticeKey))
+                    BellumCivileNotifications.Show(message, BellumNotificationColors.Inheritance,
+                        primaryKingdom: record.Realm, primaryClan: recipient, secondaryClan: record.Source);
             }
         }
 
