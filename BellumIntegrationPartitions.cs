@@ -18,5 +18,15 @@ namespace BellumCivile
             BellumIntegrationBehavior.RequireCampaignThread();
             return BellumIntegrationBehavior.Current.GetRecentPartitions();
         }
+
+        /// <summary>
+        /// Exact origin during one synchronous native partition notice only.
+        /// Null outside that invocation; neither completion nor display receipt.
+        /// </summary>
+        public static PartitionNoticeOriginSnapshot GetCurrentPartitionNoticeOrigin()
+        {
+            BellumIntegrationBehavior.RequireCampaignThread();
+            return PartitionNoticeOriginScope.GetCurrent();
+        }
     }
 }
