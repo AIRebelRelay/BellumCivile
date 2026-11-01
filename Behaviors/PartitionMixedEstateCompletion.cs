@@ -67,13 +67,14 @@ namespace BellumCivile.Behaviors
                             summary?.RecordPartitionCadetBranch(share.Recipient, estate.Source, estate.Realm, package.PrimaryFief);
                             summary?.RecordSovereignPartition(promotion.Successor, package.RootTitle);
                             ShowSovereignPartitionMessage(estate.Source, share.Recipient, share.Heir, package,
-                                estate.Realm, promotion.Successor, titles);
+                                estate.Realm, promotion.Successor, titles,
+                                pending.DeadLeaderId, "mixed", "mixed-share:" + i);
                         }
                         else
                         {
                             if (share.CadetPlan?.Cadet != null)
                                 summary?.RecordPartitionCadetBranch(share.Recipient, estate.Source, estate.Realm, ResolveTown(share.PrimaryFiefId));
-                            ShowEstateInheritanceMessage(estate, share, titles);
+                            ShowEstateInheritanceMessage(estate, share, titles, "mixed", "mixed-share:" + i);
                         }
                     }, out reason)) return false;
                 }
