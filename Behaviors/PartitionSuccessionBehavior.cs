@@ -345,11 +345,13 @@ namespace BellumCivile.Behaviors
                     if (successorKingdom != null)
                     {
                         Campaign.Current.GetCampaignBehavior<SuccessionYearlySummaryBehavior>()?.RecordSovereignPartition(successorKingdom, unit.RootTitle);
-                        ShowSovereignPartitionMessage(parentClan, cadetClan, heir, unit, kingdom, successorKingdom, titleBehavior);
+                        ShowSovereignPartitionMessage(parentClan, cadetClan, heir, unit, kingdom, successorKingdom, titleBehavior,
+                            record.DeadLeaderId, "ordinary", "heir:" + heir.StringId);
                     }
                     else
                     {
-                        ShowPartitionMessage(parentClan, cadetClan, heir, unit, kingdom, titleBehavior);
+                        ShowPartitionMessage(parentClan, cadetClan, heir, unit, kingdom, titleBehavior,
+                            record.DeadLeaderId, "ordinary", "heir:" + heir.StringId);
                     }
 
                     TracePartition($"created {cadetClan.StringId}; parent={parentClan.StringId}; leader={heir.StringId}; unit={unit.DebugName}; fiefs={FormatFiefIds(transferredFiefs)}; titles={FormatTitleIds(legalizedTitles)}; independent={successorKingdom?.StringId ?? "no"}; independent_failure={sovereignFailure ?? "none"}.");
@@ -1048,7 +1050,8 @@ namespace BellumCivile.Behaviors
             _clanTierField = typeof(Clan).GetField("_tier", flags);
         }
 
-        private static void ShowPartitionMessage(Clan parentClan, Clan cadetClan, Hero heir, FeudalInheritancePackage inheritancePackage, Kingdom kingdom, FeudalTitleBehavior titleBehavior)
+        private static void ShowPartitionMessage(Clan parentClan, Clan cadetClan, Hero heir, FeudalInheritancePackage inheritancePackage, Kingdom kingdom, FeudalTitleBehavior titleBehavior,
+            string deceasedId = null, string executor = null, string noticeKey = null)
         {
             TextObject text = new TextObject("{=BC_PartitionSuccession_CadetFounded}Following the recent succession on the {PARENT_CLAN}, {HEIR_NAME} has inherited the {TITLE_NAME} as {POSSESSIVE} bloodright, henceforth {POSSESSIVE} side of the family shall be known as the {CADET_CLAN}.");
             text.SetTextVariable("PARENT_CLAN", parentClan?.Name ?? new TextObject("?"));
@@ -1058,7 +1061,9 @@ namespace BellumCivile.Behaviors
             text.SetTextVariable("POSSESSIVE", heir?.IsFemale == true
                 ? new TextObject("{=BC_Pronoun_Her}her")
                 : new TextObject("{=BC_Pronoun_His}his"));
-            BellumCivileNotifications.Show(text, BellumNotificationColors.Inheritance, primaryKingdom: kingdom, primaryClan: cadetClan, secondaryClan: parentClan);
+            using (PartitionNoticeOriginScope.Begin(deceasedId, parentClan?.StringId, heir?.StringId,
+                cadetClan?.StringId, executor, noticeKey))
+                BellumCivileNotifications.Show(text, BellumNotificationColors.Inheritance, primaryKingdom: kingdom, primaryClan: cadetClan, secondaryClan: parentClan);
         }
 
         private static void ShowSovereignPartitionMessage(
@@ -1068,13 +1073,16 @@ namespace BellumCivile.Behaviors
             FeudalInheritancePackage inheritancePackage,
             Kingdom parentKingdom,
             Kingdom successorKingdom,
-            FeudalTitleBehavior titleBehavior)
+            FeudalTitleBehavior titleBehavior,
+            string deceasedId = null, string executor = null, string noticeKey = null)
         {
             TextObject text = new TextObject("{=BC_PartitionSuccession_SovereignRealmFounded}With no higher title to bind the inheritance, {HEIR_NAME} has inherited {TITLE_NAME} as an independent realm. The domains of {PARENT_CLAN} have been divided among its blood heirs.");
             text.SetTextVariable("HEIR_NAME", heir?.Name ?? new TextObject("?"));
             text.SetTextVariable("TITLE_NAME", ResolveInheritedTitleName(inheritancePackage, titleBehavior));
             text.SetTextVariable("PARENT_CLAN", parentClan?.Name ?? new TextObject("?"));
-            BellumCivileNotifications.Show(
+            using (PartitionNoticeOriginScope.Begin(deceasedId, parentClan?.StringId, heir?.StringId,
+                cadetClan?.StringId, executor, noticeKey))
+                BellumCivileNotifications.Show(
                 text,
                 BellumNotificationColors.Inheritance,
                 primaryKingdom: successorKingdom,
