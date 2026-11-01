@@ -40,7 +40,7 @@ Check ($origin.Contains('[ThreadStatic]') -and
 
 Check ($origin.Contains('IDisposable') -and
     $origin.Contains('Dispose()') -and
-    $origin.Contains('_active = previous;') -and
+    $origin.Contains('new Restore(previous)') -and
     $origin.Contains('_active = _previous;')) 'scope_restored_after_exception_or_nested_call'
 
 Check ($ordinary.Contains('record.DeadLeaderId, "ordinary", "heir:" + heir.StringId') -and
