@@ -23,7 +23,7 @@ $offGuard = $onTick.IndexOf('|| !WarPeaceRevampBehavior.IsRevampEnabled()', [Str
 $scan = $onTick.IndexOf('EnsureCollectionsInitialized();', [StringComparison]::Ordinal)
 Check ($firstGuard -ge 0 -and $offGuard -gt $firstGuard -and $offGuard -lt $scan) 'Revamp OFF returns before scanning proposal and war every tick'
 Check ($onTick.Contains('|| InformationManager.IsAnyInquiryActive()') -and
-    $onTick.Contains('|| PeaceParleyInterface.Instance.IsShown)') -and
+    $onTick.Contains('|| PeaceParleyInterface.Instance.IsShown') -and
     $onTick.Contains('string.IsNullOrWhiteSpace(_pendingPlayerParleyOpenProposalId)')) 'existing UI and empty deferred ID fences retained'
 Check ($onTick.Contains('if (proposal == null || proposal.State != TreatyProposalState.ParleyPending)') -and
     $onTick.Contains('if (war == null || !war.IsActive)') -and
