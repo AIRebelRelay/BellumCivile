@@ -898,7 +898,8 @@ namespace BellumCivile.Behaviors
         {
             if (string.IsNullOrWhiteSpace(_pendingPlayerParleyOpenProposalId)
                 || InformationManager.IsAnyInquiryActive()
-                || PeaceParleyInterface.Instance.IsShown)
+                || PeaceParleyInterface.Instance.IsShown
+                || !WarPeaceRevampBehavior.IsRevampEnabled())
             {
                 return;
             }
