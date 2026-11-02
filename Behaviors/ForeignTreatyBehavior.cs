@@ -163,6 +163,11 @@ namespace BellumCivile.Behaviors
         public bool TrySetPlayerVote(string proposalId, TreatyCouncilVoteStance stance, int influenceCommitment, out string report)
         {
             report = "player treaty vote could not be recorded";
+            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+            {
+                report = "Bellum foreign treaty is frozen while War & Peace Revamp is disabled";
+                return false;
+            }
             TreatyProposalRecord proposal = _proposals.FirstOrDefault(candidate => candidate != null && candidate.ProposalId == proposalId);
             Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
             if (proposal == null || proposal.State != TreatyProposalState.ParleyPending || playerKingdom == null)
@@ -203,6 +208,11 @@ namespace BellumCivile.Behaviors
         public bool TryRejectPlayerParley(string proposalId, out string report)
         {
             report = "the treaty could not be rejected";
+            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+            {
+                report = "Bellum foreign treaty is frozen while War & Peace Revamp is disabled";
+                return false;
+            }
             TreatyProposalRecord proposal = FindPendingPlayerProposal(proposalId);
             Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
             if (proposal == null || playerKingdom?.RulingClan != Clan.PlayerClan)
@@ -248,6 +258,11 @@ namespace BellumCivile.Behaviors
         public bool TrySignPlayerParley(string proposalId, out string report)
         {
             report = "the treaty could not be signed";
+            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+            {
+                report = "Bellum foreign treaty is frozen while War & Peace Revamp is disabled";
+                return false;
+            }
             TreatyProposalRecord proposal = FindPendingPlayerProposal(proposalId);
             WarScoreRecord war = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(proposal?.WarKey);
             Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
@@ -388,6 +403,11 @@ namespace BellumCivile.Behaviors
         public bool TryOpenPlayerParley(WarScoreRecord war, bool forced, bool preferWhitePeace, string reason, Kingdom drafter, Action onClosed, out string report)
         {
             report = "foreign parley could not be opened";
+            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+            {
+                report = "Bellum foreign treaty is frozen while War & Peace Revamp is disabled";
+                return false;
+            }
             if (war == null || !WarPeaceRevampBehavior.IsPlayerPoliticalParticipant(
                     ResolveKingdom(war.AttackerKingdomId),
                     ResolveKingdom(war.DefenderKingdomId)))
@@ -650,6 +670,11 @@ namespace BellumCivile.Behaviors
         public bool TryReplacePlayerDraft(string proposalId, IEnumerable<TreatyTermRecord> terms, out string report)
         {
             report = "treaty draft could not be changed";
+            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+            {
+                report = "Bellum foreign treaty is frozen while War & Peace Revamp is disabled";
+                return false;
+            }
             TreatyProposalRecord proposal = _proposals.FirstOrDefault(candidate => candidate != null && candidate.ProposalId == proposalId);
             if (proposal == null || proposal.State != TreatyProposalState.ParleyPending)
             {
