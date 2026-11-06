@@ -97,6 +97,7 @@ namespace BellumCivile.Behaviors
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, OnHourlyTick);
             CampaignEvents.TickEvent.AddNonSerializedListener(this, OnTick);
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -223,6 +224,8 @@ namespace BellumCivile.Behaviors
 
             WarScoreRecord war = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(proposal.WarKey);
             if (TryCancelStorylineProtectedProposal(war, proposal, out report))
+                return true;
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out report))
                 return true;
 
             if (proposal.IsForced)
@@ -428,6 +431,8 @@ namespace BellumCivile.Behaviors
                 return false;
             }
 
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out report))
+                return false;
             EnsureProposalHasDraft(war, proposal);
             if (!TryPreparePendingProposalDraft(war, proposal, out report))
                 return false;
@@ -476,6 +481,8 @@ namespace BellumCivile.Behaviors
             Kingdom winner = ResolveKingdom(proposal.WinnerKingdomId);
             Kingdom loser = ResolveKingdom(proposal.LoserKingdomId);
             if (TryCancelStorylineProtectedProposal(war, proposal, out report))
+                return false;
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out report))
                 return false;
 
             if (war == null || !war.IsActive || !IsTreatyRealmAvailable(winner) || !IsTreatyRealmAvailable(loser))
@@ -594,6 +601,35 @@ namespace BellumCivile.Behaviors
             if (proposal != null && _forcedPlayerParleyInquiryProposalId == proposal.ProposalId)
                 _forcedPlayerParleyInquiryProposalId = null;
             return true;
+        }
+
+        private bool TryCancelAllianceRestrictedProposal(WarScoreRecord war, TreatyProposalRecord proposal, out string report)
+        {
+            report = null;
+            // A cancelled or already-applied proposal must not be cancelled again on load or tick.
+            if (proposal == null || proposal.State != TreatyProposalState.ParleyPending
+                || Campaign.Current == null || war?.ConflictType != WarScoreConflictType.ForeignWar
+                || !AlliancePeaceRestriction.IsPeaceBlocked(ResolveKingdom(war.AttackerKingdomId), ResolveKingdom(war.DefenderKingdomId)))
+                return false;
+
+            report = AlliancePeaceRestriction.CancellationReason;
+            CancelInvalidProposal(war, proposal, report);
+            if (_pendingPlayerParleyOpenProposalId == proposal.ProposalId)
+                _pendingPlayerParleyOpenProposalId = null;
+            if (_forcedPlayerParleyInquiryProposalId == proposal.ProposalId)
+                _forcedPlayerParleyInquiryProposalId = null;
+            return true;
+        }
+
+        private void OnSessionLaunched(CampaignGameStarter starter)
+        {
+            if (!WarPeaceRevampBehavior.IsRevampEnabled())
+                return;
+
+            EnsureCollectionsInitialized();
+            WarScoreBehavior scores = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>();
+            foreach (TreatyProposalRecord proposal in _proposals.Where(p => p?.State == TreatyProposalState.ParleyPending).ToList())
+                TryCancelAllianceRestrictedProposal(scores?.GetActiveWar(proposal.WarKey), proposal, out _);
         }
 
         private static bool IsTreatyRealmAvailable(Kingdom kingdom)
@@ -839,6 +875,8 @@ namespace BellumCivile.Behaviors
 
         private bool TryShowForcedPlayerParleyInquiry(WarScoreRecord war, TreatyProposalRecord proposal)
         {
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
+                return false;
             Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
             Kingdom winner = ResolveKingdom(proposal?.WinnerKingdomId);
             Kingdom loser = ResolveKingdom(proposal?.LoserKingdomId);
@@ -974,6 +1012,8 @@ namespace BellumCivile.Behaviors
                 Kingdom winner = ResolveKingdom(proposal.WinnerKingdomId);
                 Kingdom loser = ResolveKingdom(proposal.LoserKingdomId);
                 if (TryCancelStorylineProtectedProposal(war, proposal, out _))
+                    continue;
+                if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
                     continue;
 
                 if (IsAiOnlyWar(winner, loser))
@@ -1843,6 +1883,8 @@ namespace BellumCivile.Behaviors
 
             if (TryCancelStorylineProtectedProposal(war, proposal, out _))
                 return false;
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
+                return false;
 
             if (!TryValidateCouncilControlledWhitePeace(war, proposal, out _))
                 return false;
@@ -1870,6 +1912,8 @@ namespace BellumCivile.Behaviors
         private bool ApplyTreatyCore(WarScoreRecord war, TreatyProposalRecord proposal, Kingdom winner, Kingdom loser)
         {
             if (!HasSettlementBudget(proposal, out _))
+                return false;
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
                 return false;
 
             bool whitePeace = proposal.Terms.Any(term => term?.Type == TreatyTermType.WhitePeace);
