@@ -45,11 +45,12 @@ namespace BellumCivile.Patches
             if (war == null || war.ConflictType != WarScoreConflictType.ForeignWar)
                 return true;
 
-            if (StorylineWarProtectionHelper.TryGetPeaceBlock(playerKingdom, opponent, out TextObject storylineReason))
+            if (StorylineWarProtectionHelper.TryGetPeaceBlock(playerKingdom, opponent, out TextObject storylineReason)
+                || AlliancePeaceRestriction.TryGetPeaceBlock(playerKingdom, opponent, out storylineReason))
             {
                 ____opponentFaction = null;
                 InformationManager.DisplayMessage(new InformationMessage(storylineReason.ToString(), BellumNotificationColors.Warning));
-                BellumCivileLogger.Log($"Suppressed a ruler courier peace offer for a Story Mode protected war; war={war.WarKey}.");
+                BellumCivileLogger.Log($"Suppressed a ruler courier peace offer for a protected foreign war; war={war.WarKey}.");
                 return false;
             }
 
@@ -112,7 +113,8 @@ namespace BellumCivile.Patches
             if (war == null || war.ConflictType != WarScoreConflictType.ForeignWar)
                 return true;
 
-            if (StorylineWarProtectionHelper.TryGetPeaceBlock(playerKingdom, opponent, out TextObject storylineReason))
+            if (StorylineWarProtectionHelper.TryGetPeaceBlock(playerKingdom, opponent, out TextObject storylineReason)
+                || AlliancePeaceRestriction.TryGetPeaceBlock(playerKingdom, opponent, out storylineReason))
             {
                 InformationManager.DisplayMessage(new InformationMessage(storylineReason.ToString(), BellumNotificationColors.Warning));
                 return false;
@@ -174,6 +176,14 @@ namespace BellumCivile.Patches
             WarScoreRecord war = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(playerKingdom, opponent);
             if (war == null || war.ConflictType != WarScoreConflictType.ForeignWar)
                 return true;
+
+            if (AlliancePeaceRestriction.TryGetPeaceBlock(playerKingdom, opponent, out TextObject allianceReason))
+            {
+                peaceDecision.Kingdom?.RemoveDecision(peaceDecision);
+                InformationManager.DisplayMessage(new InformationMessage(allianceReason.ToString(), BellumNotificationColors.Warning));
+                BellumCivileLogger.Log($"Retired a stale peace vote notification for a native call-to-arms protected war; war={war.WarKey}.");
+                return false;
+            }
 
             if (StorylineWarProtectionHelper.TryGetPeaceBlock(playerKingdom, opponent, out TextObject storylineReason))
             {
@@ -245,10 +255,11 @@ namespace BellumCivile.Patches
             if (war == null || war.ConflictType != WarScoreConflictType.ForeignWar)
                 return;
 
-            if (StorylineWarProtectionHelper.IsPeaceBlocked(playerKingdom, opponent))
+            if (StorylineWarProtectionHelper.IsPeaceBlocked(playerKingdom, opponent)
+                || AlliancePeaceRestriction.IsPeaceBlocked(playerKingdom, opponent))
             {
                 peaceDecision.Kingdom?.RemoveDecision(peaceDecision);
-                BellumCivileLogger.Log($"Prevented a peace vote notification from queuing during a Story Mode protected war; war={war.WarKey}.");
+                BellumCivileLogger.Log($"Prevented a peace vote notification from queuing during a protected foreign war; war={war.WarKey}.");
                 return;
             }
             if (PeaceParleyDecisionRedirector.RetireDuringRetryWindow(peaceDecision, war)) return;
@@ -362,6 +373,13 @@ namespace BellumCivile.Patches
                 .GetActiveWar(playerKingdom, opponent);
             if (war == null || war.ConflictType != WarScoreConflictType.ForeignWar)
                 return false;
+
+            if (AlliancePeaceRestriction.IsPeaceBlocked(playerKingdom, opponent))
+            {
+                peaceDecision.Kingdom?.RemoveDecision(peaceDecision);
+                report = AlliancePeaceRestriction.CancellationReason;
+                return true;
+            }
 
             if (StorylineWarProtectionHelper.IsPeaceBlocked(playerKingdom, opponent))
             {
