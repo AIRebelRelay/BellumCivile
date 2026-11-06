@@ -75,6 +75,8 @@ Check ($ruler.Contains('TryQueueDeferredPlayerParleyOpen(') -and
        $button.Contains('TryOpenPlayerParley(') -and
        $queued.Contains('TryQueuePlayerParley(') -and
        $redirect.Contains('TryQueueDeferredPlayerParleyOpen(')) 'ordinary legal peace redirect paths retained'
+Check ($ruler.Contains('Suppressed a ruler courier peace offer for a protected foreign war;') -and
+       $queued.Contains('Prevented a peace vote notification from queuing during a protected foreign war;')) 'shared protected-war logs do not falsely label alliance blocks as Story Mode'
 Check ($src.Contains('StorylineWarProtectionHelper.TryGetPeaceBlock') -and
        $src.Contains('InternalPeaceSettlementBehavior.TryIdentify')) 'storyline and internal peace routing unchanged'
 

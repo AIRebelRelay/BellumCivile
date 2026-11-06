@@ -50,7 +50,7 @@ namespace BellumCivile.Patches
             {
                 ____opponentFaction = null;
                 InformationManager.DisplayMessage(new InformationMessage(storylineReason.ToString(), BellumNotificationColors.Warning));
-                BellumCivileLogger.Log($"Suppressed a ruler courier peace offer for a Story Mode protected war; war={war.WarKey}.");
+                BellumCivileLogger.Log($"Suppressed a ruler courier peace offer for a protected foreign war; war={war.WarKey}.");
                 return false;
             }
 
@@ -259,7 +259,7 @@ namespace BellumCivile.Patches
                 || AlliancePeaceRestriction.IsPeaceBlocked(playerKingdom, opponent))
             {
                 peaceDecision.Kingdom?.RemoveDecision(peaceDecision);
-                BellumCivileLogger.Log($"Prevented a peace vote notification from queuing during a Story Mode protected war; war={war.WarKey}.");
+                BellumCivileLogger.Log($"Prevented a peace vote notification from queuing during a protected foreign war; war={war.WarKey}.");
                 return;
             }
             if (PeaceParleyDecisionRedirector.RetireDuringRetryWindow(peaceDecision, war)) return;
