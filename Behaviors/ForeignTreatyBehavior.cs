@@ -731,6 +731,12 @@ namespace BellumCivile.Behaviors
                 return false;
             }
 
+            if (AlliancePeaceRestriction.TryGetPeaceBlock(attacker, defender, out TextObject allianceReason))
+            {
+                report = allianceReason.ToString();
+                return false;
+            }
+
             if (ClientKingdomBehavior.Instance?.IsAuxiliaryClientWar(attacker, defender) == true)
             {
                 report = "client auxiliary wars are settled by the suzerain's principal treaty";
