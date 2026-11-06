@@ -335,8 +335,11 @@ namespace BellumCivile.Behaviors
             List<WarScoreRecord> candidates = GetActiveWars()
                 .Where(war => war.ConflictType == WarScoreConflictType.ForeignWar
                     && (war.AttackerKingdomId == proposer.Kingdom.StringId || war.DefenderKingdomId == proposer.Kingdom.StringId))
+                .Where(war => !IsAiInfluenceForeignLedger(war))
                 .Where(war => !IsAuxiliaryClientWar(war))
                 .Where(war => !IsStorylineProtectedForeignWar(war))
+                .Where(war => !AlliancePeaceRestriction.IsPeaceBlocked(
+                    ResolveKingdom(war.AttackerKingdomId), ResolveKingdom(war.DefenderKingdomId)))
                 .Where(war => war.CanReconsiderPeace(CurrentDay))
                 .Where(war => !requireLowWill || CourtAgendaBehavior.EffectiveWarWill(proposer,war,
                     Campaign.Current.GetCampaignBehavior<WarPeaceRevampBehavior>()?.GetWarWill(proposer) ?? 50) < BellumCivileOptions.WarWillPeaceThreshold)
@@ -1156,6 +1159,10 @@ namespace BellumCivile.Behaviors
             if (war.ConflictType == WarScoreConflictType.ForeignWar && IsStorylineProtectedForeignWar(war))
                 return false;
 
+            // The native call-to-arms obligation must not latch terminal peace,
+            // force the score to capitulation, or create a retry loop.
+            if (war.ConflictType == WarScoreConflictType.ForeignWar && AlliancePeaceRestriction.IsPeaceBlocked(ResolveKingdom(war.AttackerKingdomId), ResolveKingdom(war.DefenderKingdomId))) return false;
+
             if (!war.QueueTerminalResolution(reason))
                 return false;
 
@@ -1242,6 +1249,16 @@ namespace BellumCivile.Behaviors
                 {
                     war.ClearTerminalResolution();
                     TouchRuntimeRevision();
+                    return false;
+                }
+
+                // Also close terminal flags restored from an older save. An
+                // alliance-restricted war must not fall through to forced peace.
+                if (AlliancePeaceRestriction.IsPeaceBlocked(attacker, defender))
+                {
+                    war.ClearTerminalResolution();
+                    TouchRuntimeRevision();
+                    BellumCivileLogger.Log($"Discarded Bellum terminal peace resolution for native call-to-arms restriction; war={war.WarKey}; attacker={attacker.StringId}; defender={defender.StringId}; accounting_only=false.");
                     return false;
                 }
 
