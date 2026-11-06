@@ -100,7 +100,7 @@ namespace P003Fixture {
 '@
 $fixture += [Environment]::NewLine + $queueGate +
     [Environment]::NewLine + 'return true;' + [Environment]::NewLine + '}' +
-    [Environment]::NewLine + '}' 
+    [Environment]::NewLine + '}' + [Environment]::NewLine + '}'
 Add-Type -TypeDefinition $fixture -ErrorAction Stop
 $pair=[P003Fixture.WarScoreRecord]::new()
 $pair.AttackerKingdomId='a'
