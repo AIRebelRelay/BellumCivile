@@ -29,9 +29,9 @@ $helper = Slice 'private bool TryCancelAllianceRestrictedProposal(' 'private voi
 $session = Slice 'private void OnSessionLaunched(' 'private static bool IsTreatyRealmAvailable('
 $forced = Slice 'private bool TryShowForcedPlayerParleyInquiry(' 'private void OnTick(float dt)'
 $daily = Slice 'private void OnDailyTick()' 'private void ResolvePendingParley('
-$pending = Slice 'private void ResolvePendingParley(' 'private void OnHourlyTick()'
+$pending = Slice 'private void ResolvePendingParley(' 'private void RejectParley('
 $apply = Slice 'private bool ApplyTreaty(' 'private bool ApplyTreatyCore('
-$core = Slice 'private bool ApplyTreatyCore(' 'private static bool HasSettlementBudget('
+$core = Slice 'private bool ApplyTreatyCore(' 'internal static bool HasSettlementBudget('
 
 Check ($register.Contains('CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);')) 'session-launch event subscribed once'
 Before $reject 'if (!WarPeaceRevampBehavior.IsRevampEnabled())' 'TryCancelAllianceRestrictedProposal(war, proposal, out report)' 'reject: OFF remains before cancellation'
@@ -171,8 +171,9 @@ $cases = @'
          && p.State==TreatyProposalState.Cancelled && fixture.CancelCalls==1 && !war.ParleyPending
          && fixture._pendingPlayerParleyOpenProposalId==null && fixture._forcedPlayerParleyInquiryProposalId==null,
          "forbidden pending foreign treaty cancels once and clears matching GUI markers");
-      Verify(!fixture.Try(war,p,out report) && fixture.CancelCalls==1 && p.ResolutionNote==report || 
-         !fixture.Try(war,p,out report) && fixture.CancelCalls==1, "terminal proposal not cancelled twice");
+      string previousReason = p.ResolutionNote;
+      Verify(!fixture.Try(war,p,out report) && fixture.CancelCalls==1
+         && p.ResolutionNote==previousReason, "terminal proposal not cancelled twice");
       var p2=new TreatyProposalRecord { ProposalId="other" };
       var w2=new WarScoreRecord { AttackerKingdomId="a", DefenderKingdomId="b", ConflictType=WarScoreConflictType.ForeignWar };
       fixture._pendingPlayerParleyOpenProposalId="unrelated";
