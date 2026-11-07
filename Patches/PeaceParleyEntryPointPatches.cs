@@ -286,6 +286,21 @@ namespace BellumCivile.Patches
     [HarmonyPatch(typeof(Kingdom), nameof(Kingdom.AddDecision))]
     public static class KingdomPeaceDecisionAddedParleyCleanupPatch
     {
+        [HarmonyPrefix]
+        private static bool Prefix(KingdomDecision kingdomDecision)
+        {
+            if (!WarPeaceRevampBehavior.IsRevampEnabled() || !(kingdomDecision is MakePeaceKingdomDecision peace))
+                return true;
+            Kingdom first = peace.Kingdom;
+            Kingdom second = peace.FactionToMakePeaceWith as Kingdom;
+            var war = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(first, second);
+            if (war?.ConflictType != WarScoreConflictType.ForeignWar || !AlliancePeaceRestriction.IsPeaceBlocked(first, second))
+                return true;
+
+            BellumCivileLogger.Log($"Suppressed separate peace decision during an active call-to-arms agreement; war={war.WarKey}.");
+            return false;
+        }
+
         [HarmonyPostfix]
         private static void Postfix(Kingdom __instance, KingdomDecision kingdomDecision)
         {
