@@ -40,9 +40,9 @@ function ExistingPrefix([string]$source, [string]$className) {
     $a=$source.IndexOf('class ' + $className,[StringComparison]::Ordinal)
     Check ($a -ge 0) "existing sibling class: $className"
     $p=$source.IndexOf('private static bool Prefix(', $a, [StringComparison]::Ordinal)
-    $e=if($p -lt 0){-1}else{$source.IndexOf([Environment]::NewLine + '        }',$p,[StringComparison]::Ordinal)}
+    $e=if($p -lt 0){-1}else{$source.IndexOf([char]10 + '        }',$p,[StringComparison]::Ordinal)}
     Check ($p -ge 0 -and $e -gt $p) "existing sibling Prefix body: $className"
-    return $source.Substring($p,$e-$p+([Environment]::NewLine+'        }').Length)
+    return $source.Substring($p,$e-$p+([char]10+'        }').Length)
 }
 $nativeMethod=$prefix.Substring($prefix.IndexOf('private static bool Prefix(',[StringComparison]::Ordinal))
 $rival=ExistingPrefix $internal 'InternalPeaceRivalInsertionPatch'
