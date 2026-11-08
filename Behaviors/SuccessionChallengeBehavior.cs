@@ -96,6 +96,8 @@ namespace BellumCivile.Behaviors
 
         internal SuccessionChallengeRecord TryBegin(Kingdom realm, Hero challenger, double demandRoll, bool playerInitiated = false)
         {
+            var graceManager = Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>();
+            if (graceManager?.HasCivilWarGrace(realm) == true) return null;
             if (realm == null || realm.IsEliminated || !CrownAccessionBehavior.IsHereditaryRealm(realm)
                 || SuccessionLawBehavior.Instance?.ResolvePermanentRealm(realm) != realm
                 || CrownAccessionBehavior.Instance?.IsPending(realm) == true || challenger == Hero.MainHero && !playerInitiated
