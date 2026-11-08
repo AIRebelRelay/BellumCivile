@@ -577,7 +577,6 @@ namespace BellumCivile
         public void AddMember(Clan clan)
         {
             if (clan == null || (IsIdeology && !CourtMembershipEligibility.CanBelong(clan, ParentKingdom))) return;
-            if (!IsIdeology && clan == ParentKingdom?.RulingClan) return;
             if (Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>()?.IsCivilWarGraceBlocked(this) == true) return;
             if (clan == Clan.PlayerClan && !Members.Contains(clan)
                 && Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>()?.CivilWarGraceJoinBlock(this) != null) return;
