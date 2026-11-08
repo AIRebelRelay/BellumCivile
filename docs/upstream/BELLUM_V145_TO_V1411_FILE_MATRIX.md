@@ -7,21 +7,21 @@
 - **Custom Native Bellum:** `AIRebelRelay/BellumCivile` main @ `71c7ab8b8b7a21fc2661f5f25e0a18d74b952ca7`; our label **1.4.6**, with user-confirmed functional ancestry **official 1.4.5 + custom changes**. This is **not** official upstream 1.4.6 source.
 - **Prepared stacked Native drafts:** PR #9 → #10 → #11 → #12 → #13, combined head `a7a7d39e3bacac4799dc2d301831b2926171ebea`; these are **not merged**. A "Draft touched" mark is a candidate for review, **not** proof of upstream parity.
 - **Official upstream:** [`Vonbalt/BellumCivile`](https://github.com/Vonbalt/BellumCivile); target frozen commit `da426b23c64f3a66ae2b389d2db8f23489736bf9` (source `v1.4.11`). No `v1.4.x` git refs/tags resolved through repository file access; all comparisons below use **immutable full SHA**.
-- **CRITICAL BASELINE UNCERTAINTY:** author's accessible `_Module/SubModule.xml` history goes from `v1.4.4` at `40a25a8db99fa8f5fcf63595de3aa29bcfcdde0c` directly to `v1.4.6` in later commits; an independently verified official **1.4.5 source SHA was not found**. For safety the first interval uses the **older, broad pre-1.4.6 checkpoint** (`v1.4.4` string), so it may contain extra changes and MUST NOT be mislabeled as an exact official 1.4.5 diff. Resolve this by locating the 1.4.5 source/release archive, its build commit or matching tree before claiming 100% accuracy.
+- **1.4.5† CANDIDATE (source-backed, NOT RELEASE-BINARY-VERIFIED):** official Nexus [version 1.4.5 history](https://www.nexusmods.com/mountandblade2bannerlord/mods/10609?BH=14) lists the Oct 17–18 fixes (siege ownership, hostage checks, MCM instability/regency, Enforce Peace). In `Vonbalt/BellumCivile` those exact successive commits culminate in `b1d9a4e8fb74d4f9dd045793c156abeac6f9f4eb` (2026-10-18 02:30 UTC), before next known v1.4.6-era code. **Crucially our Native main `BellumCivileSaveDefiner.cs` Git blob `ca7ce54894239d7132b3ab79c81bcf1fc3037402` exactly matches this upstream commit** (99 class IDs, 97 containers). Git `_Module/SubModule.xml` still says `v1.4.4` in this candidate, so the exact **published 1.4.5 package source SHA is not independently proven**. Use this *high-confidence historical source candidate* as the narrower first checkpoint, and recheck against the release archive once obtainable.
 - **Additional boundary nuance:** upstream module version string can lag development changes: early commits for a later feature sometimes still carry an earlier `SubModule.xml` version. These checkpoints are **version-era source snapshots**, not independently proven release-package contents. Verify against actual released archives when determining an exact version boundary.
 
 ## Frozen comparison checkpoints
 
 | Phase | Base SHA | Head SHA | Commits | GitHub diff files | Source compare |
 |---|---|---|---:|---:|---|
-| pre-1.4.6* → 1.4.6 | `40a25a8db99fa8f5fcf63595de3aa29bcfcdde0c` | `2e4232521c469f5a9603c33cc1da5c2673a99162` | 12 | 96 | [Compare](https://github.com/Vonbalt/BellumCivile/compare/40a25a8db99fa8f5fcf63595de3aa29bcfcdde0c...2e4232521c469f5a9603c33cc1da5c2673a99162) |
+| 1.4.5† → 1.4.6 | `b1d9a4e8fb74d4f9dd045793c156abeac6f9f4eb` | `2e4232521c469f5a9603c33cc1da5c2673a99162` | 21 | 143 | [Compare](https://github.com/Vonbalt/BellumCivile/compare/b1d9a4e8fb74d4f9dd045793c156abeac6f9f4eb...2e4232521c469f5a9603c33cc1da5c2673a99162) |
 | 1.4.6 → 1.4.7 | `2e4232521c469f5a9603c33cc1da5c2673a99162` | `d93a20269e66226843df764be69b8a0dd1f264a0` | 5 | 19 | [Compare](https://github.com/Vonbalt/BellumCivile/compare/2e4232521c469f5a9603c33cc1da5c2673a99162...d93a20269e66226843df764be69b8a0dd1f264a0) |
 | 1.4.7 → 1.4.8 | `d93a20269e66226843df764be69b8a0dd1f264a0` | `ea0cc7b555bd05e4d246d5b1c98f643ec81da3d4` | 7 | 102 | [Compare](https://github.com/Vonbalt/BellumCivile/compare/d93a20269e66226843df764be69b8a0dd1f264a0...ea0cc7b555bd05e4d246d5b1c98f643ec81da3d4) |
 | 1.4.8 → 1.4.9 | `ea0cc7b555bd05e4d246d5b1c98f643ec81da3d4` | `e2ff7d074adeef3b539e7ec47094171c388b6842` | 4 | 28 | [Compare](https://github.com/Vonbalt/BellumCivile/compare/ea0cc7b555bd05e4d246d5b1c98f643ec81da3d4...e2ff7d074adeef3b539e7ec47094171c388b6842) |
 | 1.4.9 → 1.4.10 | `e2ff7d074adeef3b539e7ec47094171c388b6842` | `fe799297ed931ee0d1b69d8a7d4f57a7c22dd983` | 11 | 61 | [Compare](https://github.com/Vonbalt/BellumCivile/compare/e2ff7d074adeef3b539e7ec47094171c388b6842...fe799297ed931ee0d1b69d8a7d4f57a7c22dd983) |
 | 1.4.10 → 1.4.11 | `fe799297ed931ee0d1b69d8a7d4f57a7c22dd983` | `da426b23c64f3a66ae2b389d2db8f23489736bf9` | 10 | 64 | [Compare](https://github.com/Vonbalt/BellumCivile/compare/fe799297ed931ee0d1b69d8a7d4f57a7c22dd983...da426b23c64f3a66ae2b389d2db8f23489736bf9) |
 
-**Inventory:** **261 unique file paths**, union of **370 version-interval change entries** (same file can occur in several intervals). By initial review priority: P0=89, P1=85, P2=87. Raw GitHub compare indicates no oversized diff for these intervals; each supplied an explicit file array. This is a union of **checkpoint diffs**, not a per-commit audit of temporary changes later reverted inside the same interval.
+**Inventory:** **304 unique file paths**, union of **417 version-interval change entries** (same file can occur in several intervals). By initial review priority: P0=107, P1=96, P2=101. GitHub compare returned complete file arrays for these interval endpoints. This is a union of **checkpoint diffs**, not a per-commit audit of temporary changes later reverted inside an interval.
 
 ## How to use this tracker
 
@@ -31,11 +31,11 @@
 4. Before production changes define ROOT CAUSE, TOUCH, DO NOT TOUCH, MUST FIX, MUST NOT CHANGE and RED/neighbor regressions. Isolate one stage per Draft PR; audit its entire diff; execute real Windows PowerShell / .NET Native build, Bellum Bridge ABI test and copied-old-save / new-game logs before merge. Do not merge directly to main or release while these gates are pending.
 5. Preserve AI Influence external diplomacy ownership with Bellum War & Peace Revamp **OFF**, and verify no duplicate Bellum Bridge/Relay political events. Audit all new `SaveDefiner` class IDs, containers and original field IDs; never copy only newer schema registrations.
 
-**Stage cell legend:** `A` added; `M` modified; `D` deleted; `R` renamed; `C` copied; `—` not in that endpoint's changed-file list. `Draft touched?` compares our original Native main to stacked PR #13. Every status initially `TODO`. **P→6 uses the provisional pre-1.4.6 source**, not a proven 1.4.5 release SHA.
+**Stage cell legend:** `A` added; `M` modified; `D` deleted; `R` renamed; `C` copied; `—` not in that endpoint's changed-file list. `Draft touched?` compares our original Native main to stacked PR #13. Every status initially `TODO`. **5→6† uses the source-backed Oct 18 1.4.5 candidate**, not independently verified release-package source.
 
-## Complete changed-file matrix — 261 paths
+## Complete changed-file matrix — 304 paths
 
-| Priority | File | Area | P→6* | 6→7 | 7→8 | 8→9 | 9→10 | 10→11 | Draft touched? | Audit status |
+| Priority | File | Area | 5→6† | 6→7 | 7→8 | 8→9 | 9→10 | 10→11 | Draft touched? | Audit status |
 |:---:|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|
 | P2 | `_Module/SubModule.xml` | Module | M | M | M | M | M | M | — | TODO |
 | P2 | `AlliancePeaceRestriction.cs` | Politics/war | — | — | — | A | — | — | — | TODO |
@@ -46,6 +46,7 @@
 | P1 | `Behaviors/BellumMarriageStrategyHelper.cs` | Court/title | — | — | M | — | — | M | — | TODO |
 | P0 | `Behaviors/CivilWarCollapseContinuation.cs` | Politics/war | M | — | — | — | — | — | YES | TODO |
 | P0 | `Behaviors/CivilWarCrownTransfer.cs` | Politics/war | M | — | — | — | — | — | YES | TODO |
+| P0 | `Behaviors/CivilWarGrace.cs` | Politics/war | A | — | — | — | — | — | — | TODO |
 | P0 | `Behaviors/CivilWarResolutionBehavior.cs` | Politics/war | M | — | — | — | — | — | YES | TODO |
 | P0 | `Behaviors/CivilWarSuccessionSettlement.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/ClaimFeudBehavior.cs` | Behavior | — | M | — | — | — | — | — | TODO |
@@ -55,15 +56,22 @@
 | P1 | `Behaviors/CourtClientGrantAgendas.cs` | Court/title | — | — | — | — | M | — | — | TODO |
 | P1 | `Behaviors/CourtCouncilAgendas.cs` | Court/title | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/CourtExecutiveAgendas.cs` | Court/title | M | — | — | — | — | — | — | TODO |
+| P1 | `Behaviors/CourtInstability.cs` | Court/title | M | — | — | — | — | — | — | TODO |
+| P1 | `Behaviors/CourtNominationMandates.cs` | Court/title | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/CourtPlayerCrownActions.cs` | Politics/war | — | — | — | — | M | — | — | TODO |
+| P1 | `Behaviors/CourtPlayerMotionPicker.cs` | Court/title | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/CourtTitleGrantAgendas.cs` | Court/title | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/CourtTitleGrantRecipientFlow.cs` | Court/title | A | — | — | — | — | — | — | TODO |
-| P1 | `Behaviors/CrownAccessionBehavior.cs` | Politics/war | — | — | M | — | — | — | — | TODO |
+| P1 | `Behaviors/CrownAbdication.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P1 | `Behaviors/CrownAccessionBehavior.cs` | Politics/war | M | — | M | — | — | — | — | TODO |
 | P1 | `Behaviors/CrownForcedAbdication.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
-| P1 | `Behaviors/DynamicMercenaryBandBehavior.cs` | Behavior | — | — | M | — | — | — | — | TODO |
+| P1 | `Behaviors/CrownHouseholdRecovery.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P1 | `Behaviors/CrownPlayerDeparture.cs` | Politics/war | A | — | — | — | — | — | — | TODO |
+| P1 | `Behaviors/DynamicMercenaryBandBehavior.cs` | Behavior | M | — | M | — | — | — | — | TODO |
 | P1 | `Behaviors/DynamicMercenaryPartyRepair.cs` | Behavior | — | — | A | — | — | — | — | TODO |
 | P1 | `Behaviors/DynamicRelationBehavior.cs` | Behavior | — | — | M | — | — | — | — | TODO |
 | P1 | `Behaviors/DynasticHeirBehavior.cs` | Behavior | M | — | — | — | — | — | — | TODO |
+| P1 | `Behaviors/ElectiveContestBehavior.cs` | Behavior | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/ExileAsylumDialogues.cs` | Behavior | — | — | — | — | A | — | — | TODO |
 | P1 | `Behaviors/ExileAsylumTesting.cs` | Behavior | — | — | — | — | A | — | — | TODO |
 | P1 | `Behaviors/ExileAsylumVisits.cs` | Behavior | — | — | — | — | A | — | — | TODO |
@@ -76,7 +84,7 @@
 | P1 | `Behaviors/ForeignTreatyBehavior.cs` | Politics/war | M | — | — | M | — | — | — | TODO |
 | P1 | `Behaviors/HostagePactPlacement.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/HostagePactTreatyDelivery.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
-| P1 | `Behaviors/IdeologyBehavior.cs` | Behavior | — | M | — | — | — | — | — | TODO |
+| P1 | `Behaviors/IdeologyBehavior.cs` | Behavior | M | M | — | — | — | — | — | TODO |
 | P1 | `Behaviors/IndependenceRulerSaveRepair.cs` | Behavior | A | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/LordshipBehavior.cs` | Court/title | — | — | A | M | M | M | — | TODO |
 | P1 | `Behaviors/LordshipCommandTransfers.cs` | Court/title | — | — | — | — | — | A | — | TODO |
@@ -96,14 +104,19 @@
 | P1 | `Behaviors/SpecificMarriageProposalBehavior.cs` | Court/title | — | — | M | — | — | M | — | TODO |
 | P1 | `Behaviors/StrategicMarriageBehavior.cs` | Court/title | — | — | M | — | — | M | — | TODO |
 | P1 | `Behaviors/StrategicMarriageProspects.cs` | Court/title | — | — | — | — | — | M | — | TODO |
+| P0 | `Behaviors/SuccessionChallengeBehavior.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P0 | `Behaviors/SuccessionChallengeInitiation.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P0 | `Behaviors/SuccessionChallengePlayer.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P0 | `Behaviors/SuccessionChallengeWar.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/TitleAcquisitionBehavior.cs` | Court/title | — | — | A | — | — | — | — | TODO |
 | P1 | `Behaviors/VassalLordshipDialogues.cs` | Court/title | — | — | A | M | M | — | — | TODO |
 | P1 | `Behaviors/VassalLordships.cs` | Court/title | — | — | A | M | M | — | — | TODO |
+| P0 | `Behaviors/WarPeaceRevampBehavior.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/WarScoreBehavior.cs` | Politics/war | — | — | — | M | — | — | — | TODO |
-| P2 | `BellumCivile.csproj` | Politics/war | — | — | M | — | — | — | — | TODO |
+| P2 | `BellumCivile.csproj` | Politics/war | M | — | M | — | — | — | — | TODO |
 | P1 | `BellumCivileConstants.cs` | Politics/war | M | — | M | — | — | M | — | TODO |
 | P2 | `BellumCivileOptions.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
-| P0 | `BellumCivileSaveDefiner.cs` | Save/state | M | — | M | — | M | M | YES | TODO |
+| P0 | `BellumCivileSaveDefiner.cs` | Save/state | M | — | M | — | M | M | YES | PARTIAL |
 | P1 | `BellumCivileSettings.cs` | Politics/war | M | — | — | — | — | M | — | TODO |
 | P2 | `BellumClanPoliticsModel.cs` | Other | — | — | M | — | — | — | — | TODO |
 | P2 | `BellumFeudalClanFinanceModel.cs` | Other | — | — | M | — | — | — | — | TODO |
@@ -111,9 +124,11 @@
 | P2 | `BellumMarriageModel.cs` | Court/title | — | — | M | — | — | — | — | TODO |
 | P2 | `CheatCommands.cs` | Other | — | — | — | — | M | — | — | TODO |
 | P0 | `CivilWarCollapseRecord.cs` | Save/state | M | — | — | — | — | — | YES | TODO |
+| P0 | `CivilWarGraceRecord.cs` | Save/state | A | — | — | — | — | — | — | TODO |
 | P2 | `CourtClientGrantObjectiveSource.cs` | Court/title | — | — | — | — | M | — | — | TODO |
 | P1 | `CourtClientGrantRecord.cs` | Save/state | — | — | — | — | M | — | — | TODO |
 | P1 | `CourtTitleGrantRecord.cs` | Save/state | M | — | — | — | — | — | — | TODO |
+| P1 | `CrownAccessionRecord.cs` | Save/state | M | — | — | — | — | — | — | TODO |
 | P2 | `DynamicKingdomTitleNameHelper.cs` | Politics/war | — | M | — | — | — | — | — | TODO |
 | P2 | `DynamicMercenaryBandService.cs` | Other | — | — | M | — | — | — | — | TODO |
 | P2 | `EstateInheritanceDisplay.cs` | Other | — | — | M | — | — | — | — | TODO |
@@ -122,6 +137,7 @@
 | P2 | `FeudalTitleConfig.cs` | Court/title | — | — | — | M | — | — | — | TODO |
 | P2 | `FeudalTitleDisplayHelper.cs` | Court/title | — | — | M | M | — | M | — | TODO |
 | P2 | `FeudalTitlePlayerActionService.cs` | Court/title | — | M | M | — | — | — | — | TODO |
+| P2 | `GUI/Brushes/BellumParley.xml` | Other | A | — | — | — | — | — | — | TODO |
 | P2 | `GUI/Prefabs/KingdomManagement/Factions/BellumFactionsPanel.xml` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P2 | `GUI/Prefabs/KingdomManagement/Hierarchy/BellumHierarchyPanel.xml` | Politics/war | — | — | M | — | — | — | — | TODO |
 | P2 | `GUI/Prefabs/KingdomManagement/Hierarchy/BellumHierarchyTitleTreeNode.xml` | Politics/war | — | — | M | — | — | — | — | TODO |
@@ -130,6 +146,7 @@
 | P2 | `HostagePactRules.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P2 | `HouseholdMembership.cs` | Court/title | — | — | A | — | — | M | — | TODO |
 | P2 | `IndependentKingdomProfile.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P2 | `InternalInstabilityPresets.cs` | Other | M | — | — | — | — | — | — | TODO |
 | P2 | `KingdomVisualHelper.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P2 | `LordshipEligibility.cs` | Court/title | — | — | A | M | M | M | — | TODO |
 | P2 | `LordshipHapIncome.cs` | Court/title | — | — | — | — | A | — | — | TODO |
@@ -158,8 +175,10 @@
 | P1 | `Patches/LordshipFinancePatches.cs` | Harmony | — | — | A | — | M | M | — | TODO |
 | P1 | `Patches/LordshipMapBannerPatch.cs` | Harmony | — | — | A | — | M | — | — | TODO |
 | P0 | `Patches/PeaceParleyEntryPointPatches.cs` | Harmony | — | — | — | M | — | — | — | TODO |
+| P1 | `Patches/PlayerLandedSecessionPatch.cs` | Harmony | M | — | — | — | — | — | — | TODO |
 | P1 | `Patches/ProtectedRealmLoadMigrationPatch.cs` | Harmony | A | — | — | — | — | — | — | TODO |
 | P1 | `Patches/RealmLeadershipDiagnosticPatch.cs` | Harmony | A | — | — | — | — | — | — | TODO |
+| P1 | `Patches/RecruitmentRankPatch.cs` | Harmony | A | — | — | — | — | — | — | TODO |
 | P1 | `Patches/RegencyAdulthoodEventPatch.cs` | Harmony | A | — | — | — | — | — | — | TODO |
 | P1 | `Patches/SeparateSpouseHouseholdPatch.cs` | Harmony | — | — | — | — | — | M | — | TODO |
 | P1 | `Patches/TitleAcquisitionNotificationPatch.cs` | Harmony | — | — | A | — | — | — | — | TODO |
@@ -178,17 +197,24 @@
 | P2 | `SubModule.cs` | Other | — | — | M | — | M | — | — | TODO |
 | P2 | `Tests/AcceptedIndependence.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/AsylumAudience.Tests.ps1` | Tests | — | — | — | — | A | — | — | TODO |
+| P2 | `Tests/AutomaticWhitePeaceFallback.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
 | P2 | `Tests/BilateralMarriage.Tests.ps1` | Tests | — | — | — | — | — | M | — | TODO |
+| P0 | `Tests/CivilWarGrace.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/ClaimFeudPlayerControl.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
+| P2 | `Tests/CourtPlayerPicker.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
 | P2 | `Tests/CourtRedesignHarness/CourtRedesignHarness.csproj` | Tests | — | — | — | — | — | M | — | TODO |
 | P2 | `Tests/CourtRedesignHarness/Program.cs` | Tests | — | — | — | — | — | M | — | TODO |
 | P2 | `Tests/CourtTitleGrant.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
+| P2 | `Tests/CrownFavorCost.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
 | P2 | `Tests/CrownPanelCleanup.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
+| P2 | `Tests/CrownPlayerDeparture.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/EstateInheritanceDisplay.Tests.ps1` | Tests | — | — | M | — | — | — | — | TODO |
+| P2 | `Tests/FactionInfluenceCostSizing.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/ForcedAbdication.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
 | P2 | `Tests/HierarchyActionMenu.Tests.ps1` | Tests | — | M | M | — | — | — | — | TODO |
 | P2 | `Tests/IndependenceRulerSaveRepair.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/InheritedPossession.Tests.ps1` | Tests | — | M | — | — | — | — | — | TODO |
+| P2 | `Tests/InternalInstability.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
 | P2 | `Tests/PartyVisualRefresh.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/PeaceParleyCapitulation.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/PeaceParleyOverBudget.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
@@ -201,15 +227,17 @@
 | P0 | `Tests/SuccessionEngineHarness/AlliancePeaceTests.cs` | Tests | — | — | — | A | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/AsylumDialogueFlowTests.cs` | Tests | — | — | — | — | A | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/AsylumVisitTests.cs` | Tests | — | — | — | — | A | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/CadetHouseholdPreparationTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CampaignRunRecoveryTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CampaignUiStartupProbe.cs` | Tests | — | — | M | — | M | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CaptainTitleTests.cs` | Tests | — | — | — | — | — | A | — | TODO |
-| P0 | `Tests/SuccessionEngineHarness/CivilWarGraceTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/CivilWarGraceTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/ClaimFeudCooldownTests.cs` | Tests | — | A | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CollapseClaimantRecoveryTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CompanionOffspringTests.cs` | Tests | — | — | — | — | — | A | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CourtClientGrantTests.cs` | Tests | — | — | — | — | M | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CourtTitleGrantEngineTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/CrownPlayerDepartureTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/CrownRebellionSafetyTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/DynamicMercenaryPartyRepairTests.cs` | Tests | — | — | A | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/DynamicMercenarySpawnTests.cs` | Tests | — | — | A | — | — | — | — | TODO |
@@ -228,6 +256,8 @@
 | P0 | `Tests/SuccessionEngineHarness/HouseholdMembershipTests.cs` | Tests | — | — | — | — | — | A | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/IndependenceRulerRepairTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/IntegrationSaveDefinitionTests.cs` | Tests | M | — | M | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/InternalInstabilityPresetTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/InternalInstabilityTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/InternalPeaceTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/LordshipApiTests.cs` | Tests | — | — | A | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/LordshipAppointmentTests.cs` | Tests | — | — | — | — | A | M | — | TODO |
@@ -254,7 +284,11 @@
 | P0 | `Tests/SuccessionEngineHarness/PartyNavigationTestScene.cs` | Tests | — | — | A | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/PartyVisualRefreshTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/PeaceCouncilReadinessTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/PeaceParleyBudgetRecoveryTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/PeaceParleyCapitulationTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/PeaceParleyExplanationTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/PeaceParleyPresentationTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/PeaceParleyVotingTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/PeaceReadinessTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/PlayerMarriageAgreementTests.cs` | Tests | — | — | — | — | — | M | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/PrefabFinalizationCompatibilityTests.cs` | Tests | — | — | — | — | A | — | — | TODO |
@@ -262,6 +296,7 @@
 | P0 | `Tests/SuccessionEngineHarness/Program.cs` | Tests | M | M | M | M | M | M | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/RealmLeadershipDiagnosticTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/RealmNameTests.cs` | Tests | — | M | — | — | — | — | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/RecruitmentRankTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/RegencyAdulthoodTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/RegencySettingsTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/RestoredRealmRecoveryTests.cs` | Tests | A | — | — | — | — | — | — | TODO |
@@ -271,11 +306,15 @@
 | P0 | `Tests/SuccessionEngineHarness/TitleAcquisitionTests.cs` | Tests | — | — | A | — | — | — | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/TitleNameCacheTests.cs` | Tests | — | — | — | — | — | M | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/TitlePresetLocalizationTests.cs` | Tests | — | — | M | M | — | M | — | TODO |
+| P0 | `Tests/SuccessionEngineHarness/WhitePeaceFallbackTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
 | P2 | `Tests/TreatyDurationSettings.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `TitleAcquiredMapNotification.cs` | Court/title | — | — | A | — | — | — | — | TODO |
 | P2 | `TownPartyPositionHelper.cs` | Other | — | — | A | — | — | — | — | TODO |
 | P2 | `TreatyAiDraftService.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P2 | `TreatyCouncilAbstentionReason.cs` | Politics/war | A | — | — | — | — | — | — | TODO |
+| P2 | `TreatyCouncilMemberEvaluation.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P2 | `TreatyHostageTerms.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
+| P1 | `TreatyProposalRecord.cs` | Save/state | M | — | — | — | — | — | — | TODO |
 | P2 | `TreatyRatificationService.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P2 | `TreatyRoyalMarriageService.cs` | Politics/war | — | — | M | — | — | — | — | TODO |
 | P1 | `TreatyTermRecord.cs` | Save/state | M | — | — | — | — | — | — | TODO |
@@ -292,16 +331,28 @@
 | P2 | `UI/FactionsWindowVM.cs` | UI | M | — | — | — | — | — | — | TODO |
 | P2 | `UI/KingdomManagementBellumFactionsVMMixin.cs` | UI | — | — | — | — | M | — | — | TODO |
 | P2 | `UI/Parley/PeaceParleyHostages.cs` | UI | M | — | — | — | — | — | — | TODO |
+| P2 | `UI/Parley/PeaceParleyInterface.cs` | UI | M | — | — | — | — | — | — | TODO |
 | P2 | `UI/Parley/PeaceParleyVM.cs` | UI | M | — | — | M | — | — | — | TODO |
+| P2 | `UI/Parley/TreatyCouncilExplanation.cs` | UI | A | — | — | — | — | — | — | TODO |
+| P2 | `UI/Parley/TreatyCouncilMemberVM.cs` | UI | M | — | — | — | — | — | — | TODO |
+| P2 | `UI/Parley/TreatyCouncilSummaryVM.cs` | UI | A | — | — | — | — | — | — | TODO |
 | P2 | `UI/TitleAcquiredNotificationItemVM.cs` | UI | — | — | A | — | — | — | — | TODO |
 | P2 | `UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyBuildContext.cs` | UI | — | — | — | — | A | — | — | TODO |
 | P2 | `UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs` | UI | — | M | M | M | M | — | — | TODO |
 | P2 | `UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleTreeNodeWidget.cs` | UI | — | — | A | — | — | — | — | TODO |
 | P2 | `UI/VanillaTabs/Kingdoms/Hierarchy/KingdomHierarchyTabVM.cs` | UI | — | — | M | — | M | — | — | TODO |
 
+### First P0 read-only audit: save class registry (PARTIAL, not merged)
+
+- **Native `main`** and **upstream candidate 1.4.5†** share the same file blob `ca7ce54894239d7132b3ab79c81bcf1fc3037402` — exact source parity for **this file alone**, not the whole fork or binary package.
+- **Class registration counts / containers:** Native main 99 / 97; author candidate 1.4.5† 99 / 97; author 1.4.9 105 / 103; author 1.4.10 106 / 104; author 1.4.11 108 / 106; stacked Native PR #13 100 / 98.
+- **PR #13 vs author 1.4.11:** all **100 shared class IDs and names match**; **no class ID collision** found. Eight classes remain absent in staged Native: `CivilWarGraceRecord=136`, `PersonalLordshipRecord=138`, `LordshipAppointmentRecord=139`, `LordshipIncomeCredit=140`, `TitleAcquiredMapNotification=141`, `AsylumVisitRecord=142`, `LordshipCommandTransferRecord=143`, `RetainerIndentureRecord=144`. `RestoredRealmCreationRecord=137` already exists in PR #13. These are **source registry findings**, NOT verified complete save compatibility.
+- **Status rationale:** `BellumCivileSaveDefiner.cs` = **PARTIAL**, because baseline metadata aligns but many upstream feature types/containers are not yet present. **DO NOT COPY** these registrations without implementing and testing the owning features. Before marking MATCH, audit field IDs, all downstream save types, feature initialization, old-save defaults, Windows build/load and unmodified historical save.
+- **Production change boundary:** **NONE** in this audit; no new fields, ID assignments, Harmony, migration, or save repair. Next P0 audit must inspect source-side callers of each missing class and its registration and preserve current AII foreign peace (Revamp OFF), original save IDs and Bridge ABI.
+
 ## Pending coverage blockers / separate checks
 
-- [ ] Establish official author's **1.4.5 source tree SHA**, or match the available 1.4.5 release archive to a commit/tree; then **regenerate the first interval** and count. Keep the conservative pre-1.4.6 checkpoint until evidence replaces it.
+- [ ] Verify the **source-backed Oct 18 1.4.5† candidate** `b1d9a4e8...` against the actual author's 1.4.5 release archive/package; refine the checkpoint if actual packaged code differs. The first comparison has already been regenerated from this candidate, but this is not a binary-matched release provenance claim.
 - [ ] Check inter-checkpoint **commit-by-commit paths** for any file changed and fully reverted within one interval. The matrix intentionally does not claim such transient history was exhaustively inspected.
 - [ ] Compare independent Draft PR #2–#7 and PR #9–#13 against latest upstream, custom Native features, and each other. PR #7 (collapse ID reference guard) is **not** included in the #9→#13 stack; validate merge ordering, don't assume it is integrated.
 - [ ] Compare upstream 1.4.10 → 1.4.11 new save classes `LordshipCommandTransferRecord` (ID 143), `RetainerIndentureRecord` (ID 144), dependencies and containers; they do not exist in our staged Native as part of this port. Never import those IDs without importing and testing the corresponding feature.
