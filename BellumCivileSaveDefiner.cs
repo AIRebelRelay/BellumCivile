@@ -17,6 +17,7 @@ namespace BellumCivile
         protected override void DefineClassTypes()
         {
             AddClassDefinition(typeof(RestoredRealmCreationRecord), 137);
+            AddClassDefinition(typeof(CivilWarGraceRecord), 136);
             AddClassDefinition(typeof(RoyalPeaceDecreeRecord), 135);
             AddClassDefinition(typeof(IntegrationVoteRecord), 133);
             AddClassDefinition(typeof(CouncilAppointmentResultRecord), 134);
@@ -162,6 +163,7 @@ namespace BellumCivile
 
         protected override void DefineContainerDefinitions()
         {
+            ConstructContainerDefinition(typeof(List<CivilWarGraceRecord>));
             ConstructContainerDefinition(typeof(List<RestoredRealmCreationRecord>));
             ConstructContainerDefinition(typeof(List<RoyalPeaceDecreeRecord>));
             ConstructContainerDefinition(typeof(List<IntegrationVoteRecord>));
