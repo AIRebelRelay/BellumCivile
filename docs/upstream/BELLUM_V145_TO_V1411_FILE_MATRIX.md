@@ -473,6 +473,29 @@ All eight save classes are absent from our staged SaveDefiner. The exact missing
 
 **Tracker metadata remains baseline-specific:** the 304-row `Draft touched?` column and `MISSING/PARTIAL/TODO` statuses still compare the author's upstream delta **against the previous Native staged PR #13**, not the unmerged PR #15. See this P0-04 section for exact **staged** source progress. Do not rewrite historical 1.4.5→1.4.11 file classifications based only on a Draft build.
 
+## P0-05 — Crown rebellion / succession-transition safety port (2026-11-08)
+
+**Status:** source port staged in [Native Draft PR #16](https://github.com/AIRebelRelay/BellumCivile/pull/16), stacked on P0-04 Draft #15; **NOT MERGED / full-final-DLL build and game QA pending**. Author pinned `Vonbalt/BellumCivile@da426b23c64f3a66ae2b389d2db8f23489736bf9`.
+
+**ROOT CAUSE (author behavior gap):** our inherited native `OnRulingClanChanged(Kingdom, Clan newRulingClan)` mistakenly handled Bannerlord's *displaced ruling clan* as the *incoming ruler* and triggered fresh Crown claimant ultimatums **synchronously** before succession/transfer/election completed. Missing source checks also allowed an invalid/self-reigning claimant, or a Crown change during household transfer, to pass an unsafe rebellion state. Author 1.4.11 defers the opportunity and rejects unsafe/changed Crowns without disrupting valid committed wars.
+
+**Exactly 4 files in Draft #16, +212/−82:**
+
+| File | Status / ownership |
+|---|---|
+| `Behaviors/FactionSuccessionSafety.cs` | **NEW / verbatim author**; warm-rebel reconciliation, saved queued contender opportunities, hourly readiness gate |
+| `Behaviors/FactionManagerBehavior.cs` | **STAGED**; add hourly processor, persist old-save-safe `BellumCivile_PendingSuccessionOpportunities`, daily reconciliation; replace only old synchronous incoming-ruler callback to use `kingdom.RulingClan`. Keep `ReportRulingClanChangedEvent`, `CourtAgendaBehavior.ReconcileCrown` and P1-01E/F transfer fences |
+| `FactionObject.cs` | **STAGED**; author `TryGetRebellionCrown`/`RebellionCrownUnchanged` and guards at ultimatum preflight/accept/refuse, adopted/partial recovery, new rebellion creation, all relevant member transfers. Active civil war and committed challenge resume remain covered |
+| `Tests/P005CrownRebellionSafetySource.Tests.ps1` | **RED-FIRST source contract**; positive/negative cases and previous feature protection, not yet run through PowerShell |
+
+**Source evidence only:** red test was the initial commit before code changes; 25/25 independent structural assertions against HEAD, verified 4-file diff, 9 `TryGetRebellionCrown` and 12 `RebellionCrownUnchanged` occurrences matching author, exact author Git blob for new helper, all 149 added nonblank production lines appear in author's respective 1.4.11 files. Native SaveDefiner already has `Dictionary<string,string>` container; **no new save class or ID**. This is source parity evidence, not C#/Windows/game compile or gameplay proof.
+
+**DO NOT TOUCH:** AII foreign war/peace (Revamp OFF), Relay/Bridge, Civil War Grace P0-04, P1-01E/F owner transfer fences, existing customized ruler-reporting helper and Court. The apparent historical weakness in `Behaviors/CivilWarSuccessionSettlement.cs` (custom `ResumeChallengeOutcome` ignores failure return from `TransferLiveClansFromEliminatedKingdom` and `DrainAndDestroyRebelKingdom`, whereas author `return`s to retry) is logged **separately for P0-06**; no combined patch.
+
+**Final single-DLL regression gate (ALL NOT EXECUTED):** run `Tests/P005CrownRebellionSafetySource.Tests.ps1` and author's `Tests/SuccessionEngineHarness/CrownRebellionSafetyTests.cs`, P0-04/P1-01A–F and all preceding tests against complete integrated source; compile **one complete release-candidate Native BellumCivile.dll** on Windows only after planned ports are finished; load compatible **Bellum Bridge**, copied historical save and new campaign. Verify actual `RulingClanChanged` old-clan arg, correct current ruler and no duplicate `ruler_changed`, warm faction disband/member removal, live war / partial / hereditary challenge untouched, correctly queued-once safe crown opportunity after accession, no false self-rebellion or resurrection after save-load. Preserve AII foreign diplomacy. No intermediate stage DLLs.
+
+**Tracker caveat:** historical 304-row `Draft touched?` and `MISSING/PARTIAL/TODO` statuses represent the earlier stacked PR #13 comparison. P0-04 and P0-05 staged statuses are *additional* tables, not completed 1.4.11 whole-project code-parity certificates.
+
 ## Pending coverage blockers / separate checks
 
 - [ ] Verify the **source-backed Oct 18 1.4.5† candidate** `b1d9a4e8...` against the actual author's 1.4.5 release archive/package; refine the checkpoint if actual packaged code differs. The first comparison has already been regenerated from this candidate, but this is not a binary-matched release provenance claim.
