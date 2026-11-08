@@ -70,6 +70,15 @@ namespace BellumCivile
         [SaveableField(34)] private bool _challengeWarAnnounced;
         [SaveableField(35)] private string _civilWarOriginShellPrefix;
         [SaveableField(36)] internal CourtAppeasementRecord CrownAccommodation;
+        [SaveableField(37)] private bool _judgmentResistance;
+        [SaveableField(38)] private bool _committedCourtChallenge;
+        internal void MarkCommittedCourtChallenge() => _committedCourtChallenge = true;
+        internal bool IsJudgmentResistance => _judgmentResistance;
+        internal void MarkJudgmentResistance() => _judgmentResistance = true;
+        internal bool HasStartedCivilWar => _rebellionCreationCompleted;
+        internal bool IsRebellionCreationPending => _rebellionCreationStarted && !_rebellionCreationCompleted;
+        internal bool IsCommittedCrownChallenge => IsUltimatumPending || _ultimatumResolved
+            || _rebellionCreationStarted || !string.IsNullOrEmpty(_successionChallengeId) || _committedCourtChallenge;
         public bool IsChallengeStartupPending => !string.IsNullOrEmpty(_successionChallengeId) && !_rebellionCreationCompleted;
         internal void BindSuccessionChallenge(string id)
         {
@@ -568,6 +577,10 @@ namespace BellumCivile
         public void AddMember(Clan clan)
         {
             if (clan == null || (IsIdeology && !CourtMembershipEligibility.CanBelong(clan, ParentKingdom))) return;
+            if (!IsIdeology && clan == ParentKingdom?.RulingClan) return;
+            if (Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>()?.IsCivilWarGraceBlocked(this) == true) return;
+            if (clan == Clan.PlayerClan && !Members.Contains(clan)
+                && Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>()?.CivilWarGraceJoinBlock(this) != null) return;
             if (_declaredLoyalist == clan) _declaredLoyalist = null;
             if (!Members.Contains(clan))
             {
@@ -669,6 +682,7 @@ namespace BellumCivile
 
             if (IsCivilWarActive() || IsUltimatumPending || HasTrackedRebelKingdom)
                 return;
+            if (Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>()?.IsCivilWarGraceBlocked(this) == true) return;
 
             RebellionPowerProjection projection = CalculatePowerProjection(forceRefresh: true);
             float factionPower = projection.FactionPower;
@@ -802,6 +816,7 @@ namespace BellumCivile
         internal bool CanTriggerUltimatum(out Settlement unsafeSettlement)
         {
             unsafeSettlement = null;
+            if (Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>()?.IsCivilWarGraceBlocked(this) == true) return false;
 
             if (IsIdeology
                 || IsCivilWarActive()
@@ -1075,6 +1090,7 @@ namespace BellumCivile
         /// </summary>
         internal bool StartImmediateSecessionFromParentRealm()
         {
+            if (Campaign.Current?.GetCampaignBehavior<FactionManagerBehavior>()?.IsCivilWarGraceBlocked(this) == true) return false;
             if (IsIdeology
                 || IsCivilWarActive()
                 || HasTrackedRebelKingdom
