@@ -288,6 +288,9 @@ namespace BellumCivile.Behaviors
             if (compact)
                 status = new TextObject(CourtAgendaPresentation.Status(agenda?.State, agenda?.CrisisInterventionPending == true,
                     IsCampaignObjective(agenda), IsSubjugationObjective(agenda), IsClaimObjective(agenda), IsDynastic(agenda), IsProtection(agenda), IsTrade(agenda), IsTitleGrant(agenda), IsRally(agenda), IsLiberation(agenda)));
+            if (agenda != null && (agenda.CrisisInterventionPending || agenda.State == CourtAgendaState.Crisis)
+                && CourtChallengeGraceBlock(agenda) is TextObject grace)
+                status = grace;
             text.SetTextVariable("STATUS", status);
             if (compact && CourtAgendaPresentation.Deadline(agenda) is var deadline && deadline.HasValue)
             {
@@ -457,7 +460,7 @@ namespace BellumCivile.Behaviors
                 bool playerLed = owner != null && sponsor == Clan.PlayerClan;
                 if (!playerLed && ShouldStartCourtCrisis(owner, realm)) { agenda.State = CourtAgendaState.Crisis; continue; }
                 if (playerLed) agenda.State = CourtAgendaState.AwaitingPlayerDecision;
-                if (playerLed && owner.Mood <= -60) agenda.CrisisInterventionPending = true;
+                if (playerLed && owner.Mood <= -60 && manager.HasCivilWarGrace(realm) != true) agenda.CrisisInterventionPending = true;
                 selecting.Add(agenda);
             }
             var choices = _objectiveSelector.SelectBatch(context,
@@ -522,8 +525,10 @@ namespace BellumCivile.Behaviors
                 if (!agenda.SessionDate.IsPast) return;
                 if (agenda.State == CourtAgendaState.Crisis)
                 {
-                    agenda.State = agenda.Faction.Mood >= -20 ? CourtAgendaState.Withdrawn
-                        : ideology.TryLaunchCourtChallenge(agenda.Faction, agenda.Realm) ? CourtAgendaState.Ultimatum : CourtAgendaState.TooWeak;
+                    if (agenda.Faction.Mood >= -20) { agenda.State = CourtAgendaState.Withdrawn; return; }
+                    if (CourtChallengeGraceBlock(agenda) != null) return;
+                    agenda.State = ideology.TryLaunchCourtChallenge(agenda.Faction, agenda.Realm)
+                        ? CourtAgendaState.Ultimatum : CourtAgendaState.TooWeak;
                     return;
                 }
                 if (!agenda.IsPolicy) { AdvanceExecutive(agenda, ideology); return; }
