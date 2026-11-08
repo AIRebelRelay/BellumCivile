@@ -44,4 +44,23 @@ Require ($resolver.Contains('private static bool TransferClansToKingdom(') -and
     $resolver.Contains('private static bool TransferLiveClansFromEliminatedKingdom(')) 'clan transfers report completion for retries'
 Require ($orphan.Contains('IsOrphanedRestoredRealm(') -and
     $orphan.Contains('IsKingdomIdReferencedByBellumCivileState(realm.StringId)')) 'orphan sweep excludes still-referenced realms'
+Require ($resolver.Contains('if (!TransferCivilWarClan(preferredRuler') -and
+    $resolver.Contains('return !sourceKingdom.Clans.Any') -and
+    $resolver.Contains('GetLiveNobleClans(eliminatedKingdom).Any()')) 'failed founder/partial household transfer cannot report success'
+Require ($resolver.Contains('if (CountStrongholds(rebelKingdom) > 0)') -and
+    $resolver.Contains('if (!rebelKingdom.IsEliminated)')) 'strongholds or failed destruction never report successful retirement'
+Require ($resolver.Contains('if (fallbackKingdom != null || !_pendingRebelCleanupFallbackIds.ContainsKey(rebelKingdomId))')) 'null fallback does not erase saved retry destination'
+Require ($recovery.Contains('!CivilWarConflictBehavior.IsOtherRealmTransferPending(realm)') -and
+    $recovery.Contains('!realm.Clans.Any(c => c != null && !c.IsEliminated)') -and
+    $recovery.Contains('CountStrongholds(realm) == 0')) 'no third-party transfer or live holdings bypasses destruction guard'
+Require ($recovery.IndexOf('source retirement pending') -lt $recovery.IndexOf('record.CreatedNotified = true') -and
+    $recovery.IndexOf('successor crown transfer pending') -lt $recovery.IndexOf('record.CreatedNotified = true')) 'native-created signal follows source retirement and legal crown'
+Require ($orphan.Contains('realm.Leader != null') -and $orphan.Contains('CountStrongholds(realm) > 0') -and
+    $orphan.Contains('Settlement.All.Any') -and $orphan.Contains('IsRealmTransferPending(realm)')) 'orphan sweeping protects live ruler, real fiefs and pending transfers'
+Require ($resolver.Contains('if (restoration != null) activeRebellions[restoration.Owner] = restoration.Source;') -and
+    $resolver.Contains('restoration?.ParentHouses ?? GetLiveNobleClans(collapsedParent)') -and
+    $resolver.Contains('restoration?.ExternalEnemies.ToList()')) 'reentry retains recorded owner, houses and external war snapshot'
+Require ($destruction.Contains('IsCrownPromotionRealmProtected(destroyedKingdom)') -and
+    $destruction.Contains('IsRealmUnionProtected(destroyedKingdom)') -and
+    $destruction.Contains('if (isKingdomLeaderDeath) return true;')) 'prior partition, realm union and leader-death guards preserved'
 Write-Host 'P101B_PASS structural RED-first contract; behavior/save/game test status is NOT RUN'
