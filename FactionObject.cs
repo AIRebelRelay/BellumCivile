@@ -1285,7 +1285,7 @@ namespace BellumCivile
             foreach (Clan member in Members.ToList())
             {
                 if (!RebellionCrownUnchanged(crown, out failureReason)) return false;
-                if (member != Leader && member != crown && !member.IsEliminated && member.Kingdom == ParentKingdom)
+                if (member != null && member != Leader && member != crown && !member.IsEliminated && member.Kingdom == ParentKingdom)
                     MoveClanToKingdomPreservingCivilWarInfluence(member, rebelKingdom, preserveRebelClanBanners, showNotification: false);
             }
 
