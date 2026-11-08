@@ -198,6 +198,15 @@ namespace BellumCivile.Behaviors
                 }
                 if (record.Stage == 4)
                 {
+                    if (!NobleClanEligibilityHelper.IsValidRulingClan(record.Successor?.RulingClan, record.Successor)
+                        || record.Successor.IsEliminated) return;
+                    if (!record.CreatedNotified)
+                    {
+                        record.CreatedNotified = true;
+                        CampaignEventDispatcher.Instance.OnKingdomCreated(record.Successor);
+                    }
+                    if (record.Successor.IsEliminated
+                        || !NobleClanEligibilityHelper.IsValidRulingClan(record.Successor.RulingClan, record.Successor)) return;
                     if (!record.RewardsApplied)
                     {
                         if (!record.InfluenceRestored)
