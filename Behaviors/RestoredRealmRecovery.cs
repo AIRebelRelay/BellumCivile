@@ -15,6 +15,11 @@ namespace BellumCivile.Behaviors
 
         internal bool IsRestoredCreationPending(Kingdom realm) => _restoredCreations.Any(r => r.Protects(realm));
 
+        internal bool OwnsRestoredHouseholdTransfer(FactionObject faction, Clan clan, Kingdom source, Kingdom destination) =>
+            _preparingRestoredCreations.Any(r => !r.Ready && r.Owner == faction
+                && r.Source == source && r.Successor == destination
+                && r.Houses.Contains(clan));
+
         private void ResumePendingRestoredCreations()
         {
             foreach (var record in _restoredCreations.Where(r => !r.Ready).ToList())
