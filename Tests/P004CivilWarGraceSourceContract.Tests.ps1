@@ -29,7 +29,7 @@ Check (([regex]::Matches($ideology, 'rebelFaction.MarkJudgmentResistance\(\)')).
     $ideology.Contains('coalitionLeader != null && factionManager.IsClanPacified(coalitionLeader)')) 'Legal expulsions and treason resistance preserve their response while pacified coalition leaders cannot bypass eligibility.'
 Check ($manager.Contains('if (IsCivilWarGraceBlocked(newFaction)) return;') -and
     ([regex]::Matches($faction, 'IsCivilWarGraceBlocked\(this\)')).Count -ge 4) 'Backend formation, support, discontent, ultimatum and direct secession paths are guarded.'
-Check ((Read 'Behaviors/SuccessionChallengeBehavior.cs').Contains('manager?.HasCivilWarGrace(realm) == true') -and
+Check ((Read 'Behaviors/SuccessionChallengeBehavior.cs').Contains('graceManager?.HasCivilWarGrace(realm) == true') -and
     (Read 'Behaviors/SuccessionChallengeInitiation.cs').Contains('manager.HasCivilWarGrace(realm)') -and
     (Read 'Behaviors/ElectiveContestBehavior.cs').Contains('Post-civil-war grace protects this accession')) 'Hereditary initiation and new election disputes use the same realm restriction.'
 Check ((Read 'Behaviors/SuccessionChallengeWar.cs').Contains('record.RealmBlockedUntil = record.OutcomeDay;') -and
@@ -67,4 +67,15 @@ Check ((Read 'Behaviors/CourtAgendaPlayerFlow.cs').Contains('a.State == CourtAge
     $picker.Contains('BC_CourtCrisisSetAside')) 'A previously approved unissued crisis can reopen a blocked approval popup with a free way to set it aside.'
 Check ($grace.Contains('The realm is currently pacified. New rebellions against the crown are barred for {DAYS} days.') -and
     !$grace.Contains('BC_CivilWarGrace_Settling')) 'Startup, settlement and postwar commands use one standardized countdown message.'
+# Fork-specific preservation checks (the upstream test alone cannot protect our staged Native code).
+$collapse = Read 'Behaviors/CivilWarCollapseContinuation.cs'
+Check ($collapse.Contains('"Crown mantle restored after outside conquest", record.Successor') -and
+    $collapse.Contains('record.Transfer != null') -and
+    $collapse.Contains('PrepareCollapseChallengeVictory(record)')) 'A restored collapse protects its permanent successor while keeping the stage-3 claimant and crown guards.'
+Check ($manager.Contains('OwnsCollapseHouseholdTransfer(faction, clan, oldKingdom, newKingdom)') -and
+    $manager.Contains('OwnsRestoredHouseholdTransfer(faction, clan, oldKingdom, newKingdom)')) 'Earlier P1-01E/F clan transfer ownership guards remain active.'
+Check ((Read 'Behaviors/CourtAgendaPlayerFlow.cs').Contains('private void NotifyNpcCrownAgenda(CourtAgendaRecord agenda)') -and
+    (Read 'Patches/PlayerLandedSecessionPatch.cs').Contains('if (!WarPeaceRevampBehavior.IsRevampEnabled()) return true;')) 'Custom NPC Crown notification and Bellum Revamp OFF fallback remain present.'
+Check ((Read 'Behaviors/SuccessionChallengeWar.cs').Contains('record.RealmBlockedUntil = record.OutcomeDay;') -and
+    !(Read 'Behaviors/SuccessionChallengeWar.cs').Contains('record.RealmBlockedUntil = record.OutcomeDay + CampaignTime.Years(2).ToDays;')) 'The original independent realm-wide two-year succession cooldown is not stacked onto Grace.'
 'Source contracts passed; native campaign/save-load behavior still needs in-game testing.'
