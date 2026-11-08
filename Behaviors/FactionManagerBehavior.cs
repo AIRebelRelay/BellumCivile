@@ -703,6 +703,8 @@ namespace BellumCivile.Behaviors
             foreach (FactionObject faction in _activeFactions.ToList())
             {
                 if (!faction.Members.Contains(clan)) continue;
+                if (!faction.IsIdeology && Campaign.Current?.GetCampaignBehavior<CivilWarResolutionBehavior>()?
+                    .OwnsCollapseHouseholdTransfer(faction, clan, oldKingdom, newKingdom) == true) continue;
 
                 if (faction.IsIdeology)
                 {
