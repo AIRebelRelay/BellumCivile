@@ -31,7 +31,7 @@
 4. Before production changes define ROOT CAUSE, TOUCH, DO NOT TOUCH, MUST FIX, MUST NOT CHANGE and RED/neighbor regressions. Isolate one stage per Draft PR; audit its entire diff; execute real Windows PowerShell / .NET Native build, Bellum Bridge ABI test and copied-old-save / new-game logs before merge. Do not merge directly to main or release while these gates are pending.
 5. Preserve AI Influence external diplomacy ownership with Bellum War & Peace Revamp **OFF**, and verify no duplicate Bellum Bridge/Relay political events. Audit all new `SaveDefiner` class IDs, containers and original field IDs; never copy only newer schema registrations.
 
-**Stage cell legend:** `A` added; `M` modified; `D` deleted; `R` renamed; `C` copied; `—` not in that endpoint's changed-file list. `Draft touched?` compares our original Native main to stacked PR #13. Every status initially `TODO`. **5→6† uses the source-backed Oct 18 1.4.5 candidate**, not independently verified release-package source.
+**Stage cell legend:** `A` added; `M` modified; `D` deleted; `R` renamed; `C` copied; `—` not in that endpoint's changed-file list. `Draft touched?` compares our original Native main to stacked PR #13. All rows start as `TODO` except `BellumCivileSaveDefiner.cs` = `PARTIAL` after the source-registry evidence below; no runtime or game QA completed. **5→6† uses the source-backed Oct 18 1.4.5 candidate**, not independently verified release-package source.
 
 ## Complete changed-file matrix — 304 paths
 
