@@ -430,7 +430,48 @@ All eight save classes are absent from our staged SaveDefiner. The exact missing
 - [ ] Pending shell/Crown/deposition/challenge cannot accidentally block realm forever; check single expected settled log and absence of unjustified repeated notifications; NPC active-war defection compared with player active-war joining.
 - [ ] Actual author CivilWarGrace source tests and `Tests/SuccessionEngineHarness/CivilWarGraceTests.cs`, custom P101A–F and native Windows build + copied save/new campaign, Bellum Bridge ABI and actual event/log checks BEFORE port/merge. **No tests/build/game executed in this analysis.**
 
-**No decision to import or reject yet.** First obtain explicit campaign design choice between: upstream default as-is, a separately configurable shorter/scoped cooldown with optional initial grace, or intentionally excluding the mechanic. This analysis does NOT authorize code changes.
+**Historical design-open conclusion, superseded by P0-04 approval above.** First obtain explicit campaign design choice between: upstream default as-is, a separately configurable shorter/scoped cooldown with optional initial grace, or intentionally excluding the mechanic. This analysis does NOT authorize code changes.
+
+## P0-04 — approved source-faithful Grace port (2026-11-08; source staged, QA pending)
+
+**User decision (supersedes P0-03 design-open conclusion):** carry over the author's **complete Bellum 1.4.11 Civil War Grace mechanics without user-specific redesign or retuning**. Frequent civil wars and state fragmentation are currently undesirable; focus remaining development time on AI Influence itself. This decision authorizes the original Bellum mechanism, not broad unrelated upstream subsystem ports.
+
+**Native production Draft [PR #15](https://github.com/AIRebelRelay/BellumCivile/pull/15)** is stacked on Draft #13; latest audited head `d9bb7ba7a8daa3d32769e87ea7b5300974996a81`, pinned author source `da426b23c64f3a66ae2b389d2db8f23489736bf9`. **NO MERGE / NO RELEASE.** Current source diff: **24 files**, +406/-37 lines; all in intended Grace plus targeted P1-01E/F outcome interactions. Native main, Bellum Bridge, Relay and Relay Bridge remain untouched.
+
+**Staged file list (all `STAGED—QA PENDING`, not yet `MATCH`):**
+
+| File | Status |
+|---|---|
+| `Behaviors/CivilWarCollapseContinuation.cs` | STAGED—QA PENDING |
+| `Behaviors/CivilWarGrace.cs` | STAGED—QA PENDING |
+| `Behaviors/CivilWarResolutionBehavior.cs` | STAGED—QA PENDING |
+| `Behaviors/CourtAgendaBehavior.cs` | STAGED—QA PENDING |
+| `Behaviors/CourtAgendaPlayerFlow.cs` | STAGED—QA PENDING |
+| `Behaviors/CourtInstability.cs` | STAGED—QA PENDING |
+| `Behaviors/CourtPlayerMotionPicker.cs` | STAGED—QA PENDING |
+| `Behaviors/ElectiveContestBehavior.cs` | STAGED—QA PENDING |
+| `Behaviors/FactionManagerBehavior.cs` | STAGED—QA PENDING |
+| `Behaviors/IdeologyBehavior.cs` | STAGED—QA PENDING |
+| `Behaviors/SuccessionChallengeBehavior.cs` | STAGED—QA PENDING |
+| `Behaviors/SuccessionChallengeInitiation.cs` | STAGED—QA PENDING |
+| `Behaviors/SuccessionChallengePlayer.cs` | STAGED—QA PENDING |
+| `Behaviors/SuccessionChallengeWar.cs` | STAGED—QA PENDING |
+| `Behaviors/WarPeaceRevampBehavior.cs` | STAGED—QA PENDING |
+| `BellumCivileOptions.cs` | STAGED—QA PENDING |
+| `BellumCivileSaveDefiner.cs` | STAGED—QA PENDING |
+| `BellumCivileSettings.cs` | STAGED—QA PENDING |
+| `CivilWarGraceRecord.cs` | STAGED—QA PENDING |
+| `FactionObject.cs` | STAGED—QA PENDING |
+| `InternalInstabilityPresets.cs` | STAGED—QA PENDING |
+| `Patches/PlayerLandedSecessionPatch.cs` | STAGED—QA PENDING |
+| `Tests/P004CivilWarGraceSourceContract.Tests.ps1` | STAGED—QA PENDING |
+| `UI/FactionsWindowVM.cs` | STAGED—QA PENDING |
+
+**Source evidence:** RED-first author PowerShell source contract committed before production; author `CivilWarGrace.cs` and `CivilWarGraceRecord.cs` blob hashes match exactly; staging retains all 100 previous save class registrations plus non-colliding Grace class ID **136**, new class field IDs **1–6**, `FactionObject` field IDs **37/38**, Grace saved collections and configuration. **33/33** manually translated/static source-inspection assertions passed after resolving three actual omissions: player faction UI gates, author-owned hereditary realm timer, and original P1-01E Crown mantle restored successor outcome. Custom `NotifyNpcCrownAgenda` and P1-01E/F faction transfer ownership fences remain unchanged; `Revamp OFF` continues to own foreign diplomacy through AII, while author intentionally blocks *landed internal keep-holdings departure* during Grace.
+
+**Still unverified:** actual PowerShell test, official C# harness, all P101A–F, game assembly compile, Bellum Bridge ABI, fresh game, copied old save, actual logs, political state, old-save load compatibility, pending Crown/realm cleanup. These must pass *before* we can mark a file `MATCH/COMPLETE` or consider merge/release. Expected after lawful postwar cleanup: `Civil-war grace settled; faction=...; realms=...; until=...; duration=...`. No retroactive startup Grace for preexisting saves. Validate no premature/never-ending Grace, no duplicate Crown/title events, and no interference with private feuds, Enforce Peace, foreign AII peace, or old owned transfer protections.
+
+**Tracker metadata remains baseline-specific:** the 304-row `Draft touched?` column and `MISSING/PARTIAL/TODO` statuses still compare the author's upstream delta **against the previous Native staged PR #13**, not the unmerged PR #15. See this P0-04 section for exact **staged** source progress. Do not rewrite historical 1.4.5→1.4.11 file classifications based only on a Draft build.
 
 ## Pending coverage blockers / separate checks
 
