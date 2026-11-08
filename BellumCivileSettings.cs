@@ -162,7 +162,6 @@ namespace BellumCivile
         [SettingPropertyGroup(InternalInstability, GroupOrder = InternalInstabilityGroupOrder)]
         public int CivilWarGraceYears { get; set; } = 2;
 
-        
         [SettingPropertyFloatingInteger("{=BC_MCM_CourtTerm}Court Term Length (Years)", 0.25f, 4f, "0.00", Order = 20, RequireRestart = false, HintText = "{=BC_MCM_CourtTerm_Hint}Time between public court agendas. Changes apply to the next term, not announced sessions or existing policy reconsideration dates. Default: 1 year.")]
         [SettingPropertyGroup(CourtPolitics, GroupOrder = CourtPoliticsGroupOrder)]
         public float CourtTermYears { get; set; } = 1f;
