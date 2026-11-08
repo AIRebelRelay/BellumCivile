@@ -39,15 +39,15 @@
 |:---:|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|
 | P2 | `_Module/SubModule.xml` | Module | M | M | M | M | M | M | — | TODO |
 | P2 | `AlliancePeaceRestriction.cs` | Politics/war | — | — | — | A | — | — | — | TODO |
-| P1 | `AsylumVisitRecord.cs` | Save/state | — | — | — | — | A | — | — | TODO |
+| P1 | `AsylumVisitRecord.cs` | Save/state | — | — | — | — | A | — | — | MISSING |
 | P2 | `BC Changelog.txt` | Other | M | M | M | M | M | M | — | TODO |
 | P1 | `Behaviors/AcceptedIndependence.cs` | Behavior | A | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/BellumMarriageEvaluation.cs` | Court/title | — | — | M | — | — | M | — | TODO |
 | P1 | `Behaviors/BellumMarriageStrategyHelper.cs` | Court/title | — | — | M | — | — | M | — | TODO |
 | P0 | `Behaviors/CivilWarCollapseContinuation.cs` | Politics/war | M | — | — | — | — | — | YES | TODO |
 | P0 | `Behaviors/CivilWarCrownTransfer.cs` | Politics/war | M | — | — | — | — | — | YES | TODO |
-| P0 | `Behaviors/CivilWarGrace.cs` | Politics/war | A | — | — | — | — | — | — | TODO |
-| P0 | `Behaviors/CivilWarResolutionBehavior.cs` | Politics/war | M | — | — | — | — | — | YES | TODO |
+| P0 | `Behaviors/CivilWarGrace.cs` | Politics/war | A | — | — | — | — | — | — | MISSING |
+| P0 | `Behaviors/CivilWarResolutionBehavior.cs` | Politics/war | M | — | — | — | — | — | YES | PARTIAL |
 | P0 | `Behaviors/CivilWarSuccessionSettlement.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/ClaimFeudBehavior.cs` | Behavior | — | M | — | — | — | — | — | TODO |
 | P1 | `Behaviors/CouncilAppointmentDeliberationBehavior.cs` | Court/title | M | — | — | — | — | — | — | TODO |
@@ -74,9 +74,9 @@
 | P1 | `Behaviors/ElectiveContestBehavior.cs` | Behavior | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/ExileAsylumDialogues.cs` | Behavior | — | — | — | — | A | — | — | TODO |
 | P1 | `Behaviors/ExileAsylumTesting.cs` | Behavior | — | — | — | — | A | — | — | TODO |
-| P1 | `Behaviors/ExileAsylumVisits.cs` | Behavior | — | — | — | — | A | — | — | TODO |
-| P1 | `Behaviors/ExiledClanRecoveryBehavior.cs` | Behavior | — | — | — | — | M | — | — | TODO |
-| P0 | `Behaviors/FactionManagerBehavior.cs` | Politics/war | M | — | — | — | — | — | YES | TODO |
+| P1 | `Behaviors/ExileAsylumVisits.cs` | Behavior | — | — | — | — | A | — | — | MISSING |
+| P1 | `Behaviors/ExiledClanRecoveryBehavior.cs` | Behavior | — | — | — | — | M | — | — | PARTIAL |
+| P0 | `Behaviors/FactionManagerBehavior.cs` | Politics/war | M | — | — | — | — | — | YES | PARTIAL |
 | P0 | `Behaviors/FactionSuccessionSafety.cs` | Politics/war | A | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/FeudalAllocationCustody.cs` | Behavior | — | — | M | — | — | — | — | TODO |
 | P1 | `Behaviors/FeudalClientLandGrant.cs` | Behavior | — | — | — | — | M | — | — | TODO |
@@ -86,8 +86,8 @@
 | P1 | `Behaviors/HostagePactTreatyDelivery.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/IdeologyBehavior.cs` | Behavior | M | M | — | — | — | — | — | TODO |
 | P1 | `Behaviors/IndependenceRulerSaveRepair.cs` | Behavior | A | — | — | — | — | — | — | TODO |
-| P1 | `Behaviors/LordshipBehavior.cs` | Court/title | — | — | A | M | M | M | — | TODO |
-| P1 | `Behaviors/LordshipCommandTransfers.cs` | Court/title | — | — | — | — | — | A | — | TODO |
+| P1 | `Behaviors/LordshipBehavior.cs` | Court/title | — | — | A | M | M | M | — | MISSING |
+| P1 | `Behaviors/LordshipCommandTransfers.cs` | Court/title | — | — | — | — | — | A | — | MISSING |
 | P1 | `Behaviors/LordshipDialogues.cs` | Court/title | — | — | A | M | M | M | — | TODO |
 | P1 | `Behaviors/MarriageAllianceBehavior.cs` | Politics/war | — | — | — | — | — | M | — | TODO |
 | P1 | `Behaviors/MarriageHealthRules.cs` | Court/title | — | — | — | — | — | M | — | TODO |
@@ -100,7 +100,7 @@
 | P0 | `Behaviors/RestoredRealmOrphanRecovery.cs` | Behavior | A | — | — | — | — | — | YES | TODO |
 | P0 | `Behaviors/RestoredRealmRecovery.cs` | Behavior | A | — | — | — | — | — | YES | TODO |
 | P1 | `Behaviors/RetainerIndentureDialogues.cs` | Court/title | — | — | — | — | — | A | — | TODO |
-| P1 | `Behaviors/RetainerIndentures.cs` | Court/title | — | — | — | — | — | A | — | TODO |
+| P1 | `Behaviors/RetainerIndentures.cs` | Court/title | — | — | — | — | — | A | — | MISSING |
 | P1 | `Behaviors/SpecificMarriageProposalBehavior.cs` | Court/title | — | — | M | — | — | M | — | TODO |
 | P1 | `Behaviors/StrategicMarriageBehavior.cs` | Court/title | — | — | M | — | — | M | — | TODO |
 | P1 | `Behaviors/StrategicMarriageProspects.cs` | Court/title | — | — | — | — | — | M | — | TODO |
@@ -108,9 +108,9 @@
 | P0 | `Behaviors/SuccessionChallengeInitiation.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P0 | `Behaviors/SuccessionChallengePlayer.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P0 | `Behaviors/SuccessionChallengeWar.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
-| P1 | `Behaviors/TitleAcquisitionBehavior.cs` | Court/title | — | — | A | — | — | — | — | TODO |
+| P1 | `Behaviors/TitleAcquisitionBehavior.cs` | Court/title | — | — | A | — | — | — | — | MISSING |
 | P1 | `Behaviors/VassalLordshipDialogues.cs` | Court/title | — | — | A | M | M | — | — | TODO |
-| P1 | `Behaviors/VassalLordships.cs` | Court/title | — | — | A | M | M | — | — | TODO |
+| P1 | `Behaviors/VassalLordships.cs` | Court/title | — | — | A | M | M | — | — | MISSING |
 | P0 | `Behaviors/WarPeaceRevampBehavior.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P1 | `Behaviors/WarScoreBehavior.cs` | Politics/war | — | — | — | M | — | — | — | TODO |
 | P2 | `BellumCivile.csproj` | Politics/war | M | — | M | — | — | — | — | TODO |
@@ -124,7 +124,7 @@
 | P2 | `BellumMarriageModel.cs` | Court/title | — | — | M | — | — | — | — | TODO |
 | P2 | `CheatCommands.cs` | Other | — | — | — | — | M | — | — | TODO |
 | P0 | `CivilWarCollapseRecord.cs` | Save/state | M | — | — | — | — | — | YES | TODO |
-| P0 | `CivilWarGraceRecord.cs` | Save/state | A | — | — | — | — | — | — | TODO |
+| P0 | `CivilWarGraceRecord.cs` | Save/state | A | — | — | — | — | — | — | MISSING |
 | P2 | `CourtClientGrantObjectiveSource.cs` | Court/title | — | — | — | — | M | — | — | TODO |
 | P1 | `CourtClientGrantRecord.cs` | Save/state | — | — | — | — | M | — | — | TODO |
 | P1 | `CourtTitleGrantRecord.cs` | Save/state | M | — | — | — | — | — | — | TODO |
@@ -185,7 +185,7 @@
 | P1 | `Patches/VassalLordshipPatches.cs` | Harmony | — | — | A | — | — | — | — | TODO |
 | P2 | `PeaceReadiness.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P2 | `PendingMarriageProspect.cs` | Court/title | — | — | — | — | — | M | — | TODO |
-| P1 | `PersonalLordshipRecord.cs` | Save/state | — | — | A | — | M | M | — | TODO |
+| P1 | `PersonalLordshipRecord.cs` | Save/state | — | — | A | — | M | M | — | MISSING |
 | P2 | `PlayerMarriagePricing.cs` | Court/title | — | — | — | — | — | M | — | TODO |
 | P2 | `README.md` | Other | M | M | M | M | M | — | — | TODO |
 | P2 | `RealmLeadershipDiagnostics.cs` | Other | A | — | — | — | — | — | — | TODO |
@@ -193,8 +193,8 @@
 | P1 | `RegencyRecord.cs` | Save/state | M | — | — | — | — | — | — | TODO |
 | P2 | `RelationMemoryService.cs` | Other | M | — | M | — | M | — | — | TODO |
 | P0 | `RestoredRealmCreationRecord.cs` | Save/state | A | — | — | — | — | — | YES | TODO |
-| P1 | `RetainerIndentureRecord.cs` | Save/state | — | — | — | — | — | A | — | TODO |
-| P2 | `SubModule.cs` | Other | — | — | M | — | M | — | — | TODO |
+| P1 | `RetainerIndentureRecord.cs` | Save/state | — | — | — | — | — | A | — | MISSING |
+| P2 | `SubModule.cs` | Other | — | — | M | — | M | — | — | PARTIAL |
 | P2 | `Tests/AcceptedIndependence.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
 | P2 | `Tests/AsylumAudience.Tests.ps1` | Tests | — | — | — | — | A | — | — | TODO |
 | P2 | `Tests/AutomaticWhitePeaceFallback.Tests.ps1` | Tests | M | — | — | — | — | — | — | TODO |
@@ -308,7 +308,7 @@
 | P0 | `Tests/SuccessionEngineHarness/TitlePresetLocalizationTests.cs` | Tests | — | — | M | M | — | M | — | TODO |
 | P0 | `Tests/SuccessionEngineHarness/WhitePeaceFallbackTests.cs` | Tests | M | — | — | — | — | — | — | TODO |
 | P2 | `Tests/TreatyDurationSettings.Tests.ps1` | Tests | A | — | — | — | — | — | — | TODO |
-| P2 | `TitleAcquiredMapNotification.cs` | Court/title | — | — | A | — | — | — | — | TODO |
+| P2 | `TitleAcquiredMapNotification.cs` | Court/title | — | — | A | — | — | — | — | MISSING |
 | P2 | `TownPartyPositionHelper.cs` | Other | — | — | A | — | — | — | — | TODO |
 | P2 | `TreatyAiDraftService.cs` | Politics/war | M | — | — | — | — | — | — | TODO |
 | P2 | `TreatyCouncilAbstentionReason.cs` | Politics/war | A | — | — | — | — | — | — | TODO |
@@ -349,6 +349,50 @@
 - **PR #13 vs author 1.4.11:** all **100 shared class IDs and names match**; **no class ID collision** found. Eight classes remain absent in staged Native: `CivilWarGraceRecord=136`, `PersonalLordshipRecord=138`, `LordshipAppointmentRecord=139`, `LordshipIncomeCredit=140`, `TitleAcquiredMapNotification=141`, `AsylumVisitRecord=142`, `LordshipCommandTransferRecord=143`, `RetainerIndentureRecord=144`. `RestoredRealmCreationRecord=137` already exists in PR #13. These are **source registry findings**, NOT verified complete save compatibility.
 - **Status rationale:** `BellumCivileSaveDefiner.cs` = **PARTIAL**, because baseline metadata aligns but many upstream feature types/containers are not yet present. **DO NOT COPY** these registrations without implementing and testing the owning features. Before marking MATCH, audit field IDs, all downstream save types, feature initialization, old-save defaults, Windows build/load and unmodified historical save.
 - **Production change boundary:** **NONE** in this audit; no new fields, ID assignments, Harmony, migration, or save repair. Next P0 audit must inspect source-side callers of each missing class and its registration and preserve current AII foreign peace (Revamp OFF), original save IDs and Bridge ABI.
+
+## P0-02 — eight absent save-class registrations: owner and dependency audit (2026-11-08)
+
+**Evidence:** upstream Vonbalt/BellumCivile @ da426b23c64f3a66ae2b389d2db8f23489736bf9 (1.4.11), custom stacked Native PR #13 @ a7a7d39e3bacac4799dc2d301831b2926171ebea, GitHub file-content lookups, symbol/caller search and the original SaveDefiner declarations. **AUDIT ONLY — no class, schema, feature or production patch has been imported.**
+
+All eight save classes are absent from our staged SaveDefiner. The exact missing declarations occupy **five source files**, not eight separate files. The twelve related author declaration/implementation paths in this matrix are confirmed absent from PR #13 and marked **MISSING** (literal absence, not a decision to import). Existing SubModule.cs, FactionManagerBehavior.cs, CivilWarResolutionBehavior.cs and ExiledClanRecoveryBehavior.cs are marked **PARTIAL** because specific new integration callers are not present, while the old behavior remains; complete method-by-method review is still pending.
+
+| Class ID | Type / author declaration file | Author version first visible | Saved field IDs | Actual owner, collection and effect |
+|---:|---|---|---|---|
+| 136 | CivilWarGraceRecord — CivilWarGraceRecord.cs | 1.4.6 era | 1–6 | FactionManagerBehavior partial CivilWarGrace.cs, saved BC_CivilWarGrace list; new post-war grace limits creation/recruitment of rebels |
+| 138 | PersonalLordshipRecord — PersonalLordshipRecord.cs | 1.4.8 era | 1–10 | LordshipBehavior._grants, BellumCivile_PersonalLordships; village personal/vassal grants, revenue and household authority |
+| 139 | LordshipAppointmentRecord — PersonalLordshipRecord.cs | 1.4.8 era | 1–7 | LordshipBehavior._appointments, BellumCivile_LordshipAppointments; party/governor service and retirement |
+| 140 | LordshipIncomeCredit — PersonalLordshipRecord.cs | 1.4.8 era | 1–4 | LordshipBehavior._incomeCredits in VassalLordships.cs, BellumCivile_LordshipIncomeCredits; treasury and village-income accounting |
+| 141 | TitleAcquiredMapNotification — TitleAcquiredMapNotification.cs | 1.4.8 era | 10–15 | TitleAcquisitionBehavior._pending, BC_TitleAcquisitionNotices; InformationData map notice on new titles and new realms |
+| 142 | AsylumVisitRecord — AsylumVisitRecord.cs | 1.4.10 era | 1–15 | ExiledClanRecoveryBehavior partial ExileAsylumVisits.cs, BellumCivile_AsylumVisits dictionary; guest in keep, audience and optional lordship |
+| 143 | LordshipCommandTransferRecord — PersonalLordshipRecord.cs | 1.4.11 | 1–4 | LordshipBehavior._commandTransfers, BellumCivile_LordshipCommandTransfers; protected party commander replacement |
+| 144 | RetainerIndentureRecord — RetainerIndentureRecord.cs | 1.4.11 | 1–4 | LordshipBehavior._indentures, BellumCivile_RetainerIndentures; time-limited paid retainer contracts and renewals |
+
+**Container confirmation:** upstream 1.4.11 SaveDefiner registers the eight exact class ID/type pairs, seven list containers and the **Dictionary<string, AsylumVisitRecord>** container. The 100 class ID/type registrations shared with our Draft PR #13 remain consistent and show no numeric ID collision. Their presence alone would not establish save-load compatibility.
+
+### Traced call chains and blast radius
+
+**136 — grace:** In upstream FactionManagerBehavior, RegisterEvents adds new-game ArmInitialCivilWarGrace and hourly MaintainCivilWarGrace; SyncData invokes SyncCivilWarGrace; RegisterNewFaction invokes IsCivilWarGraceBlocked. CivilWarResolutionBehavior adds QueueCivilWarGrace and AddCivilWarGraceRealms after a civil settlement. These named integration seams are missing in our staged Native source. The new policy can suppress internal rebellion, directly impacting our controlled-chaos goal, even though Bellum foreign war/peace Revamp OFF remains separate. It also introduces initial-grace and configurable CivilWarGraceYears behavior.
+
+**138–141 / 143–144 — lordship and notice family:** Upstream SubModule registers LordshipBehavior and TitleAcquisitionBehavior, absent in our staged SubModule. LordshipBehavior owns six saved lists, event listeners for clan/hero/settlement/ticks, party and governor status, several Harmony patches and HAP finance integration. VassalLordships can create a grant, generate income credits, and call TitleAcquisitionBehavior.Granted; TitleAcquisitionBehavior observes KingdomCreatedEvent and settlement ownership, and uses a separate map-notification Harmony/UI path. Its new notice is NOT itself the native OnKingdomCreated dispatcher call, nor Bellum Bridge kingdom_created. New contracts and party commander transfers depend on the entire lordship subsystem; they cannot be safely enabled with SaveDefiner alone.
+
+**142 — asylum:** Our existing ExiledClanRecoveryBehavior has pending-clan ID dictionaries and immediate AcceptPlayerAsylum / DenyPlayerAsylum decisions. The official implementation adds SyncAsylumVisits, ProcessAsylumVisits, OnAsylumTick, RegisterAsylumDialogues and a saved keep-visit record. The new ExileAsylumVisits behavior can teleport the hero, hold a party, enter a settlement, resolve homage, join a kingdom and optionally use LordshipBehavior.TryGrantVassal for promised land. This directly changes an already working path. It requires an old-save pending-queue migration contract and an actual game test before consideration.
+
+**143–144 — shared dependency:** LordshipCommandTransfers consults ExiledClanRecoveryBehavior.IsAwaitingAsylum, retirement/disbanding, leader teleport and optional gold payment; RetainerIndentures holds expiring contracts, deducts gold, unlocks command without estate, and schedules renewal. Both are invalid as standalone imports without the 138–140 owner records and LordshipBehavior. Inspect player clan and party/siege eligibility before any future change.
+
+### Regression-first contract before any production import
+
+- **ROOT CAUSE:** unported, feature-owned serialized types from successive upstream feature releases, not evidence that old saves are corrupted.
+- **TOUCH:** only this file and the issue #96 backlog. **DO NOT TOUCH:** Native production/save schema, Bellum Bridge, Relay Bridge, Relay, Harmony, custom diplomacy, main, or historical save membership.
+- **MUST FIX in this audit:** class-to-owner-to-caller mapping and missing-source facts. **MUST NOT CHANGE:** current working features or old-save on-disk data.
+- [ ] Grace positive: settle rightful civil war once, then observe chosen grace period. Neighbor: already-committed claimant or civil war, unrelated kingdoms, controlled chaos frequency and gameplay settings must remain as intended; existing foreign AII war/peace with Revamp OFF unchanged. Expected author log: Civil-war grace settled; ... ; it is NOT currently expected from our build.
+- [ ] Lordship positive: personal/vassal grant, income, party or governor service and expiry. Neighbor: original clan/household/court inheritance, titles, HAP taxes, no double income or illegal clan party, no Harmony conflict. Run save/load with missing new lists and existing normal campaigns.
+- [ ] Title UI positive: one legitimate acquisition notice. Neighbor: partial restored kingdom, native KingdomCreatedEvent, Bellum Bridge observers, native title authority and old-save reload must not yield duplicate or premature notices.
+- [ ] Asylum positive: visitor arrives and has the intended time-limited keep audience. Neighbor: existing immediate accept/refuse and old pending ID queue, exiles, siege/raid, party hold, ruler relationship and promised village grant must not regress. Save/load during a visit; no duplicate faction entry, party, allegiance or relation gain.
+- [ ] Commander/retainer positive: contract, renewal, replacement, expired contract and paid role. Neighbor: original party disband, retiring governor, other clan service and blocked asylum guest must remain functional; no duplicate hero party or unintended gold debit.
+- [ ] Schema checks: every class field ID (1–6, 1–10, 1–7, 1–4, 10–15, 1–15, 1–4, 1–4), all eight exact registered containers including asylum dictionary, behavior registration and null/legacy defaults, old save copied not mutated.
+- [ ] Run real Native integration save tests, P101A–F, Windows native compile, Bellum Bridge ABI/loads, copied old-save and new campaign; compare real political state, title/party/finance data, Bellum Bridge and Relay events. No fictitious PASS from source inspection.
+
+**Disposition:** P0-02 is **source-only classification, no code port**. All eight feature packages require explicitly planned scopes and tests; do not import save class IDs alone, refactor shared FactionManager or automatically rewrite old saves. Preserve the current unmerged Draft PR stack and custom Native source.
 
 ## Pending coverage blockers / separate checks
 
