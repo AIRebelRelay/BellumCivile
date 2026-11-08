@@ -165,8 +165,8 @@ namespace BellumCivile.Behaviors
                     if (!ReleaseMercenariesFromKingdom(record.WinnerRealm)
                         || !ReleaseMercenariesFromKingdom(record.Parent))
                     { record.Failure = "Mercenary dismissal pending"; return; }
-                    TransferClansToKingdom(record.WinnerRealm, record.Successor, record.WinnerHouse);
-                    TransferClansToKingdom(record.Parent, record.Successor, record.WinnerHouse);
+                    if (!TransferClansToKingdom(record.WinnerRealm, record.Successor, record.WinnerHouse)
+                        || !TransferClansToKingdom(record.Parent, record.Successor)) return;
                     if (record.WinnerRealm.Clans.Any(c => !c.IsEliminated) || record.Parent.Clans.Any(c => !c.IsEliminated)) return;
                     EnsureValidRulingClan(record.Successor, record.WinnerHouse, forcePreferred: true);
                     Campaign.Current.GetCampaignBehavior<FeudalTitleBehavior>()?
