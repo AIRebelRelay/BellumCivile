@@ -55,6 +55,26 @@ internal static class Program
                 FiefRedistributionTests.Run(Check);
                 Console.WriteLine($"{_checks} fief redistribution checks passed.");
             }
+            else if (args.Contains("--restored-realm-recovery"))
+            {
+                RestoredRealmRecoveryTests.Run(Check);
+                Console.WriteLine($"{_checks} restored-realm recovery checks passed.");
+            }
+            else if (args.Contains("--collapse-claimant-recovery"))
+            {
+                CollapseClaimantRecoveryTests.Run(Check);
+                Console.WriteLine($"{_checks} collapse claimant recovery checks passed.");
+            }
+            else if (args.Contains("--crown-rebellion-safety"))
+            {
+                CrownRebellionSafetyTests.Run(Check);
+                Console.WriteLine($"{_checks} crown rebellion safety checks passed.");
+            }
+            else if (args.Contains("--civil-war-grace"))
+            {
+                CivilWarGraceTests.Run(Check);
+                Console.WriteLine($"{_checks} civil-war grace checks passed.");
+            }
             else if (args.Contains("--regency-settings"))
             {
                 RegencySettingsTests.Run(Check);
