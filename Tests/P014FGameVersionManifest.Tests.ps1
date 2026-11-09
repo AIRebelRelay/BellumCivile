@@ -3,7 +3,7 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $source = Get-Content -LiteralPath (Join-Path $root 'scripts/Verify-Bellum148Build.ps1') -Raw
-$start = $source.IndexOf('# Require positive version evidence', [StringComparison]::Ordinal)
+$start = $source.IndexOf('# Read Windows binary version evidence', [StringComparison]::Ordinal)
 $end = $source.IndexOf('Write-Host "BELLUM148_PREFLIGHT pass', [StringComparison]::Ordinal)
 if ($start -lt 0 -or $end -le $start) { throw 'P014F_FAIL version_source_boundary' }
 $probeCode = $source.Substring($start, $end - $start)
