@@ -115,6 +115,35 @@ internal static class Program
                 TestRoyalCadetNames();
                 Console.WriteLine($"{_checks} inheritance regression checks passed.");
             }
+            else if (args.Contains("--family-tree-refresh"))
+            {
+                string original = args.Single(a => a.StartsWith("--family-tree-dll=")).Substring("--family-tree-dll=".Length);
+                string working = args.Single(a => a.StartsWith("--working-family-tree-dll=")).Substring("--working-family-tree-dll=".Length);
+                FamilyTreeRefreshCompatibilityTests.Run(Check, original, working);
+                Console.WriteLine($"{_checks} Family Tree refresh compatibility checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-extender-addon"))
+            {
+                string dll = args.Single(a => a.StartsWith("--encyclopedia-extender-dll=")).Substring("--encyclopedia-extender-dll=".Length);
+                EncyclopediaFamilyCompatibilityTests.ExtenderProbe(Check, _game, dll);
+                Console.WriteLine($"{_checks} actual Encyclopedia Extender checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-family-addon"))
+            {
+                string module = args.Single(a => a.StartsWith("--family-addon-module=")).Substring("--family-addon-module=".Length);
+                EncyclopediaFamilyCompatibilityTests.AddonProbe(Check, _game, module);
+                Console.WriteLine($"{_checks} actual family addon checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-family-registry"))
+            {
+                EncyclopediaFamilyCompatibilityTests.RegistryProbe(Check, _game);
+                Console.WriteLine($"{_checks} real family registry checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-family"))
+            {
+                EncyclopediaFamilyTests.Run(Check, _game);
+                Console.WriteLine($"{_checks} encyclopedia family checks passed.");
+            }
             else if (args.Contains("--encyclopedia-inheritance"))
             {
                 EncyclopediaInheritanceLayoutTests.Run(Check);
