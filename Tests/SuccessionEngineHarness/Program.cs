@@ -50,7 +50,12 @@ internal static class Program
         };
         try
         {
-            if (args.Contains("--regency-settings"))
+            if (args.Contains("--fief-redistribution"))
+            {
+                FiefRedistributionTests.Run(Check);
+                Console.WriteLine($"{_checks} fief redistribution checks passed.");
+            }
+            else if (args.Contains("--regency-settings"))
             {
                 RegencySettingsTests.Run(Check);
                 TestRegencyContinuity();
