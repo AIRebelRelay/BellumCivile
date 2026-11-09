@@ -51,8 +51,8 @@ function Resolve-ExternalReference([string]$name, [string]$override, [string]$mo
     return @{ Path = $modulePath; Source = 'missing' }
 }
 $external = @{
-    '0Harmony' = Resolve-ExternalReference '0Harmony' $HarmonyDllPath 'Modules\Bannerlord.Harmony\bin\Win64_Shipping_Client\0Harmony.dll' 'workshop\content\261550\2859188632\bin\Win64_Shipping_Client\0Harmony.dll'
-    'Bannerlord.UIExtenderEx' = Resolve-ExternalReference 'Bannerlord.UIExtenderEx' $UIExtenderExDllPath 'Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll' 'workshop\content\261550\2859222409\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll'
+    '0Harmony' = (Resolve-ExternalReference '0Harmony' $HarmonyDllPath 'Modules\Bannerlord.Harmony\bin\Win64_Shipping_Client\0Harmony.dll' 'workshop\content\261550\2859188632\bin\Win64_Shipping_Client\0Harmony.dll')
+    'Bannerlord.UIExtenderEx' = (Resolve-ExternalReference 'Bannerlord.UIExtenderEx' $UIExtenderExDllPath 'Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll' 'workshop\content\261550\2859222409\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll')
 }
 # Read EXACT HintPaths declared by shipping BellumCivile.csproj, not a guessed DLL list.
 [xml]$proj = Get-Content -Raw -LiteralPath $projectPath
