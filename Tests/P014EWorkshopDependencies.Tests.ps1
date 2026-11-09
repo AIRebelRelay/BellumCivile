@@ -25,11 +25,13 @@ Check ($verify.Contains('2859188632') -and
        $verify.Contains('2859222409') -and
        $verify.Contains('workshop\content\261550') -and
        -not $verify.Contains('3720376888')) 'only_canonical_workshop_modules'
-Check ($verify.Contains("source=modules") -and
-       $verify.Contains("source=workshop") -and
-       $verify.Contains("source=override") -and
+Check ($verify.Contains("Source = 'modules'") -and
+       $verify.Contains("Source = 'workshop'") -and
+       $verify.Contains("Source = 'override'") -and
        $verify.Contains('Test-Path -LiteralPath $modulePath') -and
-       $verify.Contains('Test-Path -LiteralPath $workshopPath')) 'modules_precedes_workshop_and_override_supported'
+       $verify.Contains('Test-Path -LiteralPath $workshopPath') -and
+       $verify.IndexOf('if (-not [string]::IsNullOrWhiteSpace($override))') -lt $verify.IndexOf('Test-Path -LiteralPath $modulePath') -and
+       $verify.IndexOf('Test-Path -LiteralPath $modulePath') -lt $verify.IndexOf('Test-Path -LiteralPath $workshopPath')) 'override_then_modules_then_workshop'
 Check ($verify.Contains("unrecognized_reference_path") -and
        $verify.Contains("missing_references") -and
        $verify.Contains("wrong_game_version") -and
