@@ -18,14 +18,14 @@ Check ($fixture.Contains('All-unknown ancestry hides the headings and the entire
        $fixture.Contains('Current and former husbands use their correct relationship labels') -and
        $fixture.Contains('Family portraits retain native ')) 'Hero family positive and neighboring portrait/navigation behavior are covered.'
 Check ($fixture.Contains('Family follows Bellum titles and precedes Friends/Enemies regardless of patch order') -and
-       $fixture.Contains('The reused native portrait supports encyclopedia links') -eq $false) 'Family ordering and native links are tested without replacing existing titles/claims.'
+       $fixture.Contains('Reused native portrait supports encyclopedia links and hero tooltips on this game version')) 'Family ordering and native links are tested without replacing existing titles/claims.'
 Check ($fixture.Contains('Open hero pages subscribe to family layout ownership changes') -and
        $fixture.Contains('Closing the page unsubscribes its family completion handler')) 'Already open family pages refresh and release events safely.'
 Check ($compat.Contains('internal sealed class EncyclopediaFamilyCompatibilityTests : IDisposable') -and
        $compat.Contains('All six extensions from the actual supported Family Tree DLL are tested') -and
        $compat.Contains('An actual enabled foreign UIExtender registration restores the shared layout')) 'Real Family Tree and UIExtender supported and fallback paths are tested.'
 Check ($compat.Contains('Actual Extender Perks use normal spacing after UIExtender finalization') -and
-       $compat.Contains('An unfamiliar Perks layout is not altered') -eq $false) 'Perks extension regression is included; unknown layouts are left alone.'
+       $compat.Contains('Unfamiliar Perks layouts are untouched')) 'Perks extension regression is included; unknown layouts are left alone.'
 Check ($compat.Contains('OtherMovieEditor') -and
        $compat.Contains('EncyclopediaClanPage') -and
        -not $compat.Contains('EncyclopediaClanHouseholdPrefabPatch')) 'Other-movie negative test does not import missing Clan Household implementation.'
