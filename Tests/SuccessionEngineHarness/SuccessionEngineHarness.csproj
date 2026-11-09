@@ -4,13 +4,21 @@
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
     <!-- Keep the harness aligned with the shipping project's optional reference paths. -->
+    <!-- Explicit -p:*DllPath always wins; standard Modules first, official Steam Workshop second. -->
+    <HarmonyDllPath Condition="'$(HarmonyDllPath)' == '' and Exists('$(GameFolder)/Modules/Bannerlord.Harmony/bin/Win64_Shipping_Client/0Harmony.dll')">$(GameFolder)/Modules/Bannerlord.Harmony/bin/Win64_Shipping_Client/0Harmony.dll</HarmonyDllPath>
+    <HarmonyDllPath Condition="'$(HarmonyDllPath)' == '' and Exists('$(GameFolder)/../../workshop/content/261550/2859188632/bin/Win64_Shipping_Client/0Harmony.dll')">$(GameFolder)/../../workshop/content/261550/2859188632/bin/Win64_Shipping_Client/0Harmony.dll</HarmonyDllPath>
     <HarmonyDllPath Condition="'$(HarmonyDllPath)' == ''">$(GameFolder)/Modules/Bannerlord.Harmony/bin/Win64_Shipping_Client/0Harmony.dll</HarmonyDllPath>
+    <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == '' and Exists('$(GameFolder)/Modules/Bannerlord.UIExtenderEx/bin/Win64_Shipping_Client/Bannerlord.UIExtenderEx.dll')">$(GameFolder)/Modules/Bannerlord.UIExtenderEx/bin/Win64_Shipping_Client/Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
+    <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == '' and Exists('$(GameFolder)/../../workshop/content/261550/2859222409/bin/Win64_Shipping_Client/Bannerlord.UIExtenderEx.dll')">$(GameFolder)/../../workshop/content/261550/2859222409/bin/Win64_Shipping_Client/Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
     <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == ''">$(GameFolder)/Modules/Bannerlord.UIExtenderEx/bin/Win64_Shipping_Client/Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
+    <McmDllPath Condition="'$(McmDllPath)' == '' and Exists('$(GameFolder)/Modules/Bannerlord.MBOptionScreen/bin/Win64_Shipping_Client/MCMv5.dll')">$(GameFolder)/Modules/Bannerlord.MBOptionScreen/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
+    <McmDllPath Condition="'$(McmDllPath)' == '' and Exists('$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll')">$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
+    <McmDllPath Condition="'$(McmDllPath)' == ''">$(GameFolder)/Modules/Bannerlord.MBOptionScreen/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../BellumCivile.csproj" />
     <Reference Include="Bannerlord.UIExtenderEx" HintPath="$(UIExtenderExDllPath)" />
-    <Reference Include="MCMv5" HintPath="$(GameFolder)/Modules/Bannerlord.MBOptionScreen/bin/Win64_Shipping_Client/MCMv5.dll" />
+    <Reference Include="MCMv5" HintPath="$(McmDllPath)" />
     <Reference Include="0Harmony" HintPath="$(HarmonyDllPath)" />
     <Reference Include="TaleWorlds.CampaignSystem" HintPath="$(GameFolder)/bin/Win64_Shipping_Client/TaleWorlds.CampaignSystem.dll" />
     <Reference Include="TaleWorlds.CampaignSystem.ViewModelCollection" HintPath="$(GameFolder)/bin/Win64_Shipping_Client/TaleWorlds.CampaignSystem.ViewModelCollection.dll" />
