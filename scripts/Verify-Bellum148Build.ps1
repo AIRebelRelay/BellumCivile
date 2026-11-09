@@ -88,9 +88,9 @@ if ($missing.Count -gt 0) {
     foreach ($item in $missing) { Write-Host "BELLUM148_BUILD missing_reference=$item" }
     Block 'missing_references' 21 "$($missing.Count) required shipping dependencies absent."
 }
-# Require positive version evidence from ORIGINAL installed game binaries.
-# AssemblyVersion of some TaleWorlds libraries is stable 1.0.0.0, so prefer
-# Windows file ProductVersion/FileVersion. Fail closed if metadata is absent.
+# Read Windows binary version evidence (some TaleWorlds PE files legitimately say 1.0.0.0).
+# Require the four installed canonical base-module manifests as positive game-version evidence.
+# Keep the existing contradiction check for any specific binary version metadata.
 $targets = @(
     (Join-Path $game 'bin/Win64_Shipping_Client/TaleWorlds.CampaignSystem.dll'),
     (Join-Path $game 'bin/Win64_Shipping_Client/TaleWorlds.Library.dll'),
@@ -108,6 +108,23 @@ foreach ($target in $targets) {
         }
     }
 }
+foreach ($moduleName in @('Native', 'SandBoxCore', 'Sandbox', 'StoryMode')) {
+    $manifestPath = Join-Path $game "Modules/$moduleName/SubModule.xml"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        Block 'missing_game_version_manifest' 22 $manifestPath
+    }
+    try {
+        [xml]$gameManifest = Get-Content -LiteralPath $manifestPath -Raw -ErrorAction Stop
+        $moduleVersion = [string]$gameManifest.Module.Version.value
+    } catch {
+        Block 'invalid_game_version_manifest' 22 "$($manifestPath): $($_.Exception.Message)"
+    }
+    if ($moduleVersion -notmatch '^v1\.(?:4|5)\.[0-9]+(?:\.[0-9]+)?$') {
+        Block 'unverified_game_version' 22 "$moduleName has missing/unrecognized version: $moduleVersion"
+    }
+    Write-Host "BELLUM148_BUILD version_evidence=$moduleName/SubModule.xml ModuleVersion=$moduleVersion"
+    $versions += $moduleVersion
+}
 $gameVersionPattern = '(?<![0-9])(?:e|v)?1\.(?:4|5)\.[0-9]+'
 $gameVersions = @($versions | ForEach-Object {
     [regex]::Matches($_, $gameVersionPattern) | ForEach-Object {
@@ -116,7 +133,7 @@ $gameVersions = @($versions | ForEach-Object {
     }
 } | Select-Object -Unique)
 if ($gameVersions.Count -eq 0) {
-    Block 'unverified_game_version' 22 'No installed Bannerlord 1.4.8 ProductVersion/FileVersion found.'
+    Block 'unverified_game_version' 22 'No installed Bannerlord 1.4.8 module/binary version evidence found.'
 }
 if ($gameVersions -contains '1.5.5' -or $gameVersions -contains '1.4.5' -or
     @($gameVersions | Where-Object { $_ -ne '1.4.8' }).Count -gt 0) {
