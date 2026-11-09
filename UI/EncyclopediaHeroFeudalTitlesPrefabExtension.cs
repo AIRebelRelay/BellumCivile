@@ -85,6 +85,7 @@ namespace BellumCivile.ViewModelMixin
                     <EncyclopediaDivider Id='AlliesDivider' MarginTop='50' Parameter.Title='@AlliesText' Parameter.ItemList='..\..\AlliesGridParent' GamepadNavigationIndex='0'/>
                   </Children>
                 </ListPanel>");
+            EncyclopediaHeroFamilyPrefabPatch.InsertSection(_document);
         }
 
         [PrefabExtensionXmlDocument]
