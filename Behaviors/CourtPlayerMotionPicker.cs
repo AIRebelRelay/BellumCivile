@@ -178,7 +178,8 @@ namespace BellumCivile.Behaviors
                     result.Add(new PlayerMotion { Kind = kind, Candidate = candidate, Label = label, FilingCost = filing });
                 }
             }
-            if (Campaign.Current.GetCampaignBehavior<IdeologyBehavior>()?.CanConsiderCourtChallenge(agenda.Faction, agenda.Realm) == true)
+            if ((onlyKind == null || onlyKind == DebateKind)
+                && Campaign.Current.GetCampaignBehavior<IdeologyBehavior>()?.CanConsiderCourtChallenge(agenda.Faction, agenda.Realm) == true)
                 result.Add(new PlayerMotion { Kind = DebateKind, Candidate = new CourtObjectiveCandidate(agenda.Realm.StringId, "debate"),
                     Label = new TextObject("{=BC_CourtPickerTyranny}Debate the ruler's tyranny") });
             return result;
