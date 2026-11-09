@@ -44,8 +44,9 @@ Check ($decouple.Contains('IsDeFactoParentControlledByKingdom(title, legalParent
 Check ($deliberation.Contains('QueueRelinquishedSettlementVote(Settlement settlement)') -and
        $deliberation.Contains('BellumCivile_PendingFiefProposer') -and
        $deliberation.Contains('BellumCivile_PendingFiefExclude')) 'Existing queue serialization supports voluntary context without new save fields.'
-Check ($barter.Contains('if (!preserveLegalHierarchy)') -and
-       $barter.Contains('if (isBarter && newClan != null && sellerClan != null && sellerClan != newClan)')) 'Barter source regression still protects seller legal ownership and claim cleanup.'
+Check ($barter.Contains('preserveLegalHierarchy') -and
+       $barter.Contains('RegisterDisplacedLegalOwnerClaimIfNeeded') -and
+       $barter.Contains('DeactivateClaimsForTitle')) 'Existing barter regression checks legal-parent and seller-claim protections.'
 Check ($stub.Contains('public static bool IsVoluntaryRelinquishment(Settlement settlement, string formerHolder, Clan recipient)')) 'Isolated inheritance-ownership fixture compiles against the new local vote API.'
 Check ($program.Contains('FiefRedistributionTests.Run(Check);') -and
        $program.Contains('--fief-redistribution') -and
