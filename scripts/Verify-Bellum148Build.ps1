@@ -7,6 +7,8 @@ Exit: 20 missing GameFolder, 21 absent references, 22 game version mismatch/unve
 #>
 param(
     [string]$GameFolder = $env:GameFolder,
+    [string]$HarmonyDllPath = $env:BellumHarmonyDllPath,
+    [string]$UIExtenderExDllPath = $env:BellumUIExtenderExDllPath,
     [switch]$PreflightOnly
 )
 $ErrorActionPreference = 'Stop'
@@ -24,6 +26,34 @@ $game = (Resolve-Path -LiteralPath $GameFolder).ProviderPath
 if (-not (Test-Path -LiteralPath $projectPath -PathType Leaf)) {
     Block 'missing_project' 25 $projectPath
 }
+# Reference lookup is build-only: explicit override > standard Modules > Steam Workshop.
+# Workshop IDs select the actual Harmony/UIExtenderEx modules, never another mod's DLL.
+$commonFolder = Split-Path -Parent $game
+$steamApps = if ([System.IO.Path]::GetFileName($commonFolder) -ieq 'common') {
+    Split-Path -Parent $commonFolder
+} else { $null }
+function Resolve-ExternalReference([string]$name, [string]$override, [string]$moduleRelative, [string]$workshopRelative) {
+    $modulePath = Join-Path $game $moduleRelative
+    if (-not [string]::IsNullOrWhiteSpace($override)) {
+        if (-not [System.IO.Path]::IsPathRooted($override)) {
+            Block 'dependency_override_not_absolute' 21 "$name override must be absolute: $override"
+        }
+        return @{ Path = $override; Source = 'override' }
+    }
+    if (Test-Path -LiteralPath $modulePath -PathType Leaf) {
+        return @{ Path = $modulePath; Source = 'modules' }
+    }
+    $workshopPath = if ($steamApps) { Join-Path $steamApps $workshopRelative } else { '' }
+    if ($workshopPath -and (Test-Path -LiteralPath $workshopPath -PathType Leaf)) {
+        return @{ Path = $workshopPath; Source = 'workshop' }
+    }
+    # Preserve the original fail-closed missing_reference diagnostic for absent DLLs.
+    return @{ Path = $modulePath; Source = 'missing' }
+}
+$external = @{
+    '0Harmony' = (Resolve-ExternalReference '0Harmony' $HarmonyDllPath 'Modules\Bannerlord.Harmony\bin\Win64_Shipping_Client\0Harmony.dll' 'workshop\content\261550\2859188632\bin\Win64_Shipping_Client\0Harmony.dll')
+    'Bannerlord.UIExtenderEx' = (Resolve-ExternalReference 'Bannerlord.UIExtenderEx' $UIExtenderExDllPath 'Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll' 'workshop\content\261550\2859222409\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll')
+}
 # Read EXACT HintPaths declared by shipping BellumCivile.csproj, not a guessed DLL list.
 [xml]$proj = Get-Content -Raw -LiteralPath $projectPath
 $refs = @($proj.Project.ItemGroup.Reference | Where-Object { $_ -and $_.HintPath })
@@ -33,13 +63,25 @@ if ($refs.Count -lt 15) {
 $missing = @()
 foreach ($ref in $refs) {
     $raw = [string]$ref.HintPath
-    if (-not $raw.StartsWith('$(GameFolder)', [StringComparison]::OrdinalIgnoreCase)) {
-        Block 'unrecognized_reference_path' 21 "$($ref.Include): $raw"
+    $name = [string]$ref.Include
+    if ($external.ContainsKey($name)) {
+        $expected = if ($name -eq '0Harmony') { '$(HarmonyDllPath)' } else { '$(UIExtenderExDllPath)' }
+        if ($raw -cne $expected) {
+            Block 'unrecognized_reference_path' 21 "$($name): $raw (expected $expected)"
+        }
+        $expanded = [string]$external[$name].Path
+        if (Test-Path -LiteralPath $expanded -PathType Leaf) {
+            Write-Host "BELLUM148_BUILD reference_resolved=$name source=$($external[$name].Source) path=$expanded"
+        }
+    } else {
+        if (-not $raw.StartsWith('$(GameFolder)', [StringComparison]::OrdinalIgnoreCase)) {
+            Block 'unrecognized_reference_path' 21 "$($ref.Include): $raw"
+        }
+        $expanded = $raw.Replace('$(GameFolder)', $game)
     }
-    $expanded = $raw.Replace('$(GameFolder)', $game)
     $expanded = $expanded.Replace('\', [System.IO.Path]::DirectorySeparatorChar)
     if (-not (Test-Path -LiteralPath $expanded -PathType Leaf)) {
-        $missing += "$($ref.Include): $expanded"
+        $missing += "$($name): $expanded"
     }
 }
 if ($missing.Count -gt 0) {
@@ -108,12 +150,17 @@ if ((Get-Command git -ErrorAction SilentlyContinue) -and
 } else {
     $revision = 'unverified_checkout'
 }
+$msbuildProps = @(
+    "-p:GameFolder=$game",
+    "-p:HarmonyDllPath=$($external['0Harmony'].Path)",
+    "-p:UIExtenderExDllPath=$($external['Bannerlord.UIExtenderEx'].Path)"
+)
 Push-Location $repo
 try {
     Write-Host "BELLUM148_BUILD begin head=$revision mode=Release target=net472"
-    & dotnet restore ./BellumCivile.csproj "-p:GameFolder=$game"
+    & dotnet restore ./BellumCivile.csproj @msbuildProps
     if ($LASTEXITCODE -ne 0) { Block 'restore_failed' 25 "dotnet restore exit=$LASTEXITCODE" }
-    & dotnet build ./BellumCivile.csproj -c Release --no-restore "-p:GameFolder=$game"
+    & dotnet build ./BellumCivile.csproj -c Release --no-restore @msbuildProps
     if ($LASTEXITCODE -ne 0) { Block 'compile_failed' 25 "dotnet build exit=$LASTEXITCODE" }
 } finally { Pop-Location }
 $output = Join-Path $repo 'bin/Release/net472/BellumCivile.dll'
