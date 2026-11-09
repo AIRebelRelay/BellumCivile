@@ -7046,6 +7046,9 @@
     <string id="BC_RealmPeaceInterruptedTitle" text="Royal Peace Settlement Interrupted" />
     <string id="BC_RealmPeaceInterruptedChat" text="The Royal Peace decree in {REALM} took effect, but some private conflicts could not be safely settled." />
     <string id="BC_RealmPeaceInterruptedBody" text="The decree's influence cost has been paid and its prohibition remains in force until {DATE}. Settlement was interrupted; no further automatic attempt will repeat a partially applied transfer. The remaining conflicts require investigation using the Bellum log." />
+    <string id="BC_EstatePreview_CrownEstateKind" text="Crown estate" />
+    <string id="BC_EstatePreview_SovereignKind" text="Sovereign succession" />
+    <string id="BC_EstatePreview_HeroHint" text="{KIND} - {SOURCE}" />
     <string id="BC_HeroFamily_Header" text="Family" />
     <string id="BC_HeroFamily_Parents" text="Parents" />
     <string id="BC_HeroFamily_Grandparents" text="Grandparents" />
