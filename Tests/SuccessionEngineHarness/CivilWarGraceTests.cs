@@ -47,7 +47,8 @@ internal static class CivilWarGraceTests
     private static readonly List<Kingdom> Realms = new List<Kingdom>();
     private static MultiSelectionInquiryData _inquiry;
     private static InquiryData _confirmation;
-    private static int _memories, _notices;
+    private static int _memories, _notices, _spendCalls;
+    private static float _lastSpentCost;
     private static bool _warActive;
     private static Clan _ruler;
     private static Hero _head;
@@ -77,6 +78,10 @@ internal static class CivilWarGraceTests
     private static bool Confirm(InquiryData __0) { _confirmation = __0; return false; }
     private static bool Notice() { _notices++; return false; }
     private static bool Memory() { _memories++; return false; }
+    private static bool RecordSpend(float __1, ref bool __result)
+    {
+        _spendCalls++; _lastSpentCost = __1; __result = true; return false;
+    }
     private static bool Future(CampaignTime __instance, ref bool __result) { __result = __instance.ToDays > _day; return false; }
     private static bool Past(CampaignTime __instance, ref bool __result) { __result = __instance.ToDays < _day; return false; }
     private static bool Date(ref string __result) { __result = "Day 100"; return false; }
@@ -380,6 +385,8 @@ internal static class CivilWarGraceTests
             Patch(AccessTools.Method(typeof(CourtAgendaBehavior), "AgendaOwnerName"), nameof(Name));
             Patch(AccessTools.Method(typeof(CourtAgendaBehavior), "NotifyAgenda"), nameof(Skip));
             Patch(AccessTools.Method(typeof(CourtAgendaBehavior), "ApplyMemberMemory"), nameof(Memory));
+            // Stub TaleWorlds influence mutation only in this fake-Clan fixture; assert the call semantics.
+            Patch(AccessTools.Method(typeof(FactionObject).Assembly.GetType("BellumCivile.NpcInfluenceBudgetService"), "TrySpend"), nameof(RecordSpend));
             Patch(AccessTools.Method(typeof(MBInformationManager), "ShowMultiSelectionInquiry"), nameof(Capture));
             Patch(AccessTools.Method(typeof(InformationManager), "ShowInquiry"), nameof(Confirm));
             Patch(AccessTools.Method(typeof(FactionObject).Assembly.GetType("BellumCivile.BellumCivileNotifications"), "ShowPersonal", new[] { typeof(TextObject), typeof(Color) }), nameof(Notice));
@@ -389,7 +396,7 @@ internal static class CivilWarGraceTests
             Call(court, "Advance", agenda, ideology);
             check(!agenda.CrisisInterventionPending && agenda.State == CourtAgendaState.AwaitingPlayerDecision,
                 "The real daily agenda advancement cannot recreate a player crisis through its low-mood branch");
-            agenda.CrisisInterventionPending = true; _memories = _notices = 0;
+            agenda.CrisisInterventionPending = true; _memories = _notices = _spendCalls = 0;
             Call(court, "ShowTermBusinessInquiry", agenda);
             var approve = _inquiry.InquiryElements.Single(e => (int)e.Identifier == 0);
             var decline = _inquiry.InquiryElements.Single(e => (int)e.Identifier == 1);
@@ -401,8 +408,31 @@ internal static class CivilWarGraceTests
             check(agenda.State == CourtAgendaState.AwaitingPlayerDecision && agenda.CrisisInterventionPending && _notices == 1,
                 "Forcing a disabled Approve callback cannot turn a prohibited crisis into a committed coalition");
             Call(court, "ShowTermBusinessInquiry", agenda); _inquiry.AffirmativeAction(new List<InquiryElement> { decline });
+            check(_spendCalls == 0, "Set aside under grace never calls influence budget");
             check(!agenda.CrisisInterventionPending && agenda.State == CourtAgendaState.NotProposed && _memories == 0 && !agenda.OrdinaryCrisisRestrained,
                 "Setting a prohibited crisis aside applies neither a relation penalty nor a permanent restraint");
+
+            // The adjacent paid actions must still use the central influence budget and apply their usual memory rules.
+            _spendCalls = _memories = 0; _lastSpentCost = 0;
+            var ordinaryDecline = new CourtAgendaRecord { Realm = _parent, Faction = bloc, Sponsor = _clan,
+                State = CourtAgendaState.AwaitingPlayerDecision, ObjectiveData = new CourtObjectiveRecord { Kind = "policy" } };
+            Call(court, "ApplyPlayerAgendaChoice", ordinaryDecline, 1, false);
+            check(_spendCalls == 1 && _lastSpentCost > 0 && _memories == 1 && ordinaryDecline.PlayerSelectionConfirmed
+                && ordinaryDecline.State == CourtAgendaState.Blocked && !ordinaryDecline.OrdinaryCrisisRestrained,
+                "Ordinary decline still spends influence and applies member memory without crisis restraint");
+
+            _spendCalls = _memories = 0; _lastSpentCost = 0;
+            var unprotected = NewRealm("unprotected_court");
+            var unprotectedBloc = Faction(unprotected, FactionType.Nobility); unprotectedBloc.Mood = -100;
+            var paidCrisis = new CourtAgendaRecord { Realm = unprotected, Faction = unprotectedBloc, Sponsor = _clan,
+                State = CourtAgendaState.AwaitingPlayerDecision, ObjectiveData = new CourtObjectiveRecord { Kind = "policy" },
+                CrisisInterventionPending = true };
+            Call(court, "ApplyPlayerAgendaChoice", paidCrisis, 1, true);
+            check(_spendCalls == 1 && _lastSpentCost > 0 && _memories == 1 && paidCrisis.PlayerSelectionConfirmed
+                && paidCrisis.State == CourtAgendaState.NotProposed && !paidCrisis.CrisisInterventionPending
+                && paidCrisis.OrdinaryCrisisRestrained,
+                "Unprotected crisis restraint still costs influence and applies member memory");
+            _spendCalls = _memories = 0;
             var motionType = typeof(CourtAgendaBehavior).GetNestedType("PlayerMotion", BindingFlags.NonPublic);
             object Motion(string kind)
             {
