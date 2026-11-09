@@ -88,9 +88,9 @@ if ($missing.Count -gt 0) {
     foreach ($item in $missing) { Write-Host "BELLUM148_BUILD missing_reference=$item" }
     Block 'missing_references' 21 "$($missing.Count) required shipping dependencies absent."
 }
-# Require positive version evidence from ORIGINAL installed game binaries.
-# AssemblyVersion of some TaleWorlds libraries is stable 1.0.0.0, so prefer
-# Windows file ProductVersion/FileVersion. Fail closed if metadata is absent.
+# Read Windows binary version evidence (some TaleWorlds PE files legitimately say 1.0.0.0).
+# Require the four installed canonical base-module manifests as positive game-version evidence.
+# Keep the existing contradiction check for any specific binary version metadata.
 $targets = @(
     (Join-Path $game 'bin/Win64_Shipping_Client/TaleWorlds.CampaignSystem.dll'),
     (Join-Path $game 'bin/Win64_Shipping_Client/TaleWorlds.Library.dll'),
@@ -107,6 +107,86 @@ foreach ($target in $targets) {
             $versions += $value
         }
     }
+}
+foreach ($moduleName in @('Native', 'SandBoxCore', 'Sandbox', 'StoryMode')) {
+    $manifestPath = Join-Path $game "Modules/$moduleName/SubModule.xml"
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        Block 'missing_game_version_manifest' 22 $manifestPath
+    }
+    try {
+        [xml]$gameManifest = Get-Content -LiteralPath $manifestPath -Raw -ErrorAction Stop
+        $moduleVersion = [string]$gameManifest.Module.Version.value
+    } catch {
+        Block 'invalid_game_version_manifest' 22 "$($manifestPath): $($_.Exception.Message)"
+    }
+    if ($moduleVersion -notmatch '^v1\.(?:4|5)\.[0-9]+(?:\.[0-9]+)?
+$gameVersions = @($versions | ForEach-Object {
+    [regex]::Matches($_, $gameVersionPattern) | ForEach-Object {
+        $found = $_.Value
+        $found -replace '^[ev]', ''
+    }
+} | Select-Object -Unique)
+if ($gameVersions.Count -eq 0) {
+    Block 'unverified_game_version' 22 'No installed Bannerlord 1.4.8 module/binary version evidence found.'
+}
+if ($gameVersions -contains '1.5.5' -or $gameVersions -contains '1.4.5' -or
+    @($gameVersions | Where-Object { $_ -ne '1.4.8' }).Count -gt 0) {
+    Block 'wrong_game_version' 22 ("Found game version markers: " + ($gameVersions -join ','))
+}
+if ($gameVersions -notcontains '1.4.8') {
+    Block 'unverified_game_version' 22 'Expected installed 1.4.8 version marker.'
+}
+Write-Host "BELLUM148_PREFLIGHT pass game_version=1.4.8 reference_count=$($refs.Count)"
+if ($PreflightOnly) {
+    Write-Host 'BELLUM148_PREFLIGHT_ONLY complete; NO shipping DLL was compiled.'
+    exit 0
+}
+if (-not $IsWindows -and $env:OS -ne 'Windows_NT') {
+    Block 'windows_build_required' 23 'Use Windows with .NET Framework 4.7.2 targeting support.'
+}
+if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+    Block 'dotnet_sdk_missing' 24 'Install a .NET SDK capable of building net472 projects.'
+}
+# Never ship a build made from uncommitted modifications with a misleading HEAD.
+if ((Get-Command git -ErrorAction SilentlyContinue) -and
+    (Test-Path -LiteralPath (Join-Path $repo '.git'))) {
+    Push-Location $repo
+    try {
+        $dirty = @(& git status --porcelain --untracked-files=no)
+        if ($LASTEXITCODE -ne 0 -or $dirty.Count -gt 0) {
+            Block 'tracked_sources_dirty' 26 'Commit/revert tracked edits first; building untracked generated outputs is fine.'
+        }
+        $revision = (& git rev-parse HEAD).Trim()
+    } finally { Pop-Location }
+} else {
+    $revision = 'unverified_checkout'
+}
+$msbuildProps = @(
+    "-p:GameFolder=$game",
+    "-p:HarmonyDllPath=$($external['0Harmony'].Path)",
+    "-p:UIExtenderExDllPath=$($external['Bannerlord.UIExtenderEx'].Path)"
+)
+Push-Location $repo
+try {
+    Write-Host "BELLUM148_BUILD begin head=$revision mode=Release target=net472"
+    & dotnet restore ./BellumCivile.csproj @msbuildProps
+    if ($LASTEXITCODE -ne 0) { Block 'restore_failed' 25 "dotnet restore exit=$LASTEXITCODE" }
+    & dotnet build ./BellumCivile.csproj -c Release --no-restore @msbuildProps
+    if ($LASTEXITCODE -ne 0) { Block 'compile_failed' 25 "dotnet build exit=$LASTEXITCODE" }
+} finally { Pop-Location }
+$output = Join-Path $repo 'bin/Release/net472/BellumCivile.dll'
+if (-not (Test-Path -LiteralPath $output -PathType Leaf) -or
+    (Get-Item -LiteralPath $output).Length -le 0) {
+    Block 'missing_output_dll' 26 $output
+}
+$hash = (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash.ToLowerInvariant()
+Write-Host "BELLUM148_BUILD success head=$revision game_version=1.4.8 sha256=$hash output=$output"
+Write-Host 'BELLUM148_BUILD not_deployed game_save_runtime_untested=true'
+) {
+        Block 'unverified_game_version' 22 "$moduleName has missing/unrecognized version: $moduleVersion"
+    }
+    Write-Host "BELLUM148_BUILD version_evidence=$moduleName/SubModule.xml ModuleVersion=$moduleVersion"
+    $versions += $moduleVersion
 }
 $gameVersionPattern = '(?<![0-9])(?:e|v)?1\.(?:4|5)\.[0-9]+'
 $gameVersions = @($versions | ForEach-Object {
