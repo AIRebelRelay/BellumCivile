@@ -125,6 +125,15 @@ namespace BellumCivile.Behaviors
                 NotifyAgenda(agenda);
                 return;
             }
+            // Pacification offers a free "Set the crisis aside", not a paid permanent restraint.
+            if (choice == 1 && grace != null)
+            {
+                agenda.CrisisInterventionPending = false;
+                agenda.State = agenda.IsPolicy && Policy(agenda) == null ? CourtAgendaState.NotProposed : CourtAgendaState.Announced;
+                agenda.PlayerSelectionConfirmed = true;
+                NotifyAgenda(agenda);
+                return;
+            }
             if (choice == 1)
             {
                 if (!NpcInfluenceBudgetService.TrySpend(Clan.PlayerClan, BlockCost(agenda, crisis),
