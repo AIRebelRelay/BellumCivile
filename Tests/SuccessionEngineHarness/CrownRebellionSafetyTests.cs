@@ -182,6 +182,13 @@ internal static class CrownRebellionSafetyTests
             check(!CanStart(crownedLeader), "Current ruling clan cannot issue an ultimatum against itself");
             warming.AddMember(newHouse);
             check(!warming.Members.Contains(newHouse), "Ruling clan cannot be added to another armed faction");
+            var eligibleVassal = House("eligible_vassal", realm);
+            warming.AddMember(eligibleVassal);
+            check(warming.Members.Contains(eligibleVassal), "Ordinary vassal can still join an armed faction");
+            courtParty.AddMember(eligibleVassal);
+            check(courtParty.Members.Contains(eligibleVassal), "Ordinary vassal can still join a court faction");
+            warming.RemoveMember(eligibleVassal);
+            courtParty.RemoveMember(eligibleVassal);
             check(CanStart(warming), "Healthy landless crown can still face a legitimate ultimatum");
             _pending = true; check(!CanStart(warming), "New ultimatums wait for accession completion"); _pending = false;
             _transfer = true; check(!CanStart(warming), "New ultimatums wait for realm transfer completion"); _transfer = false;
