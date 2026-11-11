@@ -16,6 +16,9 @@ namespace BellumCivile.Behaviors
         private List<ClientKingdomRecord> _clients = new List<ClientKingdomRecord>();
         private int _diplomaticSyncDepth;
         private int _runtimeRevision;
+        // Diagnostic-only, per campaign behavior instance; not persisted.
+        private int _kdTraceRegistrationCount;
+        private int _kdTraceCallbackCount;
 
         public static ClientKingdomBehavior Instance { get; private set; }
         public bool IsSynchronizingDiplomacy => _diplomaticSyncDepth > 0;
@@ -29,6 +32,10 @@ namespace BellumCivile.Behaviors
             CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             CampaignEvents.KingdomDestroyedEvent.AddNonSerializedListener(this, OnKingdomDestroyed);
+            BellumCivileLogger.Log(
+                $"KD_TRACE_REGISTER instance={System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this)} " +
+                $"reg_count={System.Threading.Interlocked.Increment(ref _kdTraceRegistrationCount)} " +
+                $"campaign={Campaign.Current?.UniqueGameId ?? "<none>"} utc={DateTime.UtcNow:O}");
             CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
             CampaignEvents.MakePeace.AddNonSerializedListener(this, OnMakePeace);
         }
@@ -630,6 +637,12 @@ namespace BellumCivile.Behaviors
 
         private void OnKingdomDestroyed(Kingdom destroyedKingdom)
         {
+            BellumCivileLogger.Log(
+                $"KD_TRACE_CALLBACK instance={System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this)} " +
+                $"cb_count={System.Threading.Interlocked.Increment(ref _kdTraceCallbackCount)} " +
+                $"kingdom={destroyedKingdom?.StringId ?? "<null>"} " +
+                $"kingdom_ref={(destroyedKingdom == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(destroyedKingdom))} " +
+                $"campaign={Campaign.Current?.UniqueGameId ?? "<none>"} utc={DateTime.UtcNow:O}");
             if (destroyedKingdom == null)
                 return;
 
