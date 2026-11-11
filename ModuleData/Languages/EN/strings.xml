@@ -7046,5 +7046,31 @@
     <string id="BC_RealmPeaceInterruptedTitle" text="Royal Peace Settlement Interrupted" />
     <string id="BC_RealmPeaceInterruptedChat" text="The Royal Peace decree in {REALM} took effect, but some private conflicts could not be safely settled." />
     <string id="BC_RealmPeaceInterruptedBody" text="The decree's influence cost has been paid and its prohibition remains in force until {DATE}. Settlement was interrupted; no further automatic attempt will repeat a partially applied transfer. The remaining conflicts require investigation using the Bellum log." />
+    <string id="BC_EstatePreview_CrownEstateKind" text="Crown estate" />
+    <string id="BC_EstatePreview_SovereignKind" text="Sovereign succession" />
+    <string id="BC_EstatePreview_HeroHint" text="{KIND} - {SOURCE}" />
+    <string id="BC_HeroFamily_Header" text="Family" />
+    <string id="BC_HeroFamily_Parents" text="Parents" />
+    <string id="BC_HeroFamily_Grandparents" text="Grandparents" />
+    <string id="BC_HeroFamily_Spouse" text="Spouse" />
+    <string id="BC_HeroFamily_Children" text="Children ({COUNT})" />
+    <string id="BC_HeroFamily_Siblings" text="Siblings ({COUNT})" />
+    <string id="BC_HeroFamily_Grandchildren" text="Grandchildren ({COUNT})" />
+    <string id="BC_HeroFamily_Father" text="Father" />
+    <string id="BC_HeroFamily_Mother" text="Mother" />
+    <string id="BC_HeroFamily_PaternalGrandfather" text="Paternal grandfather" />
+    <string id="BC_HeroFamily_PaternalGrandmother" text="Paternal grandmother" />
+    <string id="BC_HeroFamily_MaternalGrandfather" text="Maternal grandfather" />
+    <string id="BC_HeroFamily_MaternalGrandmother" text="Maternal grandmother" />
+    <string id="BC_HeroFamily_Wife" text="Wife" />
+    <string id="BC_HeroFamily_Husband" text="Husband" />
+    <string id="BC_HeroFamily_FormerWife" text="Former wife" />
+    <string id="BC_HeroFamily_FormerHusband" text="Former husband" />
+    <string id="BC_HeroFamily_Daughter" text="Daughter" />
+    <string id="BC_HeroFamily_Son" text="Son" />
+    <string id="BC_HeroFamily_Sister" text="Sister" />
+    <string id="BC_HeroFamily_Brother" text="Brother" />
+    <string id="BC_HeroFamily_Granddaughter" text="Granddaughter" />
+    <string id="BC_HeroFamily_Grandson" text="Grandson" />
   </strings>
 </base>

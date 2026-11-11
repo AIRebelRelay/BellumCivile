@@ -16,6 +16,62 @@ namespace BellumCivile.Behaviors
         internal bool OwnsContinuingCollapse(CivilWarCollapseRecord record) => record != null && !record.Completed && _collapses.Contains(record);
         internal bool IsCollapseScorePending(WarScoreRecord score) => _collapses.Any(c => c.ProtectsScore(score));
 
+        internal bool OwnsCollapseHouseholdTransfer(FactionObject faction, Clan clan, Kingdom source, Kingdom destination) =>
+            _resumingCollapses.Any(c => !c.Completed && c.Stage == 2 && c.Winner == faction
+                && c.WinnerRealm == source && c.Successor == destination && c.WinnerClans.Contains(clan));
+
+        private bool CanContinueCollapseClaim(CivilWarCollapseRecord record)
+        {
+            var claim = record.Challenge;
+            if (claim == null) return true;
+            if (SuccessionChallengeBehavior.Instance?.GetWarRecord(record.Winner) != claim
+                || record.WinnerHouse == null || claim.OutcomeVictor != record.WinnerHouse
+                || claim.WarOutcome != SuccessionChallengeOutcome.Victory) return false;
+            if (claim.HasWarCrownReceipt) return true;
+            // A callback may have interrupted the legal transfer before its receipt.
+            // Only actual ownership of this exact successor's Crown can recover it.
+            if (record.Stage >= 3 && CollapseCrownDelivered(record))
+            {
+                claim.WarCrownTransferred = true;
+                return true;
+            }
+            return !record.WinnerHouse.IsEliminated && claim.Challenger?.IsAlive == true
+                && record.WinnerHouse.Leader == claim.Challenger
+                && (record.WinnerHouse.Kingdom == record.WinnerRealm || record.WinnerHouse.Kingdom == record.Successor);
+        }
+
+        private static bool CollapseCrownDelivered(CivilWarCollapseRecord record)
+        {
+            var realm = record.Successor;
+            var crown = Campaign.Current.GetCampaignBehavior<FeudalTitleBehavior>()?.GetKingdomPoliticalTitle(realm);
+            return realm?.IsEliminated == false && realm.RulingClan == record.WinnerHouse
+                && record.WinnerHouse.Kingdom == realm
+                && crown?.IsActive == true && crown.AssociatedKingdomId == realm.StringId
+                && crown.DeJureHolderClanId == record.WinnerHouse.StringId
+                && crown.DeFactoHolderClanId == record.WinnerHouse.StringId;
+        }
+
+        private bool PrepareCollapseChallengeVictory(CivilWarCollapseRecord record)
+        {
+            var challenges = SuccessionChallengeBehavior.Instance;
+            if (!CanContinueCollapseClaim(record)
+                || !NobleClanEligibilityHelper.IsValidRulingClan(record.Successor?.RulingClan, record.Successor)
+                || record.Successor.IsEliminated || challenges == null
+                || !challenges.PrepareWarOutcome(record.Winner, SuccessionChallengeOutcome.Victory, record.Successor)) return false;
+            if (!record.Challenge.HasWarCrownReceipt)
+            {
+                var titles = Campaign.Current.GetCampaignBehavior<FeudalTitleBehavior>();
+                var crown = titles?.GetIndependentRealmSovereignTitle(record.Successor);
+                if (record.Successor.RulingClan != record.WinnerHouse || crown?.IsActive != true
+                    || crown.AssociatedKingdomId != record.Successor.StringId
+                    || crown.DeFactoHolderClanId != record.WinnerHouse.StringId) return false;
+                if (!titles.TrySetKingdomTitleRuler(record.Successor, record.WinnerHouse, true,
+                    "restored hereditary challenge victory") || !CollapseCrownDelivered(record)) return false;
+                record.Challenge.WarCrownTransferred = true;
+            }
+            return challenges.LegalizeChallengeVictory(record.Winner, record.Successor);
+        }
+
         private bool TryResumeChallengeCollapse(SuccessionChallengeRecord challenge)
         {
             var collapse = _collapses.FirstOrDefault(c => c.OwnsChallenge(challenge));
@@ -115,7 +171,7 @@ namespace BellumCivile.Behaviors
                 if (record.Stage < 3 && (record.WinnerHouse?.Leader?.IsAlive != true
                     || record.WinnerHouse.IsEliminated || record.Successor?.IsEliminated == true))
                     throw new InvalidOperationException("Chosen successor is no longer available");
-                if (record.Challenge != null && SuccessionChallengeBehavior.Instance?.CanWinChallenge(record.Winner) != true)
+                if (!CanContinueCollapseClaim(record))
                     throw new InvalidOperationException("The original hereditary claimant can no longer take the Crown");
                 if (record.Stage == 0)
                 {
@@ -165,8 +221,8 @@ namespace BellumCivile.Behaviors
                     if (!ReleaseMercenariesFromKingdom(record.WinnerRealm)
                         || !ReleaseMercenariesFromKingdom(record.Parent))
                     { record.Failure = "Mercenary dismissal pending"; return; }
-                    TransferClansToKingdom(record.WinnerRealm, record.Successor, record.WinnerHouse);
-                    TransferClansToKingdom(record.Parent, record.Successor, record.WinnerHouse);
+                    if (!TransferClansToKingdom(record.WinnerRealm, record.Successor, record.WinnerHouse)
+                        || !TransferClansToKingdom(record.Parent, record.Successor)) return;
                     if (record.WinnerRealm.Clans.Any(c => !c.IsEliminated) || record.Parent.Clans.Any(c => !c.IsEliminated)) return;
                     EnsureValidRulingClan(record.Successor, record.WinnerHouse, forcePreferred: true);
                     Campaign.Current.GetCampaignBehavior<FeudalTitleBehavior>()?
@@ -182,14 +238,12 @@ namespace BellumCivile.Behaviors
                 {
                     if (record.Challenge != null)
                     {
-                        var challenges = SuccessionChallengeBehavior.Instance;
-                        if (!challenges.PrepareWarOutcome(record.Winner, SuccessionChallengeOutcome.Victory, record.Successor)
-                            || !challenges.LegalizeChallengeVictory(record.Winner, record.Successor)) return;
+                        if (!PrepareCollapseChallengeVictory(record)) return;
                         TryQueueChallengeTribunal(record.Winner, record.Successor);
                         if (!record.Challenge.TribunalQueued) return;
                     }
                     CompleteCivilWarTracker(record.Winner, record.WinnerRealm, record.Transfer != null
-                        ? "Crown mantle restored; rival claims continue" : "Crown mantle restored after outside conquest");
+                        ? "Crown mantle restored; rival claims continue" : "Crown mantle restored after outside conquest", record.Successor);
                     Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>()?.RemoveFaction(record.Winner);
                     PreservePromotedRebelForeignWars(record.WinnerRealm, record.Successor, record.Parent);
                     if (!DrainAndDestroyRebelKingdom(record.WinnerRealm, record.Successor)) return;
@@ -198,6 +252,15 @@ namespace BellumCivile.Behaviors
                 }
                 if (record.Stage == 4)
                 {
+                    if (!NobleClanEligibilityHelper.IsValidRulingClan(record.Successor?.RulingClan, record.Successor)
+                        || record.Successor.IsEliminated) return;
+                    if (!record.CreatedNotified)
+                    {
+                        record.CreatedNotified = true;
+                        CampaignEventDispatcher.Instance.OnKingdomCreated(record.Successor);
+                    }
+                    if (record.Successor.IsEliminated
+                        || !NobleClanEligibilityHelper.IsValidRulingClan(record.Successor.RulingClan, record.Successor)) return;
                     if (!record.RewardsApplied)
                     {
                         if (!record.InfluenceRestored)

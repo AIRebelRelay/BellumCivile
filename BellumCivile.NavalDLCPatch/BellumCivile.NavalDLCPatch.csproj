@@ -6,6 +6,10 @@
     <AssemblyName>BellumCivile.NavalDLCPatch</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Platforms>AnyCPU</Platforms>
+    <!-- Build-only dependency lookup; explicit -p:UIExtenderExDllPath overrides both locations. -->
+    <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == '' and Exists('$(GameFolder)\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll')">$(GameFolder)\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
+    <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == '' and Exists('$(GameFolder)\..\..\workshop\content\261550\2859222409\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll')">$(GameFolder)\..\..\workshop\content\261550\2859222409\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
+    <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == ''">$(GameFolder)\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +18,7 @@
 
   <ItemGroup>
     <Reference Include="Bannerlord.UIExtenderEx">
-      <HintPath>$(GameFolder)\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</HintPath>
+      <HintPath>$(UIExtenderExDllPath)</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="NavalDLC.ViewModelCollection">

@@ -50,7 +50,32 @@ internal static class Program
         };
         try
         {
-            if (args.Contains("--regency-settings"))
+            if (args.Contains("--fief-redistribution"))
+            {
+                FiefRedistributionTests.Run(Check);
+                Console.WriteLine($"{_checks} fief redistribution checks passed.");
+            }
+            else if (args.Contains("--restored-realm-recovery"))
+            {
+                RestoredRealmRecoveryTests.Run(Check);
+                Console.WriteLine($"{_checks} restored-realm recovery checks passed.");
+            }
+            else if (args.Contains("--collapse-claimant-recovery"))
+            {
+                CollapseClaimantRecoveryTests.Run(Check);
+                Console.WriteLine($"{_checks} collapse claimant recovery checks passed.");
+            }
+            else if (args.Contains("--crown-rebellion-safety"))
+            {
+                CrownRebellionSafetyTests.Run(Check);
+                Console.WriteLine($"{_checks} crown rebellion safety checks passed.");
+            }
+            else if (args.Contains("--civil-war-grace"))
+            {
+                CivilWarGraceTests.Run(Check);
+                Console.WriteLine($"{_checks} civil-war grace checks passed.");
+            }
+            else if (args.Contains("--regency-settings"))
             {
                 RegencySettingsTests.Run(Check);
                 TestRegencyContinuity();
@@ -109,6 +134,35 @@ internal static class Program
                 CadetNamingTests.Run(Check);
                 TestRoyalCadetNames();
                 Console.WriteLine($"{_checks} inheritance regression checks passed.");
+            }
+            else if (args.Contains("--family-tree-refresh"))
+            {
+                string original = args.Single(a => a.StartsWith("--family-tree-dll=")).Substring("--family-tree-dll=".Length);
+                string working = args.Single(a => a.StartsWith("--working-family-tree-dll=")).Substring("--working-family-tree-dll=".Length);
+                FamilyTreeRefreshCompatibilityTests.Run(Check, original, working);
+                Console.WriteLine($"{_checks} Family Tree refresh compatibility checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-extender-addon"))
+            {
+                string dll = args.Single(a => a.StartsWith("--encyclopedia-extender-dll=")).Substring("--encyclopedia-extender-dll=".Length);
+                EncyclopediaFamilyCompatibilityTests.ExtenderProbe(Check, _game, dll);
+                Console.WriteLine($"{_checks} actual Encyclopedia Extender checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-family-addon"))
+            {
+                string module = args.Single(a => a.StartsWith("--family-addon-module=")).Substring("--family-addon-module=".Length);
+                EncyclopediaFamilyCompatibilityTests.AddonProbe(Check, _game, module);
+                Console.WriteLine($"{_checks} actual family addon checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-family-registry"))
+            {
+                EncyclopediaFamilyCompatibilityTests.RegistryProbe(Check, _game);
+                Console.WriteLine($"{_checks} real family registry checks passed.");
+            }
+            else if (args.Contains("--encyclopedia-family"))
+            {
+                EncyclopediaFamilyTests.Run(Check, _game);
+                Console.WriteLine($"{_checks} encyclopedia family checks passed.");
             }
             else if (args.Contains("--encyclopedia-inheritance"))
             {
