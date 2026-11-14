@@ -554,3 +554,54 @@ The exact supplied XML reads `<Id value="BellumCivile"/>`, `<Version value="v1.4
 **Stop:** Do **not** expand the experimental \`feature/crbellum-first-council-feed-2026-11-14\` to more events/actions until (a) the API questions above are answered or an explicitly scoped Bridge fallback is approved and (b) Native Bellum 1.5.7 source/ABI compatibility is established. The council-feed experiment is **not** the architectural target: a one-way event by itself cannot deliver AII-style political statements or autonomous NPC world behavior.
 
 **Exact file boundary for this documentation stage:** only this Markdown file on the existing docs branch. No code, builds, merges, save changes or runtime result claimed.
+
+
+## 18. LLM Bellum 1.5.7 port — source-level decision ownership and minimal ABI audit (2026-11-14)
+
+**Provenance pinned for this stage:** custom Native [AIRebelRelay/BellumCivile @ 59b2aee](https://github.com/AIRebelRelay/BellumCivile/commit/59b2aee8268cf1633e052e6b44e1cdba0e3c15fb) (1.4.11.1; Bannerlord 1.4.8 baseline), upstream [Vonbalt/BellumCivile @ 8a08e0c](https://github.com/Vonbalt/BellumCivile/commit/8a08e0c038a60030813c56eae39a5fbee0b75cb6) (manifest 1.4.12; target game 1.5.7). Recursive blob SHA comparison: **494 paths differ** (225 common paths have different blobs; 121 only custom; 148 only upstream). These counts are an *inventory*, not a claim that all paths need merging. Neither tree has been compiled here for 1.5.7.
+
+### 18.1 Core identity: LLM Bellum, not vanilla Bellum with a newer game version
+
+| Responsibility | Authoritative owner | Guard against regression |
+|---|---|---|
+| Combat outcomes, war score, war will, economic state, claims, court memberships, legality checks, influence costs, eligibility, voting/decision resolution, save migration, and maintenance/recovery | **Native Bellum + TaleWorlds** | Preserve these as factual state and legal constraints available to the LLM; do not disable internal processing to suppress competing suggestions |
+| **Political intention/initiative**: a ruler or NPC wants to threaten, sue for peace, propose an alliance, negotiate hostages, demand territory, etc., especially bilateral **international** affairs | **LLM diplomacy service via CR↔Bellum Bridge** is the desired new primary source of proposal content and target selection | No Native routine should silently originate a parallel equivalent AI foreign-policy proposal while LLM authority is active; behavior while LLM is disabled must be **explicitly designed**, not changed incidentally |
+| Authority to act: which person/clan may initiate, what votes are required, whether a treaty is possible, and whether an outcome really committed | **Native Bellum** | The LLM may submit a proposal, NEVER directly finalize a war, peace, treaty, marriage, hostage transaction, or kingdom change without a native terminal receipt |
+| Character personality, memory, known events, and public/private context | **Calradia Remembers** (APIs) + Bridge's own private negotiation ledger | No global leakage of confidential council discussions; public Feed events are not proof that all NPCs know them |
+| LLM routes, model selection, budgets, scheduling, background NPC↔NPC exchanges and diplomacy thread persistence | **AI Rebel Relay + CR↔Bellum Bridge** | Distinct from Relay Bridge; no mixed DLL or copied \`NpcMemoryService.Core.dll\` |
+| Domestic deliberation and internal Bellum motions | **Not globally reassigned** at port stage | Inspect every class of domestic decision separately. Retain existing working councils, succession, civil-war, spontaneous reactions and voting; LLM might propose particular domestic motions later, but do not disable whole subsystems by default |
+
+**Source-backed conflict inventory (not yet patched):**
+
+1. **Already present in custom Native:** \`Behaviors/WarPeaceRevampBehavior.cs::TryCreateWarDecision\` uses Bellum's war-will/target scoring to build a \`DeclareWarDecision\`; \`TryCreatePeaceDecision\` can invoke \`ForeignTreatyBehavior.TryQueueAiParley\` for a non-player bilateral peace opportunity. These represent *intent/origination* paths, not just economic/world-state calculation. Callers and actual enablement must be traced before changing anything. \`OnDailyTickClan\` also computes war will and refreshes ranked targets, which must **not** be confused with autonomous decision commits.
+2. **New upstream only:** \`Behaviors/VoluntaryPactAiBehavior.cs\` runs on \`CampaignEvents.DailyTickEvent\`; \`Evaluate\` may call \`VoluntaryPactProposalBehavior.TryCreateAndFile\`. It is a concrete background **AI proposal initiator**, while \`VoluntaryPactProposalBehavior\` is a *transaction/validation/recovery* system. Do **not** indiscriminately import the upstream AI initiator as a background foreign-policy competitor in the LLM-enabled profile, and do **not** disable its proposal validation/delivery just because the initiator overlaps.
+3. **Custom LLM-specific safety:** \`Behaviors/WarScoreAiInfluenceForeignLedger.cs\` preserves accounting-only foreign-war records linked to accepted AI Influence event IDs, and \`Patches/CivilWarMakePeacePatch.cs\` contains protection from premature AI Influence peace on new civil wars. Do not repurpose those AII-specific receipts as CR's own receipts or remove protections in the name of a new LLM source. Analyze reuse/migration as a separate stage.
+4. **New upstream systems:** lordships, voluntary peacetime hostage pacts, court term preparation and a substantial save/type expansion. These are **not** mere 1.5.7 ABI fixes; each has independent save/gameplay/LLM-authority blast radius. Explicit separate design review required.
+
+### 18.2 Verified narrow Bannerlord 1.5.7 compatibility seam
+
+Source comparison of \`CouncilAssignmentRuntimePatches.cs\`: custom and upstream files are **identical except three source lines** in the target version:
+- Harmony target \`GetPartyMemberSizeLimit\` changed from argument types \`(PartyBase, bool)\` to \`(PartyBase, bool, bool)\`.
+- Both \`TryGetPatrolAssignmentLimits\` invocations now pass \`party.IsCurrentlyAtSea\` into \`model.GetPartyMemberSizeLimit(party.Party, party.IsCurrentlyAtSea)\`.
+
+This matches upstream commit \`b9def48e9d12b6989bfa7050087261265b8db75e\` (2026-11-10, "updated beta build to 1.5.7"). Its own \`Tests/SuccessionEngineHarness/GameVersionCompatibilityTests.cs\` added regression assertions for the method signature, both land/sea calls and hook registration. These are specific *source* facts; actual compatibility with the installed 1.5.7 game DLLs remains unverified.
+
+**Call chain/blast radius:** \`SubModule.OnGameStart\` → \`CouncilAssignmentRuntimePatches.Initialize\` → \`PatchActiveModelMethod(GetPartyMemberSizeLimit)\` → \`ApplyPatrolSizeAssignment\` / \`TryGetPatrolAssignmentLimits\`. Shared \`Initialize\` installs four model hooks; a signature mismatch could silently drop a hook, while changing the helper could disturb the other three. Its callers are currently limited by identified source entrypoints; any wider consumer must be checked before patching.
+
+**Candidate next production stage (not authorized by this audit):**
+- **ROOT CAUSE:** Native 1.4.11.1 still binds the older party-size ABI, which no longer matches TaleWorlds 1.5.7. Separately, existing and incoming autonomous foreign-policy proposal sources risk bypassing the intended LLM authority. Treat the ABI regression and policy ownership as **different bugs/stages**.
+- **TOUCH (ABI candidate):** \`CouncilAssignmentRuntimePatches.cs\` — precisely the three source lines above; a new **1.5.7** regression test/build gate in its own file(s), after confirming real SDK references and installed game DLLs.
+- **DO NOT TOUCH:** \`WarPeaceRevampBehavior\`, \`ForeignTreatyBehavior\`, \`VoluntaryPactAiBehavior\`, court/succession/war-vote rules, save types, CR/Relay Bridge, legacy AII Bellum Bridge, legacy \`Verify-Bellum148Build.ps1\` and its \`P014FGameVersionManifest.Tests.ps1\` tests.
+- **MUST FIX:** compatible Harmony method lookup and party-size calculation using correct sea state, retaining patrol size bonuses.
+- **MUST NOT CHANGE:** other three hooks, regular non-patrol party-size calculations, land behavior, native political outcome rules, old 1.4.8 shipping gate semantics, saved data.
+- **POSITIVE REGRESSIONS (future):** binding against real 1.5.7 \`PartySizeLimitModel\`; both calls use \`IsCurrentlyAtSea\`; all four hooks install; patrol bonuses work on land and at sea.
+- **NEGATIVE REGRESSIONS (future):** no hook against obsolete two-parameter method, no non-patrol bonus, no save/seed regression, no altered foreign-policy initiator or war/peace result, old 1.4.8 gate remains available on its old baseline.
+- **VALIDATION:** static diff audit → runnable targeted PowerShell and C# test harness against 1.5.7 DLLs → actual \`dotnet build --no-incremental\` on 1.5.7 dependency tree → fresh campaign, existing save and War Sails/land patrol with logs. Compile alone is **not** a game pass.
+
+### 18.3 Action policy
+
+**Do not merge upstream into our 1.4.11.1 main, overwrite newer custom source, port all new upstream save types, disable all NPC AI, or remove any Harmony patches without proving their exact call chains and regression consumers.** First port narrow game-version ABI fixes; then separately design a **foreign-policy initiation authority seam** with explicit LLM-enabled / LLM-unavailable behavior and public Bellum preflight/terminal receipts.
+
+**LogRaam agreement (from direct discussion 2026-11-14):** CR will work on (1) optional common diplomacy authority delegation and (2) per-NPC public knowledge + Feed secrecy. CR does *not* provide NPC↔NPC orchestration; that belongs to our Bridge, using own LLM routing and budgets. This external API work does not block source-only Bellum ABI auditing.
+
+**This stage changed documentation only.** No Native build, test run, gameplay result, code patch, or claim that international policies are already fully under LLM authority.
