@@ -416,3 +416,45 @@ Target runtime changes to **CR 2.8.9 + Native Bellum**, not an adapted AII Bellu
 **First CR integration contract (future):** read-only political feed using CR public `Feed.Record/Update/Retract` with exact sources, distinct public vs private court data and dedup; only after safe combined Bellum+CR runtime gate. Then one authorized intent and an owner-issued outcome receipt. Old AII's direct foreign-war handshake is **not** a substitute.
 
 **Stop condition:** Without 1.4.12b source provenance **and** real Bannerlord 1.5.7 game assemblies, no justified production diff can be defined yet. Don't invent test passes, silently import 1.5.7 main or strip AII-era code to make the project compile.
+
+
+## 15. Stage 1C — User-supplied Bellum binary fingerprint (2026-11-14, DOC ONLY)
+
+This section **supersedes Stage 1B's previous absence-of-binary blocker**. The user supplied an actual module tree on Google Drive: [BellumCivile folder](https://drive.google.com/drive/u/0/folders/1WcSRIdaIuRdNXMtZe2Qf-L6IFTNSTKI0). The binary is now available for source fingerprinting. **It is not yet proven to be the exact author-labeled 1.4.12b release** by a tag or compile record.
+
+### 15.1 Acquired binary identity (read-only)
+
+| File (Drive) | Size | SHA-256 (verified against downloaded bytes) | Google Drive preserved modified time |
+|---|---:|---|---|
+| [BellumCivile.dll](https://drive.google.com/file/d/1daVTFUhT_7iFtdeNSAqmmANz1QNyvkmT/view) | 5,434,368 bytes | `096ca56b7eb012018b1e16f0aeb9406748cab18f56bb39ead93b253ae5f6e898` | 2026-11-11 01:12:37 UTC |
+| [BellumCivile.NavalDLCPatch.dll](https://drive.google.com/file/d/1zQtcg8LS03fjvxLY7FtselUhQ7KNksq5/view) | 13,312 bytes | `ab6658859944e1eadad6da5a7cec2f537b6fc660135c915bf1cba874e76a2dbb` | 2026-11-11 01:12:37 UTC |
+| [SubModule.xml](https://drive.google.com/file/d/1rbSbQntnsDaU4mdgp8EiBDYR6qDoFPXp/view) | 1,403 bytes | Not hashed in this pass | 2026-11-11 01:11:22 UTC |
+
+The exact supplied XML reads `<Id value="BellumCivile"/>`, `<Version value="v1.4.12"/>`; it does **not** identify `1.4.12b` separately. Two PE binaries were recognized as Windows .NET assemblies. The PE header timestamps decode to nonsensical future dates (2075/2086); **do not use PE TimeDateStamp as a compile or release date**, consistent with reproducible/deterministic .NET build patterns. The Google Drive modified timestamps are provenance hints, **not cryptographic compile proof**.
+
+### 15.2 Source consistency checks (not a reconstructed commit)
+
+**Direct bytes inspection** (`strings` against the DLL's metadata/string heaps) shows:
+
+- Present: `get_IsCurrentlyAtSea`, `GetPartyMemberSizeLimit`, `AlliancePeaceRestriction`, `CourtTermPreparationRecord`, `TitleAcquisitionBehavior`, `LordshipBehavior`.
+- Absent from binary strings: `VoluntaryPactProposalBehavior`, `VoluntaryPactAiBehavior`, `VoluntaryPactDecision`, `PeacetimeHostagePactRules`.
+- Source commit [`b9def48e`](https://github.com/Vonbalt/BellumCivile/commit/b9def48e9d12b6989bfa7050087261265b8db75e) on 2026-11-10 explicitly adapts a party-size code path to **Bannerlord 1.5.7** by passing `party.IsCurrentlyAtSea`. The above binary symbol **fits** this change; its mere presence does not prove the call signature or runtime ABI by itself.
+- In upstream Git trees, pre-merge commits [`b9def48e`](https://github.com/Vonbalt/BellumCivile/commit/b9def48e9d12b6989bfa7050087261265b8db75e) and [`75d8f773`](https://github.com/Vonbalt/BellumCivile/commit/75d8f773ac56148452e41372b30b808ad54e2590) include `AlliancePeaceRestriction.cs`, `CourtTermPreparationRecord.cs` and lordship classes, **but do not** contain `Behaviors/VoluntaryPactProposalBehavior.cs` or `Behaviors/VoluntaryPactAiBehavior.cs`. The later [`e738eff9`](https://github.com/Vonbalt/BellumCivile/commit/e738eff996baa84ed8deceb4ff6d0810f2e18eb4) merge and current [`8a08e0c0`](https://github.com/Vonbalt/BellumCivile/commit/8a08e0c038a60030813c56eae39a5fbee0b75cb6) **do** contain those files.
+- **Interpretation: supplied binary is consistent with a pre-voluntary-pact 1.5.7 beta code snapshot**, and is not equivalent to the current upstream `main`. This is a source/binary **feature-set match**, not an exact SHA match, a guarantee of 1.5.7 startup or proof that the file is from Nexus' specifically labeled `1.4.12b`.
+- Public GitHub still has no observed immutable tag/release linking these DLL checksums to a source commit. Source-built DLL comparison or author's explicit SHA is needed to close exact provenance.
+
+### 15.3 Change boundary / regression contract
+
+**ROOT CAUSE:** Previously only author statements and upstream commits were known; the missing compiled beta binary prevented a binary-level feature/provenance check. The user-supplied DLLs close the **artifact availability** gap, not the **exact commit/ABI validation** gap.
+
+**TOUCH:** this living architecture document only.
+
+**DO NOT TOUCH:** main, production Bellum/CR files, both Bridges, AII legacy save decoders, 1.4.8 build script, active mod folder or saves.
+
+**MUST FIX (evidence):** freeze both hashes, distinguish XML module identity from beta label, map present/absent source features, flag remaining author commit / 1.5.7 ABI and combined runtime verification. **MUST NOT CHANGE:** foreign treaty and WarScore ownership or historic AII ledger handling.
+
+**Positive checks recorded:** raw DLL byte download/size, verified SHA-256, PE/.NET format, manifest XML, exact named binary symbol presence/absence, upstream tree comparisons. **No build, IL semantic validation or live-game test was run.**
+
+**Next single stage (after a documented decision):** introduce a **new, parallel, fail-closed 1.5.7 build-preflight script with isolated fixture tests**, preserving 1.4.8 build tooling. Before altering any gameplay C#, compile against the user's **actual** 1.5.7 TaleWorlds DLLs and the correct Naval DLC; use the binary marker above only as reference. If exact source parity is mandatory for upstream feature import, get the author's 1.4.12b SHA or reproducible build provenance first.
+
+**Live log / game gates later:** Harmony resolution errors and game startup; verify War & Peace Revamp ON/OFF, lawful Bellum peace, CR `mediate_peace` attempted raw peace, current war state, old AII ledger save handling and save/reload. **Do not conclude that startup is safe just because the binary is labeled v1.4.12.**
