@@ -311,3 +311,56 @@ A sanctioned NPC↔NPC persona-turn/offer-reply API with provenance, recipient a
 **MUST NOT CHANGE:** vanilla fallback on Revamp OFF, Bellum treaty gate/ratification/War Score, independent criminal-law peace, authored scripts, KingdomDecision votes, clientage, story protections, internal/civil war, save formats, NPC memory, active model routing.
 
 **Evidence standard:** source inspection passed for named paths above; **no actual executable bugfix is claimed**, no compile or gameplay tests run. Before gameplay changes, finish full caller inventory of shared Battle/Peace APIs (including other modules and 1.5.7 TaleWorlds overloads) and identify precise patch touch boundary on up-to-date target HEAD. Only then proceed with one narrow implementation stage.
+
+
+## 13. Stage 1A migration inventory — 2026-11-14 (NO-GO production patch yet)
+
+**Purpose:** Prepare a regression-safe port of our customized **Native Bellum** 1.4.11.1 to **Bannerlord 1.5.7** without replacing our APIs or mistaking author main for the exact 1.4.12b binary. This stage is documentation-only. It does **not** migrate code, establish combined runtime compatibility or create a release.
+
+### 13.1 Immutable baselines and provenance
+
+- Native target: `AIRebelRelay/BellumCivile` `main` @ `59b2aee8268cf1633e052e6b44e1cdba0e3c15fb` (custom 1.4.11.1, manifest `_Module/SubModule.xml` = `v1.4.11.1`).
+- Upstream candidate: `Vonbalt/BellumCivile` `main` @ `8a08e0c038a60030813c56eae39a5fbee0b75cb6` ("Prepare main for Bannerlord 1.5.7", 2026-11-11). Its manifest still says `v1.4.12`.
+- Author's Discord (2026-11-14): use the **specific 1.4.12b beta** for 1.5.7; ordinary 1.4.12 crashes during startup on 1.5.7. Nexus mod page lists ordinary 1.4.12 as its headline version.
+- **BLOCKER P0:** the public upstream GitHub repository returned **zero GitHub Releases** and no available immutable tag mapping `1.4.12b → source SHA → DLL/hash`. `main` is **not sufficient proof** that a source file was in the shipped 1.4.12b binary. This is a release-provenance gap, not a code failure.
+- CR 2.8.9 independently supports 1.5.7, but CR+our customized Bellum **has not** been booted or tested together.
+- Git inspection: 2026-11-14; compares full recursive Git trees at the two pinned SHAs, not a cherry-picked file list. Upstream tree **1,299 files**, our tree **1,272 files**; **926 blob-identical**, **225 same-path different**, **148 upstream-only**, **121 local-only**. Includes docs/tests/assets; counts are **not** all gameplay diffs.
+- C# subclass: **191 shared `.cs` paths differ**, **131 upstream-only `.cs`** (includes tests), **24 local-only `.cs`** (includes tests). This is much larger than a surgical file replacement. Do **not** merge upstream master wholesale.
+
+### 13.2 Exact safety landmarks
+
+| Boundary | Evidence | Port rule |
+|---|---|---|
+| **Save schema** | `BellumCivileSaveDefiner.cs`: our 137 registered class/enum definitions, upstream **149**; all existing registered names and numeric IDs are unchanged in this direct textual comparison; new IDs **138–149** | Preserve every existing ID, serializer/container, and local save owner; test load/save/reload before approving any adoption |
+| **New upstream persisted types** | `PersonalLordshipRecord` 138; `LordshipAppointmentRecord` 139; `LordshipIncomeCredit` 140; `TitleAcquiredMapNotification` 141; `AsylumVisitRecord` 142; `LordshipCommandTransferRecord` 143; `RetainerIndentureRecord` 144; `CourtTermPreparationRecord` 145; `VoluntaryPactProposalRecord` 146; `VoluntaryPactProposalPhase` 147; `VoluntaryPactDecision` 148; `VoluntaryPactDecision.PactOutcome` 149 | These names/IDs are not permission to add them piecemeal; audit writer/reader behaviors, `SyncData` and lifecycle first |
+| **Our unique integration APIs** | `BellumIntegrationNpcCouncil.cs`, `BellumIntegrationNpcCrown.cs`, `Behaviors/CourtNpc*`, `Behaviors/CourtPolicyVote*`, `Behaviors/CourtTerminalEvictionReceipts.cs`, `BellumNativeLeaveProvenance.cs`, `HostagePactReadOnlySnapshot.cs` | Must stay intact; identify all consumers incl. old Bridge, no downgrade to older upstream |
+| **Author's new foreign diplomacy** | `AlliancePeaceRestriction.cs`; upstream changes in `Patches/PeaceParleyEntryPointPatches.cs` and `Behaviors/ForeignTreatyBehavior.cs`; peacetime hostage pacts via `VoluntaryPactProposalBehavior` + `VoluntaryPactAiBehavior` | Audit exact source snapshot, call-to-arms restrictions, budget/court rules, save schema and rollback together. No port from `main` until 1.4.12b provenance is pinned |
+| **Some unchanged high-risk gates** | `Patches/CivilWarMakePeacePatch.cs` and `Patches/WarDeclarationCouncilPatches.cs` were blob-text equivalent across the pinned SHAs | **Leave untouched** unless actual 1.5.7 ABI/behavioral test proves a mismatch |
+| **Our local release build gate** | `scripts/Verify-Bellum148Build.ps1` checks canonical game manifests and **requires exactly 1.4.8** at lines 138–145; `Tests/P014FGameVersionManifest.Tests.ps1` asserts 1.4.8 | Do **not** weaken the existing 1.4.8 gate. Later add a separate, fail-closed **1.5.7** build/preflight with analogous positive/negative fixture tests and distinct build identity |
+| **Upstream ABI evidence** | New `Tests/SuccessionEngineHarness/GameVersionCompatibilityTests.cs` probes 1.5.7 reflected members, party-size signature, naval class loading and campaign UI/runtime members | Treat as reference for ABI verification against actual game/DLC DLLs; not proof our customized source compiles |
+| **Reference policy** | Our csprojs have explicit Harmony/UIExtenderEx Workshop path handling; upstream uses direct module paths and adds more references; `Directory.Build.props` upstream has resolver safeguards | Preserve local fallback/override behavior and MCM path protections, add only proven 1.5.7 build requirements |
+
+**Main integration hazard carried over from Stage 0B:** CR ``mediate_peace`/`CouncilLift`/`ScenarioConsequenceExecutor` can claim success after direct `MakePeaceAction.Apply`, even when Bellum's ordinary foreign peace guard suppresses execution. This is **separate** from the 1.5.7 source-port task. Do not try to solve it by disabling Bellum's shared prefix.
+
+### 13.3 Proposed next surgical implementation boundary (PENDING prerequisites)
+
+**ROOT CAUSE:** The current local 1.4.11.1 distribution/build gate is pinned to Bannerlord **1.4.8**, and its compiled compatibility with 1.5.7 has not been demonstrated. The upstream 1.4.12b beta release-source identity is unpinned; the latest upstream `main` contains a significant, ongoing feature delta.
+
+**TOUCH — only after source and game DLL baseline verified:** a **new** 1.5.7-specific build/preflight script + corresponding narrowly scoped tests, then only exact native source files shown to fail at the 1.5.7 ABI contract. Never touch gameplay before the failure is demonstrated. Separate each independent source fix.
+
+**DO NOT TOUCH:** older 1.4.8 build script/tests, `BellumIntegration*` public contract, extra local NPC Council/Crown APIs, save IDs, external war/peace semantics, Bellum Bridge, Relay Bridge, Relay, AI Influence, CR source, native `main`, campaign saves.
+
+**MUST FIX:** exact beta provenance, isolated 1.5.7 build with canonical version verification and correct real game DLL references, retaining our local features. **MUST NOT CHANGE:** 1.4.8 shipping behavior, all AII historical compatibility safeguards that remain relevant for current saves, native War Score/treaty owner, CR's own independently working paths.
+
+**Required positive and negative regression tests before code:** valid four base manifests 1.5.7 → pass; mixed 1.5.7/1.4.8, absent/invalid manifest, random DLL, wrong path, absent Harmony/UIExtenderEx/MCM → **fail closed**; override precedence/Workshop path unchanged; naval DLC optional (if enabled, explicit DLL ABI check); new source still has each existing `BellumIntegration` symbol and all old save IDs. Include no duplicate `MakePeaceAction`, no double elections, no lost NPC court receipt and no expensive CI on every exploratory commit.
+
+**Evidence gates:** local 1.5.7 Windows build against true `TaleWorlds.*`, naval companion build where applicable, relevant targeted harnesses, full diff audit, live startup + fresh campaign + backup save/load + Bellum peace treaty + CR council/mediation + 2 game weeks. Check `HarmonyException`, `MissingMethodException`, `TypeLoadException`, `SerializationException`, `Blocked non-Bellum international peace` and actual war/treaty state. **Do not claim pass until observed.**
+
+### 13.4 Unresolved prerequisites
+
+1. Identify exact shipped upstream `1.4.12b` DLL/source fingerprint or ask Vonbalt for its commit SHA; exclude later `main` work unless explicitly planned.
+2. Obtain installed Bannerlord **1.5.7** / War Sails 1.3.7 assemblies and original beta DLL; do an initial ABI/manifest comparison before compiling our fork. Do not infer from an author screenshot that the customized fork loads.
+3. Preserve and compare the upstream ``BellumCivileSaveDefiner` + all writer behaviors` against our custom owner/IDs, not only the registry.
+4. Only then define **one** concrete failing source method for a surgical fix. Until those gates, **NO-GO production changes**; doc-only stage passes without claiming build/game validation.
+
+**Git diff contract for Stage 1A:** exactly this design document updated in the separate docs branch, no `*.cs` or shipping asset modifications, no CI, no merge/release.
