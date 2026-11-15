@@ -950,3 +950,70 @@ Three intentionally **independent** dimensions:
 **Expected later log when bound to Native:** `[LLM_DIPLO] peace_preview legality=... execution=... draft=... reason=... actor=... target=... save_id=...`. There must be **no** `Foreign treaty parley queued`, `Foreign treaty applied`, influence change or public signed-peace event from preview alone. At this stage no such runtime line exists; the only result is the contract-test PASS/FAIL summary.
 
 **Next bounded stage:** review the bridge-facing Native snapshot data sources and identify the **smallest read-only API/DTO change** capable of satisfying these fixtures, together with an explicit nonmutating-per-method call audit. Only then implement against the **current checked HEAD** in a separate production stage after regression tests and game-version build gates; never copy the test oracle into game code.
+
+
+## 23. Minimal Native foreign peace preview API — Stage 5 (2026-11-15, ANALYSIS ONLY)
+
+**Pinned baseline:** our \`AIRebelRelay/BellumCivile\` main \`59b2aee8268cf1633e052e6b44e1cdba0e3c15fb\` (1.4.11.1); upstream \`Vonbalt/BellumCivile\` main \`8a08e0c038a60030813c56eae39a5fbee0b75cb6\` (1.5.7 preparation, future update not yet incorporated); \`LogRaam/calradia-remembers\` main \`e076086424a0d8c6ac25f68e88ae06cd8fa4a9cf\` (CR 2.8.10). Existing Bellum Bridge remains 0.8.8; Relay Bridge is a **different repository**. All checks below are source inspection, not runtime tests. The contract fixture from §22 remains a design oracle, not proof of Native behavior.
+
+### 23.1 ROOT CAUSE / design decision
+
+Native \`BellumIntegration\` already has a campaign-thread guard and read-only snapshot pattern, but it has **no** specific foreign-peace preview. Simply chaining existing \`CanMakePeace\` / \`GetActiveWar\` / \`GetWarWill\` can mutate state and conflate legality, actual executable machinery and native willingness. **Choose an eligibility-only first cut; do not bundle draft validation, submission, votes or diplomacy-mode conversion into this change.**
+
+**Proposed public method (not implemented):** \`BellumIntegration.GetForeignPeaceEligibility(Hero speaker, Kingdom target)\` returning a detached, read-only \`ForeignPeaceEligibilitySnapshot\`. Do not take a CR \`SaveId\` or \`CrKnownEvent\` as an argument; Native Bellum must stay independent of CR. The Bridge captures CR 2.8.10's \`SaveId\`, \`CrApi.Version == 1\` and \`CrWorld.KnownEvents\` **outside** Native, then joins the facts with the same campaign/thread context.
+
+**Proposed immutable DTO fields:**
+- \`ActorHeroId\`, \`SourceKingdomId\`, \`TargetKingdomId\` from actual campaign objects; \`GameDay\`.
+- \`Legality: AllowedToPropose | Blocked | Unknown\` with **stable structured reason code(s)** (no free-text-only status).
+- \`ExecutionReadiness: Ready | NotReady | Unknown\`: *must be NotReady until a real negotiated-draft submission gateway exists*, even when current tracked-war data is available. Distinguish \`TrackedForeignWar\` / \`UntrackedForeignWar\` / \`UnknownTracking\`.
+- Optional observed \`WarKey\`, \`WarScore\`, \`WarScoreRuntimeRevision\` **only when a real Native record exists**; do not invent war score for an untracked pair. \`WarScoreRuntimeRevision\` is not an overall campaign commit CAS token.
+- Optional \`WarWill\` / readiness pressure as **advisory only**, never a veto or commitment.
+- \`ReplyOwner: Player | Npc | Unknown\`; \`MayExecuteImmediately=false\` invariably.
+- No \`Terms\`, \`ProposalId\`, \`RequestId\`, \`TermsNormalized\`, \`Apply\`, \`Pending\` or council vote in **first-cut eligibility**. The existing §22 fixture's \`draftReview\` dimension is reserved for a *second* independent draft-preview stage.
+
+**Hard-law positives:** real loaded campaign and campaign-thread call; existing living NPC ruler, both distinct permanent kingdoms, actually at war, ordinary international conflict (not parent/rebel, civil feud or auxiliary client war), no Story Mode prohibition, correct suzerain authority and no player impersonation. Missing facts or unavailable safety checks are \`Unknown\` (fail closed for commit, but a nonbinding narrative response may still be allowed). A player recipient must reply as a player. No global Native war-will policy may prevent the LLM **asking** for peace.
+
+### 23.2 Source purity audit and precise prospective change seams
+
+| Source (main HEAD) | Existing behavior / risk | First-cut treatment |
+|---|---|---|
+| \`BellumIntegration.cs::ApiVersion=1\`; \`BellumIntegrationBehavior.RequireCampaignThread()\` | Public integration contract and verified active campaign thread | Add **new partial API file**; bump Bellum integration version only with an actual API release; leave existing consumers untouched |
+| \`WarScoreBehavior.GetActiveWar\` | \`EnsureCollectionsInitialized()\` may assign \`_wars\` if null | Add a narrow **peek-only** read in a new partial file using existing \`_wars?\` storage, without registration/reconciliation |
+| \`ClientKingdomBehavior.CanMakePeace\` / \`GetSuzerain\` / \`GetClientRecord\` | \`EnsureCollectionsInitialized()\` **removes invalid entries** and advances \`RuntimeRevision\` | Never call from pure preview. New partial read-only client/suzerain snapshot only; missing data must not silently become \`clear\` |
+| \`WarPeaceRevampBehavior.GetWarWill\` / \`GetRankedTargets\` | Lazily adds war-will/target data; Revamp OFF freezes daily War Will | Prefer existing \`PeekWarWill\` only if the returned value can be truthfully labeled **last known/initial fallback**; omit uncertain freshness. Never call the mutating getters |
+| \`StorylineWarProtectionHelper.IsPeaceBlocked\` | Uses cached reflection, which may log failure once and return \`false\` on unreadable Story Mode API | Do not infer **confirmed clear** from unchecked reflection fallback. A tri-state story verdict is required; if unavailable, signal \`Unknown\`. Existing helper's blob is **identical** to current upstream |
+| \`ForeignTreatyBehavior.EvaluateCouncil\` / \`TryQueueParley\` | Snapshot population, draft generation and proposal state changes | **Do not call** in first-cut preview |
+| \`TreatyDraftService.TryValidateAndNormalize\` | Empty input implies WhitePeace; potentially normalizes supplied terms | **Not first-cut**; future draft-preview stage must require an explicit typed terms list |
+| \`WarScoreBehavior.RuntimeRevision\`, \`ClientKingdomBehavior.RuntimeRevision\` | Scoped revisions, not complete campaign state / save identity | May provide diagnostic revisions; **must recheck** exact authority and hostility before later commit |
+
+**Prospective TOUCH set for a separate implementation stage (pending 1.5.7 reference/build feasibility):**
+1. \`BellumIntegrationForeignPeacePreview.cs\` — **new** public \`BellumIntegration\` partial entry with \`RequireCampaignThread()\`.
+2. \`ForeignPeaceEligibilitySnapshot.cs\` — **new** immutable DTO/reasons, not a \`SaveableField\` record.
+3. \`Behaviors/WarScoreForeignPeacePreview.cs\` — **new** \`WarScoreBehavior\` partial nonmutating peek; do **not** rewrite \`GetActiveWar\`.
+4. \`Behaviors/ClientKingdomForeignPeacePreview.cs\` — **new** \`ClientKingdomBehavior\` partial nonmutating peek; do **not** rewrite \`CanMakePeace\`.
+5. Only if the story-verdict API cannot be safely derived: **STOP and reassess before touching** \`StorylineWarProtectionHelper.cs\` or expanding the boundary.
+
+These are **candidate files**, not edits made in this stage. Contract should be supported by small source+runtime tests before any compile of the addon. Actual UI/Bridge use is a later stage.
+
+**DO NOT TOUCH:** \`ForeignTreatyBehavior.cs\`, \`TreatyDraftService.cs\`, \`TreatyRatificationService.cs\`, Native commit/ratification paths, \`WarPeaceRevampBehavior.cs\`, common \`ClientKingdomBehavior.cs\` methods, \`WarScoreBehavior.cs\` shared methods, existing \`BellumIntegration.cs\` beyond a separately justified API-version update, all Native save type ordinals, CR itself, Relay, either Bridge, old AII ledger, MCM defaults, \`main\`.
+
+### 23.3 Regression contract before implementation
+
+1. Ordinary foreign NPC rulers with Revamp OFF: \`AllowedToPropose\`; *currently* \`NotReady\` (no negotiated gateway); never silently enable Revamp.
+2. Existing foreign \`WarScoreRecord\`: exact key and score; missing tracker: explicit \`UntrackedForeignWar\`, no synthetic \`WarScoreRecord\`.
+3. Client/suzerain restriction and auxiliary client war: correctly blocked/identified **without** cleanup to \`_clients\` or a client \`RuntimeRevision\` bump.
+4. Story Mode protection: blocked if proven; \`Unknown\` if reflection cannot verify a required restriction; never interpret reflection failure as legal permission.
+5. Dead/deposed ruler, player speaker, player recipient, civil war/claim feud, temporary/rebel realm: no synthetic NPC authorization; player recipient flagged.
+6. Repeat preview (100×), then compare before/after \`_wars\`, \`_clients\`, \`_warWillByClanId\`, \`_targetScoresByClanId\`, \`_proposals\`, council snapshots, hostility, influence, gold, fiefs and save metadata. Zero mutations is a hard gate.
+7. Already-open parley, existing Native/Diplomacy player peace UI and legacy AII ledger: no calls or behavior changes from preview.
+8. Switched save/campaign between LLM request and response: stale preview must not authorize any action.
+9. Prior current 1.4.11.1 regression tests + forthcoming original Bellum 1.5.7 compatibility checks must remain intact; **no whole-tree upstream merge**.
+10. CR 2.8.10 tests: optional API capability probe \`CrApi.Version >= 1\` and actor-specific \`CrWorld\` read only from the Bridge; \`CrDiplomacy\` routes CR-originated \`Pending\` honestly, not all vanilla and Native actions.
+
+**Expected future diagnostic** (not yet implemented): \`[LLM_DIPLO] peace_eligibility actor=... source=... target=... legal=... execution=not_ready war_record=... reason=...\`. **Must not appear because of preview:** \`Foreign treaty applied\`, \`Foreign treaty parley queued\`, \`War Score forced foreign peace\`, influence charges, signed-peace Feed, or Native cache cleanup. Test with MCM Revamp OFF and keep same behavior in campaign/logs before and after preview.
+
+### 23.4 Version/update gate and verdict
+
+Our Native and upstream currently differ in **\`BellumIntegration.cs\`, \`ClientKingdomBehavior.cs\`, \`WarScoreBehavior.cs\`, \`ForeignTreatyBehavior.cs\`, \`TreatyDraftService.cs\`**. \`StorylineWarProtectionHelper.cs\` and \`BellumIntegrationBehavior.cs\` have **identical blob SHAs** between pinned trees; do not assume this stays true when the next upstream Bellum update lands.
+
+**MUST FIX (future):** expose truthful NPC foreign-peace eligibility without changing any campaign state. **MUST NOT CHANGE:** Native AI policy, voting, treaty semantics, internal wars, client laws, player choice, save compatibility, CR behavior without our authority. **TOUCH NOW:** this docs section ONLY. **Validation completed now:** source inspection and documentation update; **not** game/DLL compile, live-log evidence, 1.5.7 port, or integration test. Next stage: formal source-backed unit test harness and only then smallest Native implementation of the eligibility snapshot.
