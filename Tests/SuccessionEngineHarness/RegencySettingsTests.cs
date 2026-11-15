@@ -35,6 +35,9 @@ internal static class RegencySettingsTests
     private static int _destroyed;
     private static bool Skip() => false;
     private static bool No(ref bool __result) { __result = false; return false; }
+    // This settings-only fixture uses an already-equipped adult. Native preparation is
+    // exercised independently by RegencyAdulthoodTests against the real game methods.
+    private static bool Equipped(ref bool __result) { __result = true; return false; }
     private static bool Majority(ref int __result) { __result = 18; return false; }
     private static bool Age(Hero __instance, ref float __result) { __result = Ages[__instance]; return false; }
     private static bool Player(ref Clan __result) { __result = _player; return false; }
@@ -92,6 +95,7 @@ internal static class RegencySettingsTests
             Patch(AccessTools.Method(typeof(RegencyBehavior), "ResolveClan"), nameof(ResolveClan));
             Patch(AccessTools.Method(typeof(RegencyBehavior), "TryInstallClanLeader"), nameof(Install));
             Patch(AccessTools.Method(typeof(RegencyBehavior), "ShowRegencyEnded"), nameof(Skip));
+            Patch(AccessTools.Method(assembly.GetType("BellumCivile.RegencyAdulthoodEquipment", true), "TryPrepareWard"), nameof(Equipped));
             Patch(AccessTools.Method(policy, "TryRestoreAdultLeader"), nameof(No));
             Patch(AccessTools.Method(typeof(DestroyClanAction), "ApplyByClanLeaderDeath"), nameof(Destroy));
             Patch(AccessTools.Method(assembly.GetType("BellumCivile.HereditaryRealmSuccession"), "GetLine"), nameof(Line));
@@ -171,6 +175,10 @@ internal static class RegencySettingsTests
             check(records.Count == 0 && house.Leader == regent, "Before-death hook removes the regency and leaves native succession to finish");
             record = Record();
             Ages[ward] = 18;
+            Call(regencies, "ReplaceRegent", house, record, regent, true);
+            check(records.Single() == record && house.Leader == regent,
+                "Adult ward cannot succeed before native adulthood is prepared, even with replacement regencies disabled");
+            AccessTools.Method(typeof(RegencyRecord), "CompleteAdulthood").Invoke(record, new object[] { ward });
             Call(regencies, "ReplaceRegent", house, record, regent, true);
             check(records.Count == 0 && house.Leader == ward, "Adult ward succeeds normally even when replacement regencies are disabled");
             Ages[ward] = 12;
