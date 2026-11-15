@@ -346,6 +346,11 @@ internal static class Program
                 RelationCauseLabelTests.Run(Check);
                 Console.WriteLine($"{_checks} expulsion and relation checks passed.");
             }
+            else if (args.Contains("--client-voluntary-release"))
+            {
+                ClientVoluntaryReleaseTests.Run(Check);
+                Console.WriteLine($"{_checks} voluntary client release checks passed.");
+            }
             else if (args.Contains("--starting-clientage"))
             {
                 StartingClientageTests.Run(Check);
