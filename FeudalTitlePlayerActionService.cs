@@ -336,13 +336,8 @@ namespace BellumCivile
             TextObject peaceBlock = Campaign.Current?.GetCampaignBehavior<RealmPeaceEnforcementBehavior>()?.GetRoyalPeaceBlockReason(clan.Kingdom);
             if (peaceBlock != null)
             {
+                preview.RestrictionReason = peaceBlock;
                 preview.Reason = peaceBlock.ToString();
-                return preview;
-            }
-
-            if (clan.Influence < preview.InfluenceCost)
-            {
-                preview.Reason = "insufficient influence";
                 return preview;
             }
 
@@ -350,6 +345,20 @@ namespace BellumCivile
             if (feudBehavior == null)
             {
                 preview.Reason = "claim feud behavior unavailable";
+                return preview;
+            }
+
+            TextObject cooldownBlock = feudBehavior.GetDisputeCooldownBlockReason(clan, holder, selectedTitle);
+            if (cooldownBlock != null)
+            {
+                preview.RestrictionReason = cooldownBlock;
+                preview.Reason = cooldownBlock.ToString();
+                return preview;
+            }
+
+            if (clan.Influence < preview.InfluenceCost)
+            {
+                preview.Reason = "insufficient influence";
                 return preview;
             }
 
@@ -425,6 +434,8 @@ namespace BellumCivile
             }
 
             Clan oldHolder = ResolveClan(title.DeJureHolderClanId);
+            string oldLegal = title.DeJureHolderClanId;
+            string oldActual = title.DeFactoHolderClanId;
             if (preview.GoldCost > 0)
                 GiveGoldAction.ApplyBetweenCharacters(clan.Leader, null, preview.GoldCost, true);
             if (preview.InfluenceCost > 0f
@@ -471,6 +482,7 @@ namespace BellumCivile
             FeudalTitleUsurpationBehavior.ApplyUsurpationRelations(clan, oldHolder, title);
 
             NotificationHelper.ShowFeudalTitleUsurped(clan, oldHolder, title);
+            TitleAcquisitionBehavior.Acquired(clan, title, oldLegal, oldActual);
             if (independentKingdom != null)
             {
                 NotificationHelper.ShowSovereignTitleElevated(
@@ -612,6 +624,13 @@ namespace BellumCivile
             if (titleBehavior == null || feudBehavior == null)
             {
                 reason = "title revocation is unavailable";
+                return false;
+            }
+
+            TextObject cooldownBlock = feudBehavior.GetDisputeCooldownBlockReason(revokerClan, preview.HolderClan, title);
+            if (cooldownBlock != null)
+            {
+                reason = cooldownBlock.ToString();
                 return false;
             }
 

@@ -29,6 +29,21 @@ namespace BellumCivile
             return (int)Math.Min(int.MaxValue, Math.Ceiling(price));
         }
 
+        internal static int CalculateHousehold(int nativeValue, float staffRisk, bool npcLeaves)
+        {
+            double ordinary = Math.Max(0d, -(double)nativeValue);
+            double risk = Math.Max(0, Math.Min(1, staffRisk));
+            return (int)Math.Min(int.MaxValue, Math.Ceiling(ordinary * (npcLeaves ? 1 + .5 * risk : 1 - .25 * risk)));
+        }
+
+        internal static int AdjustStatus(int compensation, bool playerFamily, bool otherFamily)
+        {
+            double price = Math.Max(0, compensation);
+            if (!playerFamily && otherFamily) price += Math.Max(2500, Math.Ceiling(price * .25));
+            else if (playerFamily && !otherFamily) price *= .75;
+            return (int)Math.Min(int.MaxValue, Math.Ceiling(price));
+        }
+
         internal static bool TryGet(MarriageBarterable item, out PlayerMarriageQuote quote)
         {
             quote = null;
@@ -50,8 +65,12 @@ namespace BellumCivile
             var policy = new MarriageHouseholdPolicy();
             bool npcLeaves = agreement.Destination == agreement.PlayerHouse;
             Hero bride = agreement.Player.IsFemale ? agreement.Player : agreement.Other;
+            bool family = HouseholdMembership.IsFamily(agreement.Other);
+            bool playerFamily = HouseholdMembership.IsFamily(agreement.Player);
+            bool dynasticPair = family && playerFamily;
             bool continuation = npcLeaves ? policy.IsContinuation(agreement.Other)
-                : bride.Age >= SuccessionLawHelper.GetAgeOfMajority() && bride.Age <= 45;
+                : HouseholdMembership.IsBloodRelative(agreement.Other, MarriageHouseholdPolicy.LegalHead(agreement.OtherHouse))
+                    && bride.Age >= SuccessionLawHelper.GetAgeOfMajority() && bride.Age <= 45;
             int native;
             bool previous = ReadingNative;
             try
@@ -62,10 +81,12 @@ namespace BellumCivile
                         .GetUnitValueForFaction(agreement.OtherHouse);
             }
             finally { ReadingNative = previous; }
-            quote = new PlayerMarriageQuote { Agreement = agreement, Compensation = Calculate(native,
-                agreement.OtherHouse.Tier - agreement.PlayerHouse.Tier,
+            int compensation = family ? Calculate(native,
+                dynasticPair ? agreement.OtherHouse.Tier - agreement.PlayerHouse.Tier : 0,
                 BellumMarriageStrategyHelper.PlayerMarriageHouseRisk(agreement.OtherHouse), npcLeaves,
-                policy.CrownHeirs.Contains(agreement.Other), policy.MustRemain(agreement.Other), continuation) };
+                policy.CrownHeirs.Contains(agreement.Other), policy.MustRemain(agreement.Other), continuation)
+                : CalculateHousehold(native, BellumMarriageStrategyHelper.PlayerMarriageStaffRisk(agreement.Other, agreement.Player, agreement.Destination), npcLeaves);
+            quote = new PlayerMarriageQuote { Agreement = agreement, Compensation = AdjustStatus(compensation, playerFamily, family) };
             Quotes.Add(item, quote);
             return true;
         }

@@ -774,3 +774,85 @@ Hardened coming-of-age hostage checks against null hero events while preserving 
 Added individual MCM controls and Standard, Reduced, and Increased Instability presets for rebellions and internal conflicts, with tooltips explaining defaults and effects.
 Added an MCM toggle to disable new minor-heir regencies and replacement regents while preserving existing regencies and safely handling pending inheritances.
 Reworked Enforce Peace into a realm-wide decree for player and AI rulers, ending all private conflicts and preventing new ones for one year, with higher influence costs and relation penalties during peacetime.
+
+1.4.6 CHANGELOG
+
+Fixed peace parley softlocks.
+Improved peace parley explanations to match nobles’ votes, clarify abstention reasons, and reflect rulers’ final decisions.
+Added dialogue and popup letters explaining when player-clan family members leave to establish their own household and inherit a throne.
+Fixed dialogue option allowing player rulers to recruit equal or higher-ranked nobles.
+Added a configurable realm-wide pacification period after civil-wars with a starting 1 in-game year pacification for new saves.
+Small rebalance to peace treaty war length consideration and hostage pacts duration with added MCM settings.
+Fixed restored kingdom cleanup and recovery to prevent leaderless remnants, duplicate successors, and premature settlement completion.
+Fixed heirs on regency skipping adult skills and equipment when coming of age.
+Fixed succession-related rebellion errors that could leave kingdoms leaderless and crash court processing.
+Added immersive accept/refuse popups for royal higher-title grants to the player, with a relation penalty for refusal.
+Fixed stalled forced-abdication settlements, stale council appointments charging influence, and false leaderless-realm alerts during campaign startup.
+
+1.4.7 CHANGELOG
+
+Fixed stalled civil-war settlements leaving empty, leaderless rebel kingdoms behind.
+Fixed crashes during kingdom and clan banner refreshes caused by incomplete militia ownership data.
+Fixed capitulated player rulers being able to remove the victor’s peace demands.
+Fixed accepted independence ultimatums assigning foreign rulers and ignoring rank-based realm splits with one-time repair for affected saves.
+Fixed repeated private feuds after accepted judgments and blocked claimed-title revocations during dispute cooldowns or Royal Peace.
+
+1.4.8 CHANGELOG
+
+Fixed internal fief redistribution rewriting de jure hierarchy when player voluntarily relinquish fief.
+Shortened grand coalition names by omitting the realm rank.
+Reorganized noble encyclopedia inheritance and family sections.
+
+1.4.8.1 CHANGELOG
+
+Small compatibility fix with mods that modify the family section of the encyclopedia.
+
+1.4.9 CHANGELOG
+
+Added personal, nonhereditary village lordships, the player may receive a spare one when joining a kingdom as his first fief like in warband.
+Split clan encyclopedia members into Family and Retainers (non-blood related clan members) sections.
+Lordships now are required so retainers can lead parties or govern settlements.
+Added honorifics for retainers while holding lordships.
+Added side notifications when the player acquires titles.
+Improved marriage logic to prioritize family, support companion marriage offers, and restrict house birthright claims to blood relatives as intended.
+Added read-only API queries for the player’s personal village lordship.
+Fixed separate peace offers and treaties bypassing active alliance call-to-arms obligations.
+
+1.4.10 CHANGELOG
+
+Crown grants to client states now distribute fiefs through the client realm’s normal vote.
+Improved hierarchy tree loading performance.
+Reworked asylum requests into seven-day keep visits with exile-specific dialogue and in-person homage.
+Added optional lordship grants when accepting exiles and enabled grants to landless vassal clan leaders.
+Improved compatibility of lordship's tax revenue and HAP's tax inefficiency feature.
+Fixed companions without a valid lordship to receive becoming stranded when relieved of command on loading saves from before the lordship feature.
+Fixed lordship requirements incorrectly blocking caravan and convoy leadership.
+Adjusted tooltip text on form new party button to specify you need a valid family member or companion holding a lordship.
+Fixed Encyclopedia Extender’s Perks section overlapping enemy portraits in the hero encyclopedia.
+Fixed premature lordship finance patching that could cause startup crashes and improved compatibility with older UIExtenderEx versions.
+Fixed a wrong dialogue loop when canceling lordship grants, revocations, or returns.
+
+1.4.11 CHANGELOG
+
+Added a targeted safeguard and diagnostic logging for pregnancy checks involving clanless heroes.
+Fixed clan-born children of companions inheriting Wanderer status and becoming eligible for native wanderer cleanup.
+Fixed additional spouses being classified as retainers (compatibility with AoC) and stale family status after marriage changes.
+Improved marriage matchmaking to better distinguish dynastic survival from household manpower.
+Fixed a crash when NPC retainer parties disband after losing their lordships, with a targeted repair for affected saves.
+Parties now seek eligible replacement commanders when retainers lose their lordships before outright disbanding them.
+Added paid retainer indentures, allowing companions to command parties or govern without a lordship, with timed contracts and renewal reminders.
+Added cultural mercenary captain terms to the titles presets, it's used by party leaders of minor factions or player companions with an active indenture.
+Adjustment to marriage dialogues to show unavailable characters with a tooltip explanation on why they can't be selected at that moment.
+Adjustment to marriage barter costs when it involves a retainer x noble marriage.
+
+1.4.12 CHANGELOG
+
+Added dialogue option to release a client state peacefully converting the clientage into a normal alliance and trade agreement bound by vanilla rules.
+Capped Marshal controversy from nobles captured or killed in a single battle at 15 points.
+Added missing localization strings and fixed nord merc captain title with invalid letter.
+Staggered court agenda preparation across daily batches to reduce stutters in campaigns with many kingdoms.
+Fixed starting-child generation to respect custom adulthood ages and compatibility with Start As Anyone mod.
+Fixed peace parleys creating landless independent realms from titles without supporting territory. Released titles now require actual towns or castles controlled by the released houses, and existing ghost realms are safely retired while surviving clans enter exile.
+Improved chat notification performance and clarified notification settings.
+
+1.4.13 CHANGELOG
