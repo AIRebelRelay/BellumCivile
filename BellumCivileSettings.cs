@@ -166,9 +166,6 @@ namespace BellumCivile
         [SettingPropertyGroup(InternalInstability, GroupOrder = InternalInstabilityGroupOrder)]
         public int CivilWarGraceYears { get; set; } = 2;
 
-        [SettingPropertyInteger("{=BC_MCM_CivilWarGrace}Post-Civil-War Grace Period (Years)", 0, 5, Order = 90, RequireRestart = false, HintText = "{=BC_MCM_CivilWarGrace_Hint}Realm-wide recovery after a civil war against the crown ends. Increasing reduces instability by delaying new rebellions; decreasing increases instability by shortening the delay. Zero disables new postwar grace periods. The duration is recorded when settlement begins; existing periods are unchanged. Applies to player and AI rebellions, including court coalitions and succession disputes. Private feuds, Enforce Peace, committed armed challenges and resistance to treason judgments are unaffected. Personal challenge cooldowns remain separate. New campaigns also receive one initial year of pacification, independently of this setting. Bellum default: 2 years.")]
-        [SettingPropertyGroup(InternalInstability, GroupOrder = InternalInstabilityGroupOrder)]
-        public int CivilWarGraceYears { get; set; } = 2;
 
         [SettingPropertyFloatingInteger("{=BC_MCM_CourtTerm}Court Term Length (Years)", 0.25f, 4f, "0.00", Order = 20, RequireRestart = false, HintText = "{=BC_MCM_CourtTerm_Hint}Time between public court agendas. Changes apply to the next term, not announced sessions or existing policy reconsideration dates. Default: 1 year.")]
         [SettingPropertyGroup(CourtPolitics, GroupOrder = CourtPoliticsGroupOrder)]

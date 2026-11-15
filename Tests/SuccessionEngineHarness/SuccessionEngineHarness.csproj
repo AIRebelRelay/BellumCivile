@@ -23,7 +23,7 @@
     <ProjectReference Include="../../BellumCivile.csproj" />
     <!-- Forward the harness-resolved Workshop/Modules paths when MSBuild rebuilds native BellumCivile. -->
     <ProjectReference Update="../../BellumCivile.csproj">
-      <AdditionalProperties>HarmonyDllPath=$(HarmonyDllPath);UIExtenderExDllPath=$(UIExtenderExDllPath)</AdditionalProperties>
+      <AdditionalProperties>HarmonyDllPath=$(HarmonyDllPath);UIExtenderExDllPath=$(UIExtenderExDllPath);McmDllPath=$(McmDllPath)</AdditionalProperties>
     </ProjectReference>
     <Reference Include="Bannerlord.UIExtenderEx" HintPath="$(UIExtenderExDllPath)" />
     <Reference Include="MCMv5" HintPath="$(McmDllPath)" />

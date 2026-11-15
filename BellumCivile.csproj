@@ -10,6 +10,8 @@
     <!-- Build-only reference overrides; defaults preserve standard Modules installs. -->
     <HarmonyDllPath Condition="'$(HarmonyDllPath)' == ''">$(GameFolder)\Modules\Bannerlord.Harmony\bin\Win64_Shipping_Client\0Harmony.dll</HarmonyDllPath>
     <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == ''">$(GameFolder)\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
+    <McmDllPath Condition="'$(McmDllPath)' == '' and Exists('$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll')">$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
+    <McmDllPath Condition="'$(McmDllPath)' == ''">$(GameFolder)\Modules\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client\MCMv5.dll</McmDllPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +27,7 @@
 
   <ItemGroup>
     <Reference Include="MCMv5">
-      <HintPath>$(GameFolder)\Modules\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client\MCMv5.dll</HintPath>
+      <HintPath>$(McmDllPath)</HintPath>
       <Private>False</Private>
     </Reference>
 
