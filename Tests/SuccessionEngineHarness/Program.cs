@@ -322,6 +322,11 @@ internal static class Program
                 CrownHouseholdRecoveryTests.Run(Check);
                 Console.WriteLine($"{_checks} Crown household recovery checks passed.");
             }
+            else if (args.Contains("--settlement-cause-labels"))
+            {
+                SettlementCauseLabelTests.Run(Check);
+                Console.WriteLine($"{_checks} settlement cause label checks passed.");
+            }
             else if (args.Contains("--gameplay-relation-memories"))
             {
                 GameplayRelationMemoryTests.Run(Check);
