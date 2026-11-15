@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
+    <StartupObject>Program</StartupObject>
     <LangVersion>latest</LangVersion>
     <!-- Keep the harness aligned with the shipping project's optional reference paths. -->
     <!-- Explicit -p:*DllPath always wins; standard Modules first, official Steam Workshop second. -->
@@ -14,6 +15,9 @@
     <McmDllPath Condition="'$(McmDllPath)' == '' and Exists('$(GameFolder)/Modules/Bannerlord.MBOptionScreen/bin/Win64_Shipping_Client/MCMv5.dll')">$(GameFolder)/Modules/Bannerlord.MBOptionScreen/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
     <McmDllPath Condition="'$(McmDllPath)' == '' and Exists('$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll')">$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
     <McmDllPath Condition="'$(McmDllPath)' == ''">$(GameFolder)/Modules/Bannerlord.MBOptionScreen/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
+    <MonoCecilDllPath Condition="'$(MonoCecilDllPath)' == '' and Exists('$(GameFolder)/Modules/Bannerlord.Harmony/bin/Win64_Shipping_Client/Mono.Cecil.dll')">$(GameFolder)/Modules/Bannerlord.Harmony/bin/Win64_Shipping_Client/Mono.Cecil.dll</MonoCecilDllPath>
+    <MonoCecilDllPath Condition="'$(MonoCecilDllPath)' == '' and Exists('$(GameFolder)/../../workshop/content/261550/2859188632/bin/Win64_Shipping_Client/Mono.Cecil.dll')">$(GameFolder)/../../workshop/content/261550/2859188632/bin/Win64_Shipping_Client/Mono.Cecil.dll</MonoCecilDllPath>
+    <MonoCecilDllPath Condition="'$(MonoCecilDllPath)' == ''">$(GameFolder)/Modules/Bannerlord.Harmony/bin/Win64_Shipping_Client/Mono.Cecil.dll</MonoCecilDllPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../BellumCivile.csproj" />
@@ -23,6 +27,7 @@
     </ProjectReference>
     <Reference Include="Bannerlord.UIExtenderEx" HintPath="$(UIExtenderExDllPath)" />
     <Reference Include="MCMv5" HintPath="$(McmDllPath)" />
+    <Reference Include="Mono.Cecil" HintPath="$(MonoCecilDllPath)" />
     <Reference Include="0Harmony" HintPath="$(HarmonyDllPath)" />
     <Reference Include="TaleWorlds.CampaignSystem" HintPath="$(GameFolder)/bin/Win64_Shipping_Client/TaleWorlds.CampaignSystem.dll" />
     <Reference Include="TaleWorlds.CampaignSystem.ViewModelCollection" HintPath="$(GameFolder)/bin/Win64_Shipping_Client/TaleWorlds.CampaignSystem.ViewModelCollection.dll" />

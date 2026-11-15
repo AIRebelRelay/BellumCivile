@@ -35,6 +35,7 @@ internal static class RegencySettingsTests
     private static int _destroyed;
     private static bool Skip() => false;
     private static bool No(ref bool __result) { __result = false; return false; }
+    private static bool Yes(ref bool __result) { __result = true; return false; }
     // This settings-only fixture uses an already-equipped adult. Native preparation is
     // exercised independently by RegencyAdulthoodTests against the real game methods.
     private static bool Equipped(ref bool __result) { __result = true; return false; }
@@ -94,6 +95,7 @@ internal static class RegencySettingsTests
             Patch(AccessTools.Method(typeof(RegencyBehavior), "ResolveHero"), nameof(ResolveHero));
             Patch(AccessTools.Method(typeof(RegencyBehavior), "ResolveClan"), nameof(ResolveClan));
             Patch(AccessTools.Method(typeof(RegencyBehavior), "TryInstallClanLeader"), nameof(Install));
+            Patch(AccessTools.Method(typeof(RegencyBehavior), "EnsureWardAdulthood"), nameof(Yes));
             Patch(AccessTools.Method(typeof(RegencyBehavior), "ShowRegencyEnded"), nameof(Skip));
             Patch(AccessTools.Method(assembly.GetType("BellumCivile.RegencyAdulthoodEquipment", true), "TryPrepareWard"), nameof(Equipped));
             Patch(AccessTools.Method(policy, "TryRestoreAdultLeader"), nameof(No));

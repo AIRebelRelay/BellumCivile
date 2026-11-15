@@ -52,11 +52,13 @@ internal static class RestoredRealmRecoveryTests
     private static int _created, _initialized, _published, _destroyed;
     private static bool _throwPublish, _blockCrown;
     private static Action _duringPublish;
+    private static Action _migration;
     private static T Blank<T>() => (T)FormatterServices.GetUninitializedObject(typeof(T));
     private static object Call(object owner, string name, params object[] args) => AccessTools.Method(typeof(CivilWarResolutionBehavior), name).Invoke(owner, args);
     private static bool Skip() => false;
     private static bool No(ref bool __result) { __result = false; return false; }
     private static bool Yes(ref bool __result) { __result = true; return false; }
+    private static bool Migrate() { _migration?.Invoke(); return false; }
     private static bool Current(ref Campaign __result) { __result = _campaign; return false; }
     private static bool All(ref MBReadOnlyList<Kingdom> __result) { __result = new MBReadOnlyList<Kingdom>(Kingdoms); return false; }
     private static bool AllClans(ref MBReadOnlyList<Clan> __result) { __result = new MBReadOnlyList<Clan>(Realms.Keys.ToList()); return false; }
@@ -305,11 +307,32 @@ internal static class RestoredRealmRecoveryTests
             check(ids.Length == 17 && ids.Distinct().Count() == 17 && ids.Max() == 17,
                 "Saved restoration identity, household snapshots and publication receipts use unique append-only field IDs");
 
-            // Original author's load-migration Harmony regressions are deferred:
-            // the current fork does not implement their feature owner.
-            // Restoration, old-save journals, Crown, orphans and callbacks above remain tested.
-
+            var migrationPatch = assembly.GetType("BellumCivile.Patches.ProtectedRealmLoadMigrationPatch", true);
+            Patch(AccessTools.Method(migrationPatch, "IsMigrationActive"), nameof(Yes));
+            var loadFinished = AccessTools.Method(typeof(TaleWorlds.CampaignSystem.CampaignBehaviors.ClanVariablesCampaignBehavior), "OnGameLoadFinished");
+            harmony.Patch(loadFinished, prefix: new HarmonyMethod(typeof(RestoredRealmRecoveryTests), nameof(Migrate)),
+                finalizer: new HarmonyMethod(migrationPatch, "Finalizer"));
+            harmony.Patch(loadFinished, prefix: new HarmonyMethod(migrationPatch, "Prefix") { priority = Priority.First });
+            void Load() => loadFinished.Invoke(Blank<TaleWorlds.CampaignSystem.CampaignBehaviors.ClanVariablesCampaignBehavior>(), null);
+            Reset(); parent = NewRealm("migration_parent"); founder = House("original_ruler", parent); Rulers[parent] = founder;
+            Protected.Add(parent); _migration = () => Rulers[parent] = null;
+            Load(); check(Rulers[parent] == founder, "A deferred native duplicate-ruler migration restores the protected realm's living prior house");
+            Protected.Clear(); Load(); check(Rulers[parent] == null, "Migration recovery does not revive an unprotected obsolete realm");
+            Rulers[parent] = founder; Protected.Add(parent); _migration = () => { Rulers[parent] = null; Gone.Add(parent); };
+            Load(); check(Rulers[parent] == null, "A completed native destruction is never rolled back by load recovery");
+            Gone.Clear(); Rulers[parent] = founder; var newRuler = House("new_ruler", parent); _migration = () => Rulers[parent] = newRuler;
+            Load(); check(Rulers[parent] == newRuler, "Migration recovery cannot overwrite an installed successor");
+            Rulers[parent] = founder; _migration = () => { Rulers[parent] = null; throw new InvalidOperationException("Injected native migration exception"); };
+            bool threw = false;
+            try { Load(); } catch (TargetInvocationException ex) { threw = ex.InnerException is InvalidOperationException; }
+            check(threw && Rulers[parent] == founder, "Migration finalization preserves the native exception while restoring deferred protected leadership");
+            Rulers[parent] = founder; _migration = () => { Rulers[parent] = null; Heads[founder] = null; };
+            Load(); check(Rulers[parent] == null, "A prior house losing its living head during migration is not restored");
+            Heads[founder] = Blank<Hero>(); Rulers[parent] = founder; _migration = () => Rulers[parent] = null;
+            harmony.Unpatch(AccessTools.Method(migrationPatch, "IsMigrationActive"), HarmonyPatchType.Prefix, harmony.Id);
+            Patch(AccessTools.Method(migrationPatch, "IsMigrationActive"), nameof(No));
+            Load(); check(Rulers[parent] == null, "An ordinary load outside the version migration receives no ruler rollback");
         }
-        finally { harmony.UnpatchAll(harmony.Id); _campaign = null; }
+        finally { harmony.UnpatchAll(harmony.Id); _campaign = null; _migration = null; }
     }
 }
