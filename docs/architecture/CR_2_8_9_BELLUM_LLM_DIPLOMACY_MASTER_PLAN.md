@@ -907,3 +907,46 @@ Only return `legality=allowed_to_propose` when an active campaign, authoritative
 **MUST NOT CHANGE:** political initiative ownership, all working player diplomacy, legal restrictions, Native council outcomes and influence, treaty effects, War Score, client/civil-war/quest protections, old AII bridge ledger and save compatibility.
 
 **NEXT ISOLATED STAGE:** build **pure fixture contracts / test harness for eligibility** using a deterministic snapshot, not a production Bellum integration. Only after positive+neighbor regression proof should a game-thread Native preview API implementation be proposed. No production patch has been attempted here.
+
+
+## 22. OFFER_PEACE preflight contract fixtures — Stage 4 (2026-11-15)
+
+**Status:** implemented **test-only**, not a Native Bellum feature. The runnable independent Python 3 standard-library contract oracle and a fixed 32-case JSON matrix now exist on this docs branch:
+
+- `Tests/LLMOfferPeacePreflight/contract.py` — deterministic, pure **illustrative contract oracle**. It does **not** call TaleWorlds, CR, Bellum code, model/Relay, or a real game. It asserts immutable fixture inputs, repeat determinism, fixed input schema, and `mayExecuteImmediately=false`.
+- `Tests/LLMOfferPeacePreflight/fixtures.json` — fixed source-independent input/expected-output scenarios. Its `nativeGatewayAvailable=true` examples deliberately describe a **hypothetical future Native integration**; **such an API does not yet exist** in main.
+
+Run locally from the repository root: `python Tests/LLMOfferPeacePreflight/contract.py` (or `py -3 Tests\LLMOfferPeacePreflight\contract.py` on Windows). No game installation, .NET SDK, modules, network or additional Python packages are required.
+
+### 22.1 Contract and explicit boundaries
+
+Three intentionally **independent** dimensions:
+
+- `legality = allowed_to_propose | blocked | unknown` — whether an NPC ruler may **offer** ordinary foreign peace, given verified actor authority, active hostility and hard world/story/client constraints. No LLM impersonation of a player.
+- `executionReadiness = ready | not_ready | unknown` — whether a **separate** hypothetical negotiated-treaty gateway and an actual `ForeignWar` record would be available. Revamp flag alone must neither grant nor deny legality/readiness; current Native has no new gateway, so the real integration remains `not_ready`.
+- `draftReview = not_requested | valid | invalid | unknown` — `terms=null` is *not requested*; `terms=[]` is invalid; explicit sole `WhitePeace` is unambiguous; a pending native verifier can supply `nativeDraftValidation` as a fact, but **this test oracle does not implement Bellum's clause law**. Matched actual War Score budget and a semantic-diff check are necessary before considering a structured draft valid.
+
+`responseAuthority = npc | player | unknown` is additionally exposed. Unknown player/AI ownership **blocks the automatic path** (`legality=unknown`) until resolved; a player-ruled *recipient* must answer as a player, not a synthetic LLM ruler. Actual acceptance, council ratification and settlement are never invoked by preview.
+
+**Scenarios:** 32 fixed cases including ordinary foreign war with Revamp OFF and no tracker, hypothetical future gateway, Revamp ON without a gateway, invalid/nonhostile/temporary/internal realms, Story Mode, client suzerain, dethroned/dead/player actor, player recipient and unknown recipient authority, stale/unknown quest or campaign information, no terms vs explicit WhitePeace vs mixed WhitePeace, stale fief/prisoner verifier, changed normalization, missing/overrun WS budget, mismatched tracked conflict, and a valid but **nonexecuting** treaty draft.
+
+**ROOT CAUSE/Why tests exist:** Native `TryQueueAiParley`, `TryPreparePendingProposalDraft`, `IsMutualWhitePeaceEligible`, `GetWarWill` and Revamp guards mingle AI policy, game legality, mutable data and treaty execution. These fixtures establish **expected request classification without reusing or cloning AI Influence code**. They are a design gate, **not** evidence that Native game behavior passes.
+
+### 22.2 Evidence and regressions
+
+**Observed locally:** Python 3.13 test run on the authored equivalent oracle/fixture matrix: `LLM_OFFER_PEACE_CONTRACT fixtures=32 passed=32 failed=0`; Python compilation check passed. One intentionally corrupted fixture (`allowed_to_propose` replaced with `blocked`) exited with status 1 and correctly reported a failure. The **committed** GitHub files were read back and checked for the same fixture count and key invariants; actual game, .NET harness and CI workflow were **not** run. CI not triggered to avoid unnecessary Actions spending.
+
+**Protect adjacent features (future binding):**
+- Ordinary Native player parley/vote and Diplomacy mod redirects still use their existing paths.
+- Client realms, internal war/claim feud, storyline protection and terminal war score remain untouched.
+- `TreatyProposalRecord` save field IDs, war/tribute data, hostage recovery, council influence and existing AII accounting-only war ledger unchanged.
+- A missing war tracker, unknown ruler authority or unknown quest state may **never** be interpreted as success.
+- `terms=[]` must **never** trigger auto white peace; preflight must never call Native `DraftAiTerms`, `TryQueueParley`, `BeginParley` or `MakePeaceAction.Apply`.
+
+**MUST NOT CHANGE:** current Revamp defaults, treaty validation semantics shared with player UI, existing kingdom decision handlers, settlement effects, public Feed/CR ownership, save compatibility or Native deployment identity.
+
+**TOUCH:** only the two new files under `Tests/LLMOfferPeacePreflight/` and this architecture document **on the docs branch**. **DO NOT TOUCH:** all production C#, either Bellum/Relay Bridge, Relay, CR, `main`, release branch, workflows and existing tests.
+
+**Expected later log when bound to Native:** `[LLM_DIPLO] peace_preview legality=... execution=... draft=... reason=... actor=... target=... save_id=...`. There must be **no** `Foreign treaty parley queued`, `Foreign treaty applied`, influence change or public signed-peace event from preview alone. At this stage no such runtime line exists; the only result is the contract-test PASS/FAIL summary.
+
+**Next bounded stage:** review the bridge-facing Native snapshot data sources and identify the **smallest read-only API/DTO change** capable of satisfying these fixtures, together with an explicit nonmutating-per-method call audit. Only then implement against the **current checked HEAD** in a separate production stage after regression tests and game-version build gates; never copy the test oracle into game code.
