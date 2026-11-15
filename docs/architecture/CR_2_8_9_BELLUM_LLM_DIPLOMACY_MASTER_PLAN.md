@@ -706,3 +706,103 @@ There is no unconditional transition from `OFFERED` or `ACCEPTED_IN_PRINCIPLE` t
 **Next isolated stage:** inspect all direct and indirect callers of `TryQueueParley` / `ApplyTreaty(Core)`, save fields and treaty term validation before defining exact production file/function touch set. No implementation in this stage; first finish the pending Bannerlord 1.5.7 compatibility build and game tests before claiming combined integration ready.
 
 **Documentation diff only.** Test cases are defined but **not run**; no build/live log evidence exists for this new LLM negotiation contract.
+
+
+## 20. OFFER_PEACE ownership call-chain and save-boundary audit — 2026-11-15 (ANALYSIS ONLY)
+
+**Repository checked:** `AIRebelRelay/BellumCivile`, Native main HEAD `59b2aee8268cf1633e052e6b44e1cdba0e3c15fb`. **Docs branch only**; production untouched. These are source-inspected call sites in named files, not a claim that every foreign-policy path in all 999 C# files has been verified. CR 2.8.10 `CrDiplomacy` affects only explicit CR-originated actions, not all TaleWorlds AI decisions.
+
+### 20.1 Verified call chain and consumers
+
+```text
+Native autonomous proposal source:
+  WarPeaceRevampBehavior.TryCreatePeaceDecision
+      -> ForeignTreatyBehavior.TryQueueAiParley
+  WarScoreBehavior.TryResolveForeignWhitePeaceFromProposal
+      -> ForeignTreatyBehavior.TryQueueAiParley
+  WarScoreBehavior.ResolveQueuedTerminalWarScore (forced)
+      -> ForeignTreatyBehavior.TryQueueAiParley
+      -> (if failed) foreign terminal fallback may enter ResolveTerminalConflict
+         -> BellumPeaceResolutionContext -> MakePeaceAction.Apply
+
+Player/other-mod-integration entrypoints:
+  PeaceParleyEntryPointPatches (courier, diplomacy tab, vote notification,
+      post-notification retirement; multiple paths)
+      -> TryQueuePlayerParley or TryOpenPlayerParley or TryQueueDeferredPlayerParleyOpen
+  DiplomacyRuntimeCompatibilityPatches (Diplomacy mod peace entry)
+      -> TryOpenPlayerParley
+  PeaceParleyVM -> TryReplacePlayerDraft / TrySignPlayerParley / TryRejectPlayerParley
+                  / TrySetPlayerVote
+
+Shared queue and draft logic — all within ForeignTreatyBehavior:
+  TryQueueAiParley              -> TryQueueParley(automaticRequest=true)
+  TryQueuePlayerParley          -> TryQueueParley(automaticRequest=false)
+  TryOpenPlayerParley           -> TryQueuePlayerParley [if missing] -> EnsureProposalHasDraft
+                                  -> TryPreparePendingProposalDraft
+  TryQueueDeferredPlayerParleyOpen -> TryQueuePlayerParley
+  TryQueueParley                -> DraftAiTerms [unless white peace]
+                                  -> TryValidateCouncilControlledWhitePeace [automatic only]
+                                  -> CanSubmitAutomaticDraft [automatic only]
+                                  -> war.BeginParley, _proposals.Add
+  ForeignTreatyBehavior.OnDailyTick
+      -> ProcessTributes
+      -> ResolvePendingParley (NPC-only or unattended player-vassal) 
+          -> TryPreparePendingProposalDraft
+          -> TryValidateCouncilControlledWhitePeace
+          -> EvaluateRatification / SpendCouncilCommitments / SpendRulerOverride
+          -> ApplyTreaty
+  ForeignTreatyBehavior.TrySignPlayerParley
+      -> TryPreparePendingProposalDraft (twice)
+      -> EvaluateCouncil / WouldCouncilAccept / SpendCouncilCommitments
+      -> ApplyTreaty
+  ApplyTreaty -> ApplyTreatyCore (direct or through HostagePactBehavior.DeliverTreaty)
+      -> royalty/marriage/territorial, gold, tribute, prisoner, claim,
+         diplomatic and political term effects
+      -> BellumPeaceResolutionContext -> MakePeaceAction.Apply / ApplyByKingdomDecision
+      -> Accepted/Applied status + news, court consequences, rebel-resolution queue
+  ForeignTreatyBehavior.OnHourlyTick (not gated by Revamp)
+      -> HostagePactBehavior.RecoverTreatyDeliveries
+      -> PendingTreatyRebelResolutionRecord processing
+```
+
+**Exact implementation-local call sites:** `TryQueueParley` is `private` and invoked only by `TryQueuePlayerParley` and `TryQueueAiParley` inside inspected `ForeignTreatyBehavior.cs`; `ApplyTreaty` is `private`, called by `TrySignPlayerParley` and `ResolvePendingParley`; `ApplyTreatyCore` is `private`, called by `ApplyTreaty` directly or through the hostage delivery callback. The named *public* entrypoints have the observed external consumers above, but should be rechecked against a complete call-graph/assembly scan before editing shared behavior.
+
+### 20.2 Why reusing current code directly is unsafe
+
+1. **Native still originates the draft:** `TryQueueParley` constructs `TreatyProposalRecord` with a new GUID, derives winner/loser from War Score, and either creates `WhitePeace` or calls `DraftAiTerms`. An existing pending proposal returns `true` without proving the caller's request identity or accepting its desired terms. Therefore its success bool is **not** an LLM request receipt.
+2. **Silent semantic substitution:** `EnsureProposalHasDraft` populates an empty proposal from Native AI. `TryPreparePendingProposalDraft` can normalize with `repairStateDrift:true` and `allowOverBudget:true`; on failed repair it **replaces the draft with white peace**. `TreatyDraftService.TryValidateAndNormalize` itself treats an empty terms list as white peace. LLM submission must require explicit typed terms and a strict *no-substitution/no-white-peace-fallback* mode, with clear `DENIED_STALE_TERMS` and a chance to renegotiate.
+3. **Voluntary white peace restriction:** `TryValidateCouncilControlledWhitePeace` currently requires a Bellum mutual-eligibility rule for NPC-only non-forced cases. It does not treat bilateral LLM acceptance as sufficient. Whether genuinely agreed voluntary white peace may override that heuristic is a **game-rule decision requiring a separate regression design**; never bypass by marking a request `forced=true`.
+4. **Revamp disabled disables unrelated services:** `ForeignTreatyBehavior.OnDailyTick` returns before `ProcessTributes`, and before pending-parley progression. `WarScoreBehavior.CanRegisterConflict` cannot register standard foreign wars when Revamp OFF, and the AII integration ledger is accounting-only. Setting Revamp ON to gain these services also revives competing autonomous initiative. Distinguish world-state simulation, payment maintenance, lawful validation, proposal/origination, and commit.
+5. **Not a single atomic operation:** `ApplyTreatyCore` effects occur around `MakePeaceAction`, and `HostagePactBehavior.RecoverTreatyDelivery` states there is **no generic rollback** for already-transferred gold/land. Existing `TreatyProposalRecord.State` is `ParleyPending|Accepted|Rejected|Applied|Cancelled`; it is not a full persisted Bridge negotiation/transaction ledger.
+6. **Save compatibility/high-risk state:** `ForeignTreatyBehavior.SyncData` stores `BellumCivile_ForeignTreaty_Proposals`, `_Tributes`, and `_RebelResolutions`; `WarScoreBehavior.SyncData` stores `BellumCivile_WarScore_Wars`. `BellumCivileSaveDefiner` has stable type IDs: `TreatyTermRecord=34`, `TreatyProposalRecord=35`, `TreatyTermType=38`, `TreatyProposalState=39`, plus list containers. `TreatyProposalRecord` already has 23 SaveableField IDs, internal `DraftRevision`, influence flags, ratification support and a terminal consequences guard. Never reorder/repurpose fields or enum ordinal values.
+7. **Player and mods share treaty infrastructure:** Harmony redirects in `PeaceParleyEntryPointPatches` and `DiplomacyRuntimeCompatibilityPatches` preserve player decisions/UI and retire mirrored vanilla votes when Revamp owns a war; `PeaceParleyVM` edits/signs/rejects drafts. No blanket disabling or changing semantics of `TryQueuePlayerParley` or `TrySignPlayerParley`.
+8. **CR gateway is not universal:** CR 2.8.10 `CrDiplomacy.RegisterAuthority` can hold a CR-originated `MakePeace` as `Pending`, but Native, TaleWorlds and other mods can still have other action paths. Any new enforcement must be explicit about scope, fail-open/fail-closed, emergency story exceptions and true terminal receipts.
+
+### 20.3 Proposed minimal architecture (NOT implemented)
+
+**Split the orchestration from Native settlement, not the gameplay implementation:** 
+
+- **Bridge private ledger:** `saveId`, `threadId`, `requestId`, speaker/target Hero/Kingdom StringIds, target `warKey` and baseline revision, offered term revisions, each side's LLM/player replies, expiry, source, exact Native receipt. Store this in the Bridge (separate from Native treaty save types). Replayed or stale requests must resolve idempotently, never re-run settlement effects.
+- **Native legal preview:** an explicit campaign-thread snapshot of allowed action families, valid targets, war score and proposed term validity. Preview must be demonstrated side-effect-free and not call Native AI drafting or spend influence. A potentially mutable normalizer is **not automatically a read-only preflight**.
+- **Native negotiated-draft entry:** separate from current `TryQueueAiParley`; consume exact explicitly approved term list and external provenance, validate current hostility/campaign/authority, create or resume a tracked treaty proposal, then use the **existing** council/ratification/settlement system after a full diff/caller audit. Do not add another implementation of treaty payouts or prisoner/fief transfer.
+- **Native outcome receipt:** return `Pending|Denied|Applied` (with exact proposal/request/war identity and reason), based on observed post-commit state and applied-clause evidence. Do not treat a successful queueing bool, `Accepted` before actual hostility change, or CR `PassThrough` as proof of signed peace. Save/recovery must reconcile partial side effects and avoid replay.
+- **Separate foreign-policy ownership seam:** suppress only *unrequested normal foreign-policy initiative/automatic foreign resolution* under LLM mode; keep internal civil-war settlement, existing courts, player parley and gameplay maintenance. Terminal War Score and unavoidable story/realm collapse are separate policy questions; do not silently override.
+
+**Implementation boundary must be re-approved after the outstanding 1.5.7 ABI/build work:** candidate file/function seams in `ForeignTreatyBehavior.cs` (new explicit path + reuse settlement internals, scoped gates), `WarScoreBehavior.cs`/`WarScoreAiInfluenceForeignLedger.cs` (foreign-war tracking and initiative fences), `BellumIntegration*.cs` (new versioned public contract), **new Bridge-owned persistence**. These are hypotheses, not a license to edit all these files in one patch.
+
+### 20.4 Stage regression contract
+
+- **Positive:** LLM-created valid treaty `OFFERED` → target `ACCEPTED_IN_PRINCIPLE` → Native `ParleyPending` → councils ratify → exactly one `Applied` with actual peace, actual term effects and one public announcement.
+- **Negative:** target rejects/silent/counteroffers, council rejects, insufficient influence/WS, changed ruler or war state, stale prisoner/fief, quest-blocked peace, duplicate `requestId`, duplicate callback or save-load replay: no phantom peace, no double cash/fief/custody transfer, no duplicate public news.
+- **Neighbor:** vanilla player peace UI, Diplomacy mod peace entry, council vote redirects, old AII accounting-only war ledger, forced terminal mechanics until explicitly revised, internal feud/civil-war resolution, existing tribute maintenance, hostage delivery/recovery, migrated saves.
+- **Strict terms:** do not silently convert negotiated treaty into `WhitePeace`, do not automatically re-draft or add clauses, and do not treat `TryQueueParley=true` as signed receipt.
+- **Suggested future logs** (not currently implemented): `[LLM_DIPLO] treaty_prepare`, `draft_validation`, `ratification_pending`, `receipt_applied|receipt_denied`, `recovery_reconciled` with stable `save_id/request_id/proposal_id/war_key`. Unexpected: `Pending treaty draft could not be repaired and was replaced by white peace` on LLM-owned proposals, `Foreign treaty applied` with no authorized request, `War Score forced foreign peace` in LLM-owned normal international war, accidental second `MakePeaceAction.Apply`.
+- **Live game gate (not run):** verify no signed treaty without CR-relevant/public receipt, both ruler personalities and private knowledge, player-ruler consent, real council influence spending, payments/hostages/territory, load/save during pending, game log comparison.
+
+### 20.5 Stage boundary / verdict
+
+**ROOT CAUSE:** direct LLM reuse would cross the Native's blended autonomous-draft, validation, ratification and commit path; Revamp OFF disables unrelated treaty maintenance and ordinary war-score tracking. **TOUCH NOW:** only this Markdown architecture document. **DO NOT TOUCH NOW:** any production C#, CR, Relay, either bridge, MCM defaults, Native save metadata, main or shipping branches. **MUST FIX LATER:** proof of explicit term acceptance and correct Native settlement receipts without Native deciding diplomacy. **MUST NOT CHANGE:** player choice, civil wars, client state rules, term legality, quest protections, influence/council semantics, current save compatibility.
+
+**Next bounded stage recommendation:** specification/fixture design for a Native **read-only `OFFER_PEACE` eligibility + draft preview**, after separating what is strict law from what is merely a Native NPC willingness heuristic. Do not yet build a direct treaty commit adapter; this audit has demonstrated several important consumers and non-atomic recovery paths requiring standalone validation.
+
+**Evidence:** source-level inspection + docs diff audit only; no test execution, game logs or compile in this stage.
