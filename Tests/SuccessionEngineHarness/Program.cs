@@ -272,6 +272,11 @@ internal static class Program
                 VotePledgeTests.Run(Check);
                 Console.WriteLine($"{_checks} vote pledge checks passed.");
             }
+            else if (args.Contains("--marshal-battle-cap"))
+            {
+                MarshalBattleControversyTests.Run(Check);
+                Console.WriteLine($"{_checks} Marshal battle controversy checks passed.");
+            }
             else if (args.Contains("--realm-names"))
             {
                 RealmNameTests.Run(Check);
