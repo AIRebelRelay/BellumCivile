@@ -68,13 +68,8 @@ internal static class CourtClaimEngineTests
                 ObjectiveData = new CourtObjectiveRecord { Kind = "court_restore_claim" }, Claim = new CourtClaimRecord {
                     Fief = fief, Beneficiary = _claimant, Target = _foreignRealm, ClaimTitleId = "barony", Activated = true,
                     ActivatedDay = 20, AcquiredDay = 80, PendingAllocation = true, GraceDays = 3, LastOwnerChangeDay = 80 } };
-            var freeze = AccessTools.Method(typeof(CourtObjectiveRecord), "FreezeTerm");
-            var agendasField = AccessTools.Field(behaviorType, "_agendas");
-            Console.WriteLine($"COURT_CLAIM_DIAG before-freeze freeze_found={freeze != null} objective_present={a.ObjectiveData != null} agendas_field_found={agendasField != null} agendas_initialized={agendasField?.GetValue(b) != null}");
-            freeze.Invoke(a.ObjectiveData, new object[] { 10d, 84d });
-            Console.WriteLine("COURT_CLAIM_DIAG after-freeze");
+            AccessTools.Method(typeof(CourtObjectiveRecord), "FreezeTerm").Invoke(a.ObjectiveData, new object[] { 10d, 84d });
             Records(b, "_agendas").Add(a);
-            Console.WriteLine("COURT_CLAIM_DIAG after-add");
             return a;
         }
         void Tick(CourtAgendaBehavior b) => maintain.Invoke(b, null);
@@ -100,30 +95,9 @@ internal static class CourtClaimEngineTests
             Patch(AccessTools.Method(typeof(WarPeaceRevampBehavior), "IsRevampEnabled"), nameof(True));
             Patch(AccessTools.Method(typeof(WarPeaceRevampBehavior), "CanSupportCourtCampaign"), nameof(True));
 
-            Console.WriteLine("COURT_CLAIM_DIAG before-behavior");
-            var b = new CourtAgendaBehavior();
-            Console.WriteLine("COURT_CLAIM_DIAG after-behavior");
-            var a = Add(b);
-            Console.WriteLine("COURT_CLAIM_DIAG after-fixture");
-            Console.WriteLine($"COURT_CLAIM_DIAG method_found={bonus != null} return_type={bonus?.ReturnType?.FullName ?? "none"} behavior_assembly={behaviorType.Assembly.Location}");
-            Console.WriteLine("COURT_CLAIM_DIAG before-default-bonus");
-            float initialBonus = Bonus(b);
-            Console.WriteLine($"COURT_CLAIM_DIAG default-bonus={initialBonus}");
-            if (initialBonus == 15)
-            {
-                Console.WriteLine("COURT_CLAIM_DIAG before-ruler-bonus");
-                float rulerBonus = Bonus(b, ruler);
-                Console.WriteLine($"COURT_CLAIM_DIAG ruler-bonus={rulerBonus}");
-                if (rulerBonus == 0)
-                {
-                    Console.WriteLine("COURT_CLAIM_DIAG before-foreign-fief-bonus");
-                    float otherBonus = Bonus(b, holding: Blank<Settlement>());
-                    Console.WriteLine($"COURT_CLAIM_DIAG foreign-fief-bonus={otherBonus}");
-                }
-            }
-            Console.WriteLine("COURT_CLAIM_DIAG before-first-assertion");
+            var b = new CourtAgendaBehavior(); var a = Add(b);
             check(Bonus(b) == 15 && Bonus(b, ruler) == 0 && Bonus(b, holding: Blank<Settlement>()) == 0,
-                $"Allocation bonus matches exact house and holding ({Bonus(b)}/{Bonus(b, ruler)}, time={CampaignTime.Now.ToDays}, ongoing={a.IsOngoingObjective})");
+                "Allocation bonus matches exact house and holding");
             _support = false;
             check(Bonus(b) == 0, "Nonparticipating voter receives no claim allocation bonus");
             _support = true; _owner = _foreignClan;
