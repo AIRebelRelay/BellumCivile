@@ -806,3 +806,104 @@ Shared queue and draft logic — all within ForeignTreatyBehavior:
 **Next bounded stage recommendation:** specification/fixture design for a Native **read-only `OFFER_PEACE` eligibility + draft preview**, after separating what is strict law from what is merely a Native NPC willingness heuristic. Do not yet build a direct treaty commit adapter; this audit has demonstrated several important consumers and non-atomic recovery paths requiring standalone validation.
 
 **Evidence:** source-level inspection + docs diff audit only; no test execution, game logs or compile in this stage.
+
+## 21. OFFER_PEACE read-only preflight — capability versus legality (2026-11-15)
+
+**Status:** architecture/fixture contract ONLY, not production implementation. Source audited at `AIRebelRelay/BellumCivile` main `59b2aee8268cf1633e052e6b44e1cdba0e3c15fb`; CR API remains 2.8.10. Keep Bannerlord 1.5.7 ABI work and this diplomacy work separate. No executable API, unit tests, compilation, model request or in-game test produced.
+
+### 21.1 ROOT CAUSE: existing “eligibility” checks encode unrelated decisions
+
+The current Native design does not offer a side-effect-free, LLM-owned `OFFER_PEACE` preview. Several different meanings are conflated:
+
+| Existing source | Directly observed semantics | Preflight classification |
+|---|---|---|
+| `ClientKingdomBehavior.CanMakePeace` | Checks suzerain restrictions, but returns **true** if realm inputs are null or `IsSynchronizingDiplomacy`; cannot alone prove valid parties | HARD RULE only **after** explicit input/state validation; a true result is not complete authorization |
+| `StorylineWarProtectionHelper.IsPeaceBlocked` | Protects third-phase Story Mode wars; uses optional reflection and may fail/disable its detection with a one-time log | HARD STORY restriction when established; treat ambiguous unavailable/reflection failure explicitly, not proof of unprotected peace |
+| `ClientKingdomBehavior.IsAuxiliaryClientWar`, permanent-realm/foreign-war classification, `Kingdom.IsAtWarWith` | Current hostility and realm authority constraints | HARD WORLD/OWNERSHIP checks |
+| `WarScoreBehavior.GetActiveWar` | Returns an existing tracked record, not arbitrary vanilla war data; `CanRegisterConflict` refuses ordinary foreign registration when Revamp OFF | EXECUTION READINESS. Missing record is **UNKNOWN/NOT_READY**, not automatically “peace illegal” |
+| `WarScoreBehavior.IsMutualWhitePeaceEligible` | Depends on `ShouldProcessWar` / Revamp, cooldown, War Will and exhaustion | Native autonomous **WILLINGNESS/automatic white-peace heuristic**, not a universal legal veto on two LLM sovereigns negotiating |
+| `WarPeaceRevampBehavior.GetWarWill`, `GetRankedTargets` | Lazily writes cached initial Will / ranked target state; `PeekWarWill` is the non-inserting alternative | ADVISORY political context, not allowed in a strictly read-only preview unless proven non-mutating |
+| `ForeignTreatyBehavior.EvaluateCouncil` | Calls `GetOrCreateCouncilSnapshot` which populates `_councilSnapshots`; ratification service calls `GetWarWill` | FUTURE RATIFICATION forecast only, **not** part of the first pure preflight |
+| `TreatyDraftService.TryValidateAndNormalize` | Validates typed clauses and recalculates costs; empty input becomes `WhitePeace`, and generated `TreatyTermRecord` may differ from input even without `repairStateDrift` | Useful candidate legal checker **only after** strict input guard, semantic-diff check, side-effect audit and tests; never pass repaired terms to execution without a new agreement |
+| `TryQueueAiParley` / `TryQueueParley`, `CanSubmitAutomaticDraft` | Generates proposal, native terms, possible council decisions, changes war/proposal state | **FORBIDDEN during preflight** |
+
+`TreatyWarScoreAccounting.Calculate` is suitable for a pure numeric term-cost calculation **when** terms and a real Bellum War Score budget are available. Do not invent zero score/budget or pretend a foreign war is untracked because the political situation is tranquil.
+
+**Important follow-on risk:** `ForeignTreatyBehavior.OnDailyTick` returns before `ProcessTributes` when Revamp OFF. Preview must not toggle Revamp just to obtain treaty services, and cannot claim that future installment payments will run until maintenance is separately enabled and tested.
+
+### 21.2 Conceptual public API contract (NOT PRESENT IN CODE)
+
+```yaml
+operation: PreviewForeignPeace                # proposed name, NOT an existing BellumIntegration API
+input:
+  saveId: "actual campaign identifier"
+  actorHeroId: "actual ruler/authorized speaker id"
+  fromKingdomId: "speaker's kingdom StringId"
+  toKingdomId: "other kingdom StringId"
+  draftTerms: null                            # null = no draft yet; [] = INVALID, never implicit white peace
+  expectedWarKey: null                        # optional revision guard for second request
+output:
+  legality: allowed_to_propose | blocked | unknown
+  executionReadiness: ready | not_ready | unknown
+  politicalAssessment: advisory_only         # war score, exhaustion, council risk; NEVER a commit
+  hardReasons: ["coded reason key", "..."]   # known hard blocks, not speculative LLM advice
+  readinessReasons: ["war_score_tracker_missing", "..."]
+  verifiedActorAndTargetIds: ["hero", "realm", "realm"]
+  currentWarKey: null                        # only if real tracked war exists
+  trackedConflictType: null                  # never manufacture ForeignWar on missing record
+  draftReview: not_requested | valid | invalid | unknown
+  normalizedTermsForDisplay: null            # no silent replacement into a signed treaty
+  observedGameDay: 0
+  observedStateRevision: null                # design goal; must map to actual Native revision source
+  mayExecuteImmediately: false               # preview never applies anything
+```
+
+Only return `legality=allowed_to_propose` when an active campaign, authoritative actor, two existing suitable realms, genuine ongoing hostility and required quest/client constraints have been positively established. `legality=allowed_to_propose` means the LLM **may ask**, not that the other ruler, court, or game has consented.
+
+- `executionReadiness=not_ready` with Revamp OFF and no ordinary foreign `WarScoreRecord` is a separate **integration blocker**, not diplomatic illegality. Do **not** call the old AII-specific `TryRegisterAiInfluenceForeignWar` to paper over it. The Bridge can still produce a narrative `PUBLIC_STATEMENT`; it cannot promise settlement execution.
+- `blocked` on active Story Mode restriction, client suzerain restriction, invalid/nonparticipating actor, non-hostile pair, eliminated/rebel/temporary realm or internal civil-war/claim feud when the operation is defined for ordinary international peace only. The correct internal-war handler remains untouched.
+- `unknown` for stale/unavailable campaign data, unclear authority, or an unverified mandatory safety check. No permissive execution from unknown.
+- The **LLM-facing capability card** must keep `NO_ACTION` and nonbinding `PUBLIC_STATEMENT` available; voluntary peace and a complex treaty are separate selectable intentions and require explicit terms. With no draft, the model may ask for a *discussion*; `[]` is invalid, and `WhitePeace` must be an explicit sole clause.
+- Bellum's `War Will`, relative strength, exhaustion, current council politics and `IsMutualWhitePeaceEligible` can be supplied as **advisory factors**, with unavailable fields honestly omitted. They must not be hardcoded into LLM policy choices or silently override the political intent of either ruler.
+
+**Draft preview (separate, after an actual proposal exists):** require exact structured `TreatyTermType` and target IDs; no implicit no-terms-to-white-peace; no implicit `forced=true`; no `DraftAiTerms` and no `CanSubmitAutomaticDraft`. Invoke clause legality/availability only in a demonstrated non-mutating mode; derive legal recalculated costs with `TreatyTermCostModel` and `TreatyWarScoreAccounting`, compare material terms against the submitted revision. A meaningful discrepancy must return `invalid/needs_counteroffer` rather than silently change gold, prisoner, holding, duration, or territory. Any accepted narrative must have a matching exact validated draft at submission time.
+
+### 21.3 Side-effect and caller boundary
+
+**Read-only invariant:** on campaign/main thread the preview may read immutable snapshots or proven-pure calculations; it must not queue `WarScoreRecord`, call `BeginParley` / `BeginResolution`, add `TreatyProposalRecord`, modify `_proposals`, `_councilSnapshots`, `_warWillByClanId`, save-type metadata, gold, influence, fiefs, prisoners, relations or CR memory/feed. Existing lazy cache initialization and reflection one-time logs are to be identified explicitly; “does not call MakePeace” alone is not enough to establish purity.
+
+**Known consumer risk:** `GetWarWill` also feeds ratification; `GetOrCreateCouncilSnapshot` stabilizes council assessments for a given proposal; `TreatyDraftService` also serves the player UI and existing automatic draft flow. Do **not** change their shared semantics to satisfy preflight. A new narrow read-only wrapper/snapshot path, if needed, is safer than a global helper modification. Keep actual Bellum ratification unchanged at commit time.
+
+**Campaign freshness:** capture source campaign, actor/target identities, live hostile pair, actual war key/side, relevant revision and timestamp. This output is **never a commit permission**; recheck every hard condition and exact terms in the later Native submit path on campaign thread. RPC/LLM completion may arrive after death, throne transfer, occupation, save switch, or a newly blocked quest.
+
+### 21.4 Positive and neighboring regression contract (BEFORE ANY CODE)
+
+| Fixture | Expected result / unchanged behavior |
+|---|---|
+| Two real rulers, valid ordinary foreign hostility, real tracked record | `allowed_to_propose`, capabilities+factual pressure; still `mayExecuteImmediately=false` |
+| Same hostility with Revamp OFF, no tracked record | Legality evaluated separately; `executionReadiness=not_ready`, no invented `warKey`/War Score |
+| Eligible ruler asks for talks, no terms yet | `draftReview=not_requested`; no automatic white peace |
+| Model explicitly selects sole `WhitePeace` clause | `draftReview` can be checked as an explicit request; no automatic permission to conclude |
+| Empty `[]` or invalid/duplicate target/terms, stale fief or prisoner | `invalid`, no fallback or replacement and no state mutation |
+| Terms exceed factual War Score budget | `invalid` or `not_ready` (missing budget), not invented affordability |
+| Non-hostile, temporary/rebel realm, internal feud/civil war, dead or dethroned ruler | Excluded from ordinary foreign-peace path without touching the internal/feud settlement |
+| Story quest block / client-suzerain restriction | `blocked` with exact reason; no generic Native pass-through |
+| Player-ruled side | No AI impersonation of the player; preview does not pre-approve player's response |
+| Repeated preflight, before/after campaign save, concurrent LLM response | Same observed facts → same decision; no additions to saved war/proposal/council or Will dictionaries, no duplicated CR Feed, no cross-save context |
+| Existing player parley, influence vote, old AII ledger, internal-war resolution | Existing paths and outcomes unchanged; this API remains opt-in and read-only |
+
+**Target test instrumentation (NOT implemented):** compare before/after snapshots of `_wars`, `_proposals`, `_councilSnapshots`, `_warWillByClanId`, finances, influence, realm hostility and related save data. Verify fixture assertions without loading arbitrary player saves. A future controlled game test should emit `[LLM_DIPLO] peace_preview actor=... target=... legality=... execution=... war_key=... reason=...` and must **not** emit `Foreign treaty parley queued`, `Foreign treaty applied`, `War Score forced foreign peace`, `MakePeaceAction.Apply` because of *preview alone*.
+
+### 21.5 Surgical stage decision
+
+**ROOT CAUSE:** mixed legal/AI-willingness/revamp gates and mutating lookups prevent truthfully advertising Bellum capabilities to LLM.
+
+**TOUCH NOW:** only `docs/architecture/CR_2_8_9_BELLUM_LLM_DIPLOMACY_MASTER_PLAN.md` on `docs/cr289-llm-diplomacy-architecture-2026-11-14`.
+
+**DO NOT TOUCH NOW:** `TreatyDraftService.cs`, `TreatyRatificationService.cs`, `ForeignTreatyBehavior.cs`, `WarScoreBehavior.cs`, `WarPeaceRevampBehavior.cs`, `ClientKingdomBehavior.cs`, `BellumIntegration*.cs`, all Bridge/Relay/CR code, Native save types, MCM defaults, `main`.
+
+**MUST FIX LATER:** legally meaningful status independent of technical readiness and AI willingness; strict and idempotent typed draft preview; read-only purity under test; safe missing-score behavior with Revamp OFF.
+
+**MUST NOT CHANGE:** political initiative ownership, all working player diplomacy, legal restrictions, Native council outcomes and influence, treaty effects, War Score, client/civil-war/quest protections, old AII bridge ledger and save compatibility.
+
+**NEXT ISOLATED STAGE:** build **pure fixture contracts / test harness for eligibility** using a deterministic snapshot, not a production Bellum integration. Only after positive+neighbor regression proof should a game-thread Native preview API implementation be proposed. No production patch has been attempted here.
