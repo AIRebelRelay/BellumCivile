@@ -7072,5 +7072,17 @@
     <string id="BC_HeroFamily_Brother" text="Brother" />
     <string id="BC_HeroFamily_Granddaughter" text="Granddaughter" />
     <string id="BC_HeroFamily_Grandson" text="Grandson" />
+    <string id="BC_ClientRelease_Open" text="I would speak of your realm's obligations to my crown." />
+    <string id="BC_ClientRelease_Question" text="What would you ask of us?" />
+    <string id="BC_ClientRelease_Proposal" text="I would release {BC_RELEASE_CLIENT} from its oath of obedience. Our realms would remain allies, but yours would answer to no overlord." />
+    <string id="BC_ClientRelease_Response" text="You would grant us our independence, and ask nothing in return?" />
+    <string id="BC_ClientRelease_Confirm" text="That is my will. Let there be friendship between our realms." />
+    <string id="BC_ClientRelease_Cancel" text="I must give this more thought." />
+    <string id="BC_ClientRelease_Thanks" text="You do us a great honor. I shall not forget this generosity. May our realms remain friends for many years to come." />
+    <string id="BC_ClientRelease_Changed" text="The circumstances have changed. We must discuss your realm's independence another time." />
+    <string id="BC_ClientRelease_AgreementsUnavailable" text="Our existing agreements must be settled before I can release your realm." />
+    <string id="BC_ClientRelease_Failure" text="{BC_RELEASE_FAILURE}" />
+    <string id="BC_ClientRelease_Hint" text="Grants independence without payment. The alliance and trade agreement continue on ordinary terms. Existing wars and alliance obligations remain unchanged. Grants +{RELATION} personal relations for {YEARS} years; an active gratitude memory cannot stack or be renewed." />
+    <string id="BC_RelationMemory_GrantedRealmIndependence" text="Granted my realm its independence" />
   </strings>
 </base>
