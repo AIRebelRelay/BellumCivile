@@ -50,7 +50,13 @@ internal static class Program
         };
         try
         {
-            if (args.Contains("--regency-adulthood-157"))
+            if (args.Contains("--court-claim-diagnostic"))
+            {
+                if (args.Contains("--with-subjugation")) CourtSubjugationEngineTests.Run(Check);
+                CourtClaimEngineTests.Run(Check);
+                Console.WriteLine($"{_checks} court claim diagnostic checks passed.");
+            }
+            else if (args.Contains("--regency-adulthood-157"))
             {
                 RegencyAdulthoodTests.Run(Check);
                 Console.WriteLine($"{_checks} regency adulthood checks passed.");

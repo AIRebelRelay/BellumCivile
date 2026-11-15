@@ -68,8 +68,13 @@ internal static class CourtClaimEngineTests
                 ObjectiveData = new CourtObjectiveRecord { Kind = "court_restore_claim" }, Claim = new CourtClaimRecord {
                     Fief = fief, Beneficiary = _claimant, Target = _foreignRealm, ClaimTitleId = "barony", Activated = true,
                     ActivatedDay = 20, AcquiredDay = 80, PendingAllocation = true, GraceDays = 3, LastOwnerChangeDay = 80 } };
-            AccessTools.Method(typeof(CourtObjectiveRecord), "FreezeTerm").Invoke(a.ObjectiveData, new object[] { 10d, 84d });
+            var freeze = AccessTools.Method(typeof(CourtObjectiveRecord), "FreezeTerm");
+            var agendasField = AccessTools.Field(behaviorType, "_agendas");
+            Console.WriteLine($"COURT_CLAIM_DIAG before-freeze freeze_found={freeze != null} objective_present={a.ObjectiveData != null} agendas_field_found={agendasField != null} agendas_initialized={agendasField?.GetValue(b) != null}");
+            freeze.Invoke(a.ObjectiveData, new object[] { 10d, 84d });
+            Console.WriteLine("COURT_CLAIM_DIAG after-freeze");
             Records(b, "_agendas").Add(a);
+            Console.WriteLine("COURT_CLAIM_DIAG after-add");
             return a;
         }
         void Tick(CourtAgendaBehavior b) => maintain.Invoke(b, null);
@@ -95,7 +100,11 @@ internal static class CourtClaimEngineTests
             Patch(AccessTools.Method(typeof(WarPeaceRevampBehavior), "IsRevampEnabled"), nameof(True));
             Patch(AccessTools.Method(typeof(WarPeaceRevampBehavior), "CanSupportCourtCampaign"), nameof(True));
 
-            var b = new CourtAgendaBehavior(); var a = Add(b);
+            Console.WriteLine("COURT_CLAIM_DIAG before-behavior");
+            var b = new CourtAgendaBehavior();
+            Console.WriteLine("COURT_CLAIM_DIAG after-behavior");
+            var a = Add(b);
+            Console.WriteLine("COURT_CLAIM_DIAG after-fixture");
             check(Bonus(b) == 15 && Bonus(b, ruler) == 0 && Bonus(b, holding: Blank<Settlement>()) == 0,
                 $"Allocation bonus matches exact house and holding ({Bonus(b)}/{Bonus(b, ruler)}, time={CampaignTime.Now.ToDays}, ongoing={a.IsOngoingObjective})");
             _support = false;
