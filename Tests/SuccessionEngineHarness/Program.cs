@@ -175,6 +175,11 @@ internal static class Program
                 MarriageDowrySimulation.Run(Check);
                 Console.WriteLine($"{_checks} marriage dowry simulation checks passed.");
             }
+            else if (args.Contains("--initial-child-age-157"))
+            {
+                InitialChildGenerationAgeTests.Run(Check);
+                Console.WriteLine($"{_checks} initial child generation age checks passed.");
+            }
             else if (args.Contains("--separate-spouse-157"))
             {
                 TestHouseholdFoundation();
