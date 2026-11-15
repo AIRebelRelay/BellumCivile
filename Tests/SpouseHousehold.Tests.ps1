@@ -12,7 +12,10 @@ foreach ($file in @('CrownIncomingHouse', 'CrownAbdication', 'CrownForcedAbdicat
 $patch = Read 'Patches/SeparateSpouseHouseholdPatch.cs'
 Check ((Read 'Behaviors/PartitionSuccessionBehavior.cs') -match 'IsPendingCrownHeir\(heir\) != true') 'Preparatory partition cadets also retain children for a pending Crown heir.'
 Check ($patch -match 'HeroCreator.DeliverOffSpring' -and $patch -notmatch 'OnHeroCreated|OnGivenBirth') 'Newborn clan is selected before native initialization, not repaired after birth.'
-Check ($patch -notmatch 'Hero.MainHero|IsFemale') 'Production visit and birth household rules do not privilege player sex.'
+$visit = $patch.Substring($patch.IndexOf('public static class ConsistentSpouseVisitPatch'))
+Check ($visit -notmatch 'Hero.MainHero|IsFemale') 'Production visit rules do not privilege player sex.'
+Check ($patch -match 'ResolveBirthOccupation' -and $patch -match 'mother == player \|\| father == player')
+    'Birth occupation resolves the player parent symmetrically without changing the maternal household choice.'
 Check ($patch -match 'hero.IsPrisoner \|\| spouse.IsPrisoner' -and $patch -match 'IsAtWarWith') 'Spouse visits inspect both captivity and faction hostility.'
 Check ($patch -match 'party.AttachedTo' -and $patch -match 'party\?\.CurrentSettlement') 'Native attached-party and settlement location conventions remain.'
 $alliance = Read 'Behaviors/MarriageAllianceBehavior.cs'
