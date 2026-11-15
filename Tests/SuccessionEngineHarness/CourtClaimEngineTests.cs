@@ -105,6 +105,23 @@ internal static class CourtClaimEngineTests
             Console.WriteLine("COURT_CLAIM_DIAG after-behavior");
             var a = Add(b);
             Console.WriteLine("COURT_CLAIM_DIAG after-fixture");
+            Console.WriteLine($"COURT_CLAIM_DIAG method_found={bonus != null} return_type={bonus?.ReturnType?.FullName ?? "none"} behavior_assembly={behaviorType.Assembly.Location}");
+            Console.WriteLine("COURT_CLAIM_DIAG before-default-bonus");
+            float initialBonus = Bonus(b);
+            Console.WriteLine($"COURT_CLAIM_DIAG default-bonus={initialBonus}");
+            if (initialBonus == 15)
+            {
+                Console.WriteLine("COURT_CLAIM_DIAG before-ruler-bonus");
+                float rulerBonus = Bonus(b, ruler);
+                Console.WriteLine($"COURT_CLAIM_DIAG ruler-bonus={rulerBonus}");
+                if (rulerBonus == 0)
+                {
+                    Console.WriteLine("COURT_CLAIM_DIAG before-foreign-fief-bonus");
+                    float otherBonus = Bonus(b, holding: Blank<Settlement>());
+                    Console.WriteLine($"COURT_CLAIM_DIAG foreign-fief-bonus={otherBonus}");
+                }
+            }
+            Console.WriteLine("COURT_CLAIM_DIAG before-first-assertion");
             check(Bonus(b) == 15 && Bonus(b, ruler) == 0 && Bonus(b, holding: Blank<Settlement>()) == 0,
                 $"Allocation bonus matches exact house and holding ({Bonus(b)}/{Bonus(b, ruler)}, time={CampaignTime.Now.ToDays}, ongoing={a.IsOngoingObjective})");
             _support = false;
