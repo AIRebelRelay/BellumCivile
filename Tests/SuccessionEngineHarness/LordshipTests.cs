@@ -148,27 +148,15 @@ internal static partial class LordshipTests
             AccessTools.Field(typeof(LordshipBehavior), "_ready").SetValue(registry, true);
             var village = VillageOf(clan, "first", out var town);
             var second = VillageOf(clan, "second", out _);
+            var parentBarony = Bounds[village.Village];
             var oldTitles = FeudalTitleBehavior.Instance;
             try
             {
                 var titles = new FeudalTitleBehavior();
                 AccessTools.Property(typeof(FeudalTitleBehavior), "Instance").SetValue(null, titles);
                 var custody = (Dictionary<string, string>)AccessTools.Field(typeof(FeudalTitleBehavior), "_allocationCustodianByTitle").GetValue(titles);
-                custody[FeudalTitleBehavior.BuildBaronyTitleId(village.Village.Bound)] = clan.StringId;
-                bool custodyGrantAllowed = registry.CanGrant(clan, village, stranger, out var custodyGrantReason);
-                if (custodyGrantAllowed)
-                {
-                    var bound = village.Village.Bound;
-                    var titleId = FeudalTitleBehavior.BuildBaronyTitleId(bound);
-                    custody.TryGetValue(titleId, out string recordedCustodian);
-                    bool directCustodyGate = (bool)AccessTools.Method(typeof(FeudalTitleBehavior), "IsHeldForAllocation")
-                        .Invoke(titles, new object[] { bound, clan });
-                    Console.WriteLine($"LORDSHIP_CUSTODY_DIAG active_instance={ReferenceEquals(FeudalTitleBehavior.Instance, titles)} " +
-                        $"title={titleId} expected_clan={clan.StringId} recorded_custodian={recordedCustodian ?? "none"} " +
-                        $"direct_gate={directCustodyGate} bound={bound?.StringId ?? "none"} " +
-                        $"reject_reason={custodyGrantReason?.ToString() ?? "none"}");
-                }
-                check(!custodyGrantAllowed, "Temporary fief custodians cannot endow the village before allocation");
+                custody[FeudalTitleBehavior.BuildBaronyTitleId(parentBarony)] = clan.StringId;
+                check(!registry.CanGrant(clan, village, stranger, out _), "Temporary fief custodians cannot endow the village before allocation");
                 check(registry.FindVacancy(clan) == second, "Vacancy selection skips custodial fiefs without hiding other available grants");
             }
             finally { AccessTools.Property(typeof(FeudalTitleBehavior), "Instance").SetValue(null, oldTitles); }
@@ -178,7 +166,7 @@ internal static partial class LordshipTests
             check(!registry.TryGrant(clan, village, sibling, out _) && _rewards == 1, "An occupied village cannot be granted twice");
             check(!registry.TryGrant(_player, second, sibling, out _), "A sovereign or outsider cannot grant another clan's village");
             check(registry.GetGrant(stranger)?.Village == village, "Hero and village indices resolve the same grant");
-            check(registry.GetGrant(village).Parent == village.Village.Bound, "The saved grant remains bound to its actual parent barony");
+            check(registry.GetGrant(village).Parent == parentBarony, "The saved grant remains bound to its actual parent barony");
             var incomeType = Type("LordshipIncome");
             for (int gross = 0; gross < 501; gross++)
             {
@@ -238,9 +226,9 @@ internal static partial class LordshipTests
             Clans[stranger] = _player;
             check(!legacy.IsCurrent && registry.GetGrant(stranger) == null, "Clan departure invalidates both personal tenure and old role exemptions");
             Clans[stranger] = clan;
-            Owners[village.Village.Bound] = _player;
+            Owners[parentBarony] = _player;
             check(registry.GetGrant(village) == null, "Loss of the parent barony immediately invalidates the personal grant");
-            Owners[village.Village.Bound] = clan;
+            Owners[parentBarony] = clan;
             Call(typeof(LordshipBehavior), "Validate", registry);
             check(registry.TryRevoke(clan, village, out _) && _rewards == 2, "Voluntary revocation uses the shared action and one personal penalty");
             check(registry.GetGrant(stranger) == null, "Revocation vacates both indices without creating a clan title or claim");
@@ -275,11 +263,11 @@ internal static partial class LordshipTests
             CheckNativeHooks(check);
             CheckSaveFields(check);
             priorRewards = _rewards;
-            Owners[village.Village.Bound] = _player;
+            Owners[parentBarony] = _player;
             Call(typeof(LordshipBehavior), "Validate", registry);
             check(malformed.Count == 0 && _rewards == priorRewards,
                 "Confirmed barony loss removes the grant permanently without a voluntary-revocation penalty");
-            Owners[village.Village.Bound] = clan;
+            Owners[parentBarony] = clan;
             check(registry.GetGrant(stranger) == null,
                 "Reconquering a barony does not resurrect its former personal endowments");
             CheckRetainerLabels(check, registry, clan, leader, sibling, spouse, stranger, Person);
