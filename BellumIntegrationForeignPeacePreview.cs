@@ -144,24 +144,28 @@ namespace BellumCivile
                     }
                 }
 
-                // Stage 7 safety fence: do NOT trust the existing bool-only
-                // StorylineWarProtectionHelper.IsPeaceBlocked, whose missing reflection
-                // path is false. This is deliberately conservative until a separate
-                // verified tri-state storyline API is designed and tested.
-                bool storyModulePresent = AppDomain.CurrentDomain.GetAssemblies()
-                    .Any(assembly => assembly.GetName().Name == "StoryMode");
-                if (storyModulePresent)
+                ForeignPeaceOptionalVerdict storyVerdict =
+                    ForeignPeaceOptionalModSafetyProbe.CheckStoryMode(source, target);
+                if (storyVerdict == ForeignPeaceOptionalVerdict.Blocked)
+                {
+                    reasons.Add("story_mode_peace_protected");
+                    legality = ForeignPeaceLegality.Blocked;
+                }
+                else if (storyVerdict == ForeignPeaceOptionalVerdict.Unknown)
                 {
                     reasons.Add("story_mode_quest_protection_unverified");
                     if (legality != ForeignPeaceLegality.Blocked)
                         legality = ForeignPeaceLegality.Unknown;
                 }
 
-                // The existing Diplomacy rebel test lazily caches reflection state.
-                // Avoid that shared mutating getter in an eligibility-only preview.
-                bool diplomacyAssemblyPresent = AppDomain.CurrentDomain.GetAssemblies()
-                    .Any(assembly => assembly.GetName().Name == "Diplomacy");
-                if (diplomacyAssemblyPresent)
+                ForeignPeaceOptionalVerdict diplomacyVerdict =
+                    ForeignPeaceOptionalModSafetyProbe.CheckDiplomacyRebels(source, target);
+                if (diplomacyVerdict == ForeignPeaceOptionalVerdict.Blocked)
+                {
+                    reasons.Add("diplomacy_rebel_kingdom");
+                    legality = ForeignPeaceLegality.Blocked;
+                }
+                else if (diplomacyVerdict == ForeignPeaceOptionalVerdict.Unknown)
                 {
                     reasons.Add("diplomacy_rebel_classification_unverified");
                     if (legality != ForeignPeaceLegality.Blocked)
