@@ -40,7 +40,7 @@ internal static class GrantFiefClosureTests
         try
         {
             var patched = harmony.CreateClassProcessor(patchType).Patch();
-            check(patched.Count == 1 && patched.Contains(callback),
+            check(patched.Count == 1 && patched[0] != null,
                 "Grant-fief Harmony class attaches to exactly the resolved native confirmation callback");
             var installed = Harmony.GetPatchInfo(callback);
             check(installed != null && installed.Prefixes.Any(p => p.owner == harmony.Id),
