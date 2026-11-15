@@ -125,7 +125,7 @@ foreach ($moduleName in @('Native', 'SandBoxCore', 'Sandbox', 'StoryMode')) {
     Write-Host "BELLUM157_BUILD version_evidence=$moduleName/SubModule.xml ModuleVersion=$moduleVersion"
     $versions += $moduleVersion
 }
-$gameVersionPattern = '(?<![0-9])(?:e|v)?1\.[0-9]+\.[0-9]+'
+$gameVersionPattern = '(?<![0-9])(?:e|v)?1\.(?:4|5)\.[0-9]+'
 $gameVersions = @($versions | ForEach-Object {
     [regex]::Matches($_, $gameVersionPattern) | ForEach-Object {
         $found = $_.Value
