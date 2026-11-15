@@ -1017,3 +1017,50 @@ These are **candidate files**, not edits made in this stage. Contract should be 
 Our Native and upstream currently differ in **`BellumIntegration.cs`, `ClientKingdomBehavior.cs`, `WarScoreBehavior.cs`, `ForeignTreatyBehavior.cs`, `TreatyDraftService.cs`**. `StorylineWarProtectionHelper.cs` and `BellumIntegrationBehavior.cs` have **identical blob SHAs** between pinned trees; do not assume this stays true when the next upstream Bellum update lands.
 
 **MUST FIX (future):** expose truthful NPC foreign-peace eligibility without changing any campaign state. **MUST NOT CHANGE:** Native AI policy, voting, treaty semantics, internal wars, client laws, player choice, save compatibility, CR behavior without our authority. **TOUCH NOW:** this docs section ONLY. **Validation completed now:** source inspection and documentation update; **not** game/DLL compile, live-log evidence, 1.5.7 port, or integration test. Next stage: formal source-backed unit test harness and only then smallest Native implementation of the eligibility snapshot.
+
+
+## 24. Native eligibility API test-first boundary — Stage 6 (2026-11-15)
+
+**Status:** TEST-FIRST source contract only, **no Native implementation**. Source revision inspected: Native main `59b2aee8268cf1633e052e6b44e1cdba0e3c15fb`; upstream `Vonbalt/BellumCivile` main `8a08e0c038a60030813c56eae39a5fbee0b75cb6`; CR main `e076086424a0d8c6ac25f68e88ae06cd8fa4a9cf` = **CR 2.8.10**. Prior 32 scenario oracle from Stage 4 remains separate.
+
+### 24.1 ROOT CAUSE and minimal change boundary
+
+Current Native helper functions that sound read-only may mutate internal state: `WarScoreBehavior.GetActiveWar` initializes `_wars`; `ClientKingdomBehavior.GetClientRecord` calls maintenance that can remove stale clients and increment revision; `WarPeaceRevampBehavior.GetWarWill` populates the war-will dictionary; Story Mode protection uses optional reflection and may report false if unavailable. An LLM eligibility *read* must not inherit these side effects or produce misleading `Allowed` status.
+
+**TOUCH in this stage:** new `Tests/LLMOfferPeacePreflight/native_boundary.py` and this architecture section **only** on the documentation branch. **DO NOT TOUCH:** the four proposed Native files (none exists yet), original `BellumIntegration.cs`, shared helpers, `ForeignTreatyBehavior`, `TreatyDraftService`, MCM, save metadata, CR, AI Influence, Bellum Bridge, Relay Bridge, Relay, `main`, workflows or releases.
+
+**MUST FIX later:** campaign-thread-only read-only `GetForeignPeaceEligibility` with truthful `Allowed / Blocked / Unknown`, separate `Ready / NotReady` and `Player / NPC / Unknown` reply authority. **MUST NOT CHANGE:** any existing player or NPC Native war/peace decisions, legacy integration calls, domestic civil war and quest handling, gold/influence/fiefs, hostage recovery, save compatibility or CR 2.8.10 behavior.
+
+### 24.2 Test modes and expected results
+
+Run from the cloned repository root with Python 3 (standard library only):
+
+```bash
+python Tests/LLMOfferPeacePreflight/native_boundary.py --mode baseline
+python Tests/LLMOfferPeacePreflight/native_boundary.py --mode self-test
+python Tests/LLMOfferPeacePreflight/native_boundary.py --mode candidate
+```
+
+- **baseline (GREEN expected on pinned Native HEAD):** eight independent source-witness checks that the integration campaign-thread fence, v1 public API, lazy war lookup, client getter cleanup, client runtime revision, War Will cache insertion, Story reflection fallback and existing Native treaty drafting/queueing remain intact.
+- **self-test (GREEN expected):** five deliberately unsafe example calls are rejected by the scanner; a comment-only occurrence is ignored.
+- **candidate (RED **expected until implementation**):** asserts four proposed files exist; then runs narrowly scoped *source* tests for the entrypoint/thread fence, immutable/non-saveable snapshot, detached War Score/client lookup partials, absence of known dangerous mutators and non-executing preview. A green source scan will **not** prove actual game runtime purity, sufficient narrative grounding, all caller safety or correct binding behavior.
+
+**Source-backed evidence checked this stage:** via the GitHub connector, **all 8/8 baseline witness conditions** on pinned main were verified; all **four** candidate implementation files are absent as expected; extracted scanner expressions flagged **5/5** unsafe sample calls in an independent JS check. **The committed Python script itself was not run** (no checkout available in this execution environment), so do not report Python test results as executed; only its source and independently verified predicates are known. Do not trigger CI just to manufacture green status.
+
+### 24.3 Regression coverage / stop conditions
+
+| Positive / neighbor | Contract |
+|---|---|
+| Native existing baseline | All eight witnesses retained; if upstream update changes any source seam, **STOP and review** rather than patch the test to pass blindly |
+| Safe new API candidate | All four isolated C# partial/DTO files; no direct calls to known state-writing getters or proposal/ratification helpers |
+| Invalid story/client authority | Unknown is not treated as clear; runtime test must cover missing reflection/provider data, eliminated/same kingdom, client subsidiary war |
+| Revamp OFF and no tracker | No fabricated war key or score; proposal can be politically legal while Native execution is unavailable |
+| Player-ruled receiving kingdom | Must route a reply to the actual player and forbid AI impersonation |
+| Previously working paths | Existing UI peace notifications, Diplomacy mod bridge, council votes, internal feuds/civil wars, older AII war ledger, old save format unchanged |
+| Runtime state purity (NEXT phase) | Repeat read 100x; compare real Native collections, revision counters, relations, gold, influence, hostility and pending proposals before/after |
+
+**Expected future Native log:** `[LLM_DIPLO] peace_eligibility ... legality=... readiness=not_ready ...`. **Unexpected after a preview alone:** `Foreign treaty parley queued`, `Foreign treaty applied`, `War Score forced foreign peace`, `MakePeaceAction.Apply`, changes to War Will/client lists, duplicate news or council influence spending.
+
+### 24.4 Next isolated stage
+
+Before writing a production Native API, reconcile **upstream Bellum's incoming 1.5.7 version** and any edited diplomatic touch surfaces. If pinned heads are still valid, develop only the proposed four isolated eligibility files against a dedicated QA branch, **with an additional real game-thread purity harness**; re-audit full diff and verify build against a separately gated 1.5.7 profile before calling the stage validated. Do not copy the old AII logic and do not presume CR's `CrDiplomacy` can intercept vanilla/Native political decisions.
