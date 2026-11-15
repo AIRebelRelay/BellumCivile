@@ -106,6 +106,7 @@ namespace BellumCivile.Behaviors
                 || challenger.Clan == realm.RulingClan)) return null;
             Hero ruler = Sovereign(realm);
             if (ruler == null || ruler == challenger) return null;
+            var manager = Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>();
             if (manager == null || manager.IsClanPacified(challenger.Clan)
                 || manager.GetRebelFaction(challenger.Clan) != null
                 || manager.GetFactionsInKingdom(realm).Any(f => f.IsCivilWarActive())) return null;
