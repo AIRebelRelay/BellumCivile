@@ -155,7 +155,20 @@ internal static partial class LordshipTests
                 AccessTools.Property(typeof(FeudalTitleBehavior), "Instance").SetValue(null, titles);
                 var custody = (Dictionary<string, string>)AccessTools.Field(typeof(FeudalTitleBehavior), "_allocationCustodianByTitle").GetValue(titles);
                 custody[FeudalTitleBehavior.BuildBaronyTitleId(village.Village.Bound)] = clan.StringId;
-                check(!registry.CanGrant(clan, village, stranger, out _), "Temporary fief custodians cannot endow the village before allocation");
+                bool custodyGrantAllowed = registry.CanGrant(clan, village, stranger, out var custodyGrantReason);
+                if (custodyGrantAllowed)
+                {
+                    var bound = village.Village.Bound;
+                    var titleId = FeudalTitleBehavior.BuildBaronyTitleId(bound);
+                    custody.TryGetValue(titleId, out string recordedCustodian);
+                    bool directCustodyGate = (bool)AccessTools.Method(typeof(FeudalTitleBehavior), "IsHeldForAllocation")
+                        .Invoke(titles, new object[] { bound, clan });
+                    Console.WriteLine($"LORDSHIP_CUSTODY_DIAG active_instance={ReferenceEquals(FeudalTitleBehavior.Instance, titles)} " +
+                        $"title={titleId} expected_clan={clan.StringId} recorded_custodian={recordedCustodian ?? "none"} " +
+                        $"direct_gate={directCustodyGate} bound={bound?.StringId ?? "none"} " +
+                        $"reject_reason={custodyGrantReason?.ToString() ?? "none"}");
+                }
+                check(!custodyGrantAllowed, "Temporary fief custodians cannot endow the village before allocation");
                 check(registry.FindVacancy(clan) == second, "Vacancy selection skips custodial fiefs without hiding other available grants");
             }
             finally { AccessTools.Property(typeof(FeudalTitleBehavior), "Instance").SetValue(null, oldTitles); }
