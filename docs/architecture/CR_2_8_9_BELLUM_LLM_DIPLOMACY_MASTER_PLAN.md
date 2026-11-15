@@ -1064,3 +1064,49 @@ python Tests/LLMOfferPeacePreflight/native_boundary.py --mode candidate
 ### 24.4 Next isolated stage
 
 Before writing a production Native API, reconcile **upstream Bellum's incoming 1.5.7 version** and any edited diplomatic touch surfaces. If pinned heads are still valid, develop only the proposed four isolated eligibility files against a dedicated QA branch, **with an additional real game-thread purity harness**; re-audit full diff and verify build against a separately gated 1.5.7 profile before calling the stage validated. Do not copy the old AII logic and do not presume CR's `CrDiplomacy` can intercept vanilla/Native political decisions.
+
+## 25. Stage 7 optional-mod safety QA — 2026-11-15 (NOT RELEASE READY)
+
+**Pinned upstream/CR versions:** custom Native main `59b2aee8268cf1633e052e6b44e1cdba0e3c15fb` = 1.4.11.1; upstream Bellum main `8a08e0c038a60030813c56eae39a5fbee0b75cb6` = pre-1.5.7 port; CR main `e076086424a0d8c6ac25f68e88ae06cd8fa4a9cf` = **CR 2.8.10**, including `CrDiplomacy` and `CrWorld`. Native API remains independent of CR. No upstream Bellum merge.
+
+### 25.1 ROOT CAUSE / change boundary
+
+Stage 7 QA initially inferred optional Diplomacy presence using `Assembly.GetName().Name == "Diplomacy"`, but the established Native compatibility code recognizes `Bannerlord.Diplomacy`, its subassemblies and a module-loader assembly. This could wrongly return `AllowedToPropose` for a Diplomacy rebel kingdom. It also returned `Unknown` for **all** wars as soon as StoryMode was loaded, although existing `StorylineWarProtectionHelper.IsPeaceBlocked` scopes protection to an **exactly-one** match with `Hero.MainHero.MapFaction`.
+
+**TOUCH (this isolated QA patch):** `BellumIntegrationForeignPeacePreview.cs` only for two new probe callsites, new `ForeignPeaceOptionalModSafetyProbe.cs` to hold fail-closed optional-module reads, new `Tests/LLMOfferPeacePreflight/optional_mod_source_regressions.py`, and this docs section.
+
+**DO NOT TOUCH:** old `StorylineWarProtectionHelper.cs` and `ModIntegrationHelper.cs`, `ForeignTreatyBehavior.cs`, `WarScoreBehavior.cs` shared methods, `ClientKingdomBehavior.cs` shared methods, `TreatyDraftService.cs`, `BellumIntegration.cs`, save definitions, either Bridge, Relay, CR, MCM defaults, `main`, game-version build gates or workflow configuration.
+
+**MUST FIX:** recognize actual optional Diplomacy code, block known rebel realms, preserve `Unknown` if optional DLL or method is incompatible, and let NPC↔NPC wars outside the player's political realm remain eligible for LLM **proposals** even with StoryMode loaded.
+
+**MUST NOT CHANGE:** signed-peace authority, automatic Native foreign policy, StoryMode real quest block, civil-war and rebel settlement, player ruler ownership, client/suzerain policy, old save format and AI Influence's accounting-only ledger.
+
+### 25.2 Exact safe scope
+
+- **StoryMode:** source-backed proven early guard states that if no current player map kingdom participates, `IsPeaceBlocked` is false regardless of quest reflection. The new probe mirrors only this *scope* without calling the legacy reflection cache. For a player-side foreign war where StoryMode is present, it returns `Unknown` until a separate tri-state quest verification can be designed and tested. This intentionally does NOT claim full StoryMode support.
+- **Diplomacy:** source inspected in `DiplomacyTeam/Bannerlord.Diplomacy` release `v1.5.5` and dev HEAD `b71fe0e93d0bc6cf4c002d45771e75df80c7940d`: public static `Diplomacy.Extensions.KingdomExtensions.IsRebelKingdom(Kingdom)` reads active and dead rebel registries. The new optional probe recognizes official assembly names, finds this exact bool method by reflection without modifying Native's cached reflection state, queries both realms, blocks an established rebel; missing/incompatible method, absent manager and thrown exceptions return `Unknown`. If the mod isn't loaded, `Clear`. **Runtime side-effect freedom remains to be demonstrated against the player's installed DLL**, not inferred just from source.
+- `GetForeignPeaceEligibility` still returns `ExecutionReadiness.NotReady` and `MayExecuteImmediately=false` on every path. No proposal is queued, no treaty term is drafted and no CR action is approved by this preview.
+
+### 25.3 Regression contract and observations
+
+| Input/neighbor | Required output / preservation |
+|---|---|
+| NPC kingdom A vs NPC kingdom B at war, StoryMode loaded, neither the player's map faction | Story probe `Clear`; no broad false-Unknown |
+| Player map faction is one side, StoryMode loaded, quest unverified | `Unknown`; never infer a protected quest ended |
+| StoryMode absent | Story probe `Clear` |
+| Official Diplomacy loaded, actual source/target is a rebel kingdom | `Blocked`; no regular foreign treaty path |
+| Official Diplomacy loaded, both kingdoms explicitly not rebel | `Clear` (based on verified read-only extension); still `ExecutionReadiness.NotReady` |
+| Diplomacy loaded but extension missing, method signature incompatible, manager missing or reflection throws | `Unknown`, not `Clear` |
+| Neither optional mod loaded | `Clear` on both optional checks |
+| Existing player parley/vote, internal war/feud, NPC diplomacy autonomous path, original bridge ledger | No changed shared methods, no shadow intervention |
+| Preview repeated 100 times and save/reload | Future game test **must** show unchanged war/client/war-will/treaty lists, revisions, gold, influence, fiefs and hostility |
+
+**Before implementation:** a new source regression script was added on the QA branch and the needed source assertions were defined. The new optional probe and two callsites were then implemented; `native_boundary.py` source blacklist remains intact.
+
+**Source verification (not compilation):** GitHub readback and independent static assertions confirmed the expected optional-module markers, exact method signature, StoryMode scope check, fail-closed statuses and absence of banned Native mutators. Structural braces/parentheses checks passed for all five new or edited C# files. Python script itself, C# tests, .NET build and live game validation **have not run** in this environment. Required `dotnet`/`pwsh` compiler tools and the referenced TaleWorlds game DLLs are unavailable; do not claim a successful compile. Do not trigger GitHub Actions without explicit need.
+
+**Expected later logs/state:** diagnostic `[LLM_DIPLO] peace_eligibility ... story=clear|unknown diplomacy=clear|blocked|unknown readiness=not_ready` is desirable but **not emitted by the current API**. Observe actual eligibility snapshot values during game-thread test, confirm no `Foreign treaty parley queued`, no `Foreign treaty applied`, no `MakePeaceAction.Apply`, no forced foreign white peace, no mutations to live saved state from preview.
+
+### 25.4 Remaining gate
+
+**Stage 7 is not green/live-validated.** Next step is an isolated build with an explicit matching Bannerlord 1.4.8 or separately ported 1.5.7 profile plus targeted loaded-game testing for StoryMode/Diplomacy, real .NET type/API resolution, the nonmutating 100x preview and the prior 32 fixture contracts. The upcoming upstream Bellum update must be audited before porting; do not merge or release current QA work into `main` until these checks pass.
