@@ -605,3 +605,104 @@ This matches upstream commit \`b9def48e9d12b6989bfa7050087261265b8db75e\` (2026-
 **LogRaam agreement (from direct discussion 2026-11-14):** CR will work on (1) optional common diplomacy authority delegation and (2) per-NPC public knowledge + Feed secrecy. CR does *not* provide NPC↔NPC orchestration; that belongs to our Bridge, using own LLM routing and budgets. This external API work does not block source-only Bellum ABI auditing.
 
 **This stage changed documentation only.** No Native build, test run, gameplay result, code patch, or claim that international policies are already fully under LLM authority.
+
+
+## 19. OFFER_PEACE v0.1 — LLM Bellum negotiated treaty contract, read-only design (2026-11-15)
+
+**Stage status:** CONTRACT ONLY. No production edits, external LLM calls, dry-run execution, game validation, builds, or release. This is not a promise that the API below already exists.
+
+**Provenance:** custom Native Bellum main `59b2aee8268cf1633e052e6b44e1cdba0e3c15fb` (1.4.11.1), CR main `e076086424a0d8c6ac25f68e88ae06cd8fa4a9cf` (CR 2.8.10 extension API). Reviewed AII 7.0.0 decompiled `DiplomaticAction`, `DiplomaticStatementResponse`, `DiplomaticStatementWorkRegistry`, `KingdomStatementGenerator` for **requirements and regression lessons only**; NO AII code copied and several decompiled bodies are not complete. Existing working AII Bridge and Relay Bridge stay separate.
+
+### 19.1 SOURCE-BACKED ROOT CAUSE / BOUNDARY
+
+- In custom Native, `ForeignTreatyBehavior.TryQueueAiParley` → `TryQueueParley` → `DraftAiTerms` / `CanSubmitAutomaticDraft` may synthesize treaty terms and check both sides' automatic council acceptance. `OnDailyTick` → `ResolvePendingParley` → `EvaluateRatification` → `ApplyTreaty` → `ApplyTreatyCore` can finish an NPC-only parley after a campaign day. **This is not a pure "submit externally negotiated draft" API**. Reusing it blindly would give Native its own negotiating authority.
+- `TryQueueParley`, the player sign/reject/vote paths, and `ForeignTreatyBehavior.OnDailyTick` have broad `WarPeaceRevampBehavior.IsRevampEnabled()` gates. With Revamp **OFF**, they are not ready-made LLM treaty execution services. Conversely, simply enabling Revamp also enables unrelated policy-initiative paths; do not do that as a workaround.
+- `WarScoreBehavior.CanRegisterConflict` rejects regular foreign-war tracking with Revamp OFF. Custom `TryRegisterAiInfluenceForeignWar` is an **accounting-only**, AII-source-proofed exception; it has its own event-id invariants and must not be renamed/reused as a CR authoritative receipt. Its `ShouldPreventAutonomousForeignResolution` suppresses automatic foreign-war end states, including terminal resolution, while Revamp OFF.
+- `Patches/CivilWarMakePeacePatch.ShouldAllowOrdinaryKingdomPeace` passes vanilla international peace with Revamp OFF; thus the absence of Native autonomous parley does **not** mean all external vanilla or CR peace execution is prevented.
+- CR 2.8.10 `CrDiplomacy.RegisterAuthority` applies to CR-originated explicit actions (e.g., `mediate_peace`, council/scenario), **not** TaleWorlds game votes, ordinary AI decisions, or all other mods. It cannot be the only foreign-peace fence. CR `CrWorld.KnownEvents(heroId)` provides actor-specific knowledge and secret Feed events; CR does not generate autonomous NPC↔NPC diplomacy for us.
+- Identified known *candidate* callers/consumers for future review: `WarPeaceRevampBehavior.TryCreatePeaceDecision`, `WarScoreBehavior.TryResolveForeignWhitePeaceFromProposal`, `ForeignTreatyBehavior.TryQueueAiParley`, its player parley entrypoints and UI, `ForeignTreatyBehavior.OnDailyTick`, the war-score terminal resolver, `CivilWarMakePeacePatch`, and `CrDiplomacy` integration. This list is **not a complete call-graph guarantee**.
+
+### 19.2 PRODUCT CONTRACT — OFFER_PEACE
+
+**Initiation:** during an existing ruler rotation, the Bridge chooses an eligible, living ruler, obtains truthful game facts and `CrWorld.KnownEvents(rulerHeroId)`, then presents a **dynamic** `OFFER_PEACE` capability card when an actual foreign hostile pair exists. The card is distinct from `PUBLIC_STATEMENT` and `NO_ACTION`. The LLM can decline to propose peace; no forced positive choice.
+
+**Illustrative LLM-facing card (designed, not an existing API):**
+
+```yaml
+id: OFFER_PEACE
+intent: Open negotiations with an enemy realm; this does NOT end the war.
+target: one currently hostile foreign kingdom (exact Kingdom.StringId)
+availability: generated from current campaign facts, actor authority and political restrictions
+terms: white_peace OR a typed draft using only Bellum-supported negotiable clauses
+expected_response: ACCEPT_IN_PRINCIPLE | REJECT | COUNTEROFFER | SILENCE
+limitations: ruler acceptance is not treaty ratification; Bellum councils, treaty budgets,
+             Story Mode protections, influence costs and current state still apply
+alternative: NO_ACTION | PUBLIC_STATEMENT
+```
+
+**Candidate Bridge request** (all keys conceptual): `saveId`, `requestId`, `initiatingHeroId`, `initiatingKingdomId`, `targetKingdomId`, `warKey`, `warStateRevision`, `statement`, `proposalId`, `termItems[]`, `expiryGameDay`, `privacy`, `knownEventIds[]`. The Bridge's private negotiation ledger persists identifiers, structured terms, prior replies and their provenance. Use stable IDs, not displayed hero/kingdom names.
+
+**Two independent stages of agreement:**
+
+1. **Political agreement in principle:** sender LLM proposes; target ruler LLM reacts or player decides if player is the actual ruler. Counteroffers create new immutable revisions under the same negotiation thread. Merely saying "I accept" must not trigger `MakePeaceAction`.
+2. **Authoritative application:** after the agreed terms are prepared, Bellum independently validates active war, proposer authority, player involvement, storyline restrictions, auxiliary-client war status, clause validity, War Score budget, council/ruler ratification, influence payment and relevant treaty-specific effects. Only the committed Native receipt permits announcing "peace signed". Bellum **may reject** a verbally accepted agreement.
+
+**Canonical conceptual state machine:**
+
+`ELIGIBLE` → `DRAFTED` → `OFFERED` → `COUNTERED` (repeat bounded) / `REJECTED` / `EXPIRED` → `ACCEPTED_IN_PRINCIPLE` → `SUBMITTED_TO_BELLUM` → `RATIFICATION_PENDING` → `APPLIED` or `DENIED` / `CANCELLED`.
+
+There is no unconditional transition from `OFFERED` or `ACCEPTED_IN_PRINCIPLE` to `APPLIED`. A pending or failed Native operation must not emit signed-treaty news, alter the hostility state, pay reparations or transfer fiefs.
+
+**Intent preflight vs commit:** preflight must be **read-only** and return eligibility plus legal/reasonable term bands *as data*, rather than choosing the treaty policy. The final submission uses a campaign-thread, versioned, idempotent, CR-independent Native Bellum gateway accepting **exact negotiated terms**, not `DraftAiTerms`. Possible future API boundary (names subject to review): `PreviewForeignPeace`, `SubmitNegotiatedForeignTreaty`, `GetForeignTreatyReceipt`. Do NOT implement these names before tracing all existing treaty and vote callers and agreeing on ownership. The Bridge must not invoke `MakePeaceAction.Apply` directly.
+
+**Revamp mode:** treat `EnableWarPeaceLogicRevamp=false` as the currently preferred player profile, **not** as a final dependency design. A future separable "Bellum simulation/treaty execution ON, Native foreign-policy initiative OFF" profile needs separate review. Do not flip the old switch under the hood and do not re-enable broad autonomous foreign-war/peace resolution to obtain treaty services.
+
+**World knowledge:** CR 2.8.10 `CrWorld.KnownEvents` is the source for what each ruler plausibly knows. Confidential offers become Bridge-owned private diplomatic threads and/or CR secret events / `CrNpcMemory.AddMemory(Private=true)`; confirmed public outcomes alone become public Feed news. Ensure character-scoped facts are read on campaign thread, not from async provider threads. CR's `Feed.Record` per-source/day quota means event aggregation should remain an explicit Bridge concern.
+
+**LLM-unavailable policy:** avoid covert Native acceptance or forced peace as a fallback. Preserve a pending diplomatic request, fail it or expire it by a separately specified rule; make a distinct explicit product decision for storyline-mandated or terminal-conflict exceptions before changing any emergency resolver.
+
+### 19.3 REGRESSION CONTRACT DEFINED BEFORE IMPLEMENTATION
+
+| Scenario | Required dry-run / later live outcome |
+|---|---|
+| Two AI kingdoms at war; ruler makes offer; target considers it | Valid offer and response thread; `Applied=false` until Native signed receipt |
+| Counteroffer changes tribute/fief/prisoners | Immutable new revision and fresh term normalization; never share stale term amounts across multiple actions |
+| Ruler accepts but council rejects or budget insufficient | `DENIED`; war continues, no gold/fief/custody mutation; reasons preserved |
+| War already ended, target eliminated, signer dethroned, or save changed | Reject stale request; no game mutation or wrong-campaign reply |
+| Player rules recipient or sender realm | Only actual player decides their political reply; no LLM impersonation of player |
+| Story Mode war, auxiliary client war, internal civil war/claim feud | Appropriate rejection or delegated internal path; never convert into ordinary foreign peace |
+| Zero/weak War Score and voluntary white peace | Preflight reports Bellum legality rather than assuming `TryGetForeignParleyProposal`'s AI heuristic is binding law; no silent fallbacks |
+| Duplicate requestId, duplicate response, save/reload mid-ratification | One at-most-once final commit and one public outcome receipt |
+| CR `mediate_peace` requested while Bridge authority active | `CrDiplomacy` reports `Pending`/`Rejected` truthfully, not automatic `Applied`; Native diplomacy still needs its own guard |
+| No CR or absent authority; legacy baseline | Existing CR behavior without registration unaffected; Native old 1.4.8 shipping / AII Bridge protected; no new global defaults |
+| Bellum automatic settlement reaches terminal War Score | Never auto-apply foreign peace while LLM ownership active; log required human/LLM diplomatic escalation, preserve actual internal-war resolution |
+
+**Dry-run harness design (future, not executed):** feed 30–50 deterministic scenario fixtures spanning 3–5 ruler personalities. Stub Native preflight/receipt; do not mutate Bannerlord game objects or saves. Compare LLM choices against player/realm permissions, real knowledge, optional no-action, repetition cooldown, term schema, offer → counteroffer → council rejection flow. Record false positive actions, invented knowledge, invalid terms, duplicate requests and token/cost. Treat any `Applied` without receipt as hard failure.
+
+**Desired future logs** (names illustrative, NOT existing log lines):
+
+```text
+[LLM_DIPLO] offer_peace draft request_id=... save=... actor=... target=... war_key=... mode=dry_run
+[LLM_DIPLO] offer_peace preflight request_id=... eligible=true|false reason=... state_revision=...
+[LLM_DIPLO] offer_peace response proposal_id=... revision=... verdict=accept|reject|counter|silence
+[LLM_DIPLO] offer_peace bellum_submit proposal_id=... verdict=pending|denied|applied receipt=...
+[LLM_DIPLO] offer_peace public_event proposal_id=... published=true receipt=...
+```
+
+**Unexpected log/state to eliminate in later live tests:** `Foreign treaty applied` without an accepted and ratified linked LLM proposal; unrequested `Foreign treaty parley queued` from Native autonomy; `War Score forced foreign peace` in LLM-owned normal foreign wars; `MakePeaceAction.Apply` with no authorized receipt; duplicate applied treaty / public event; CR "peace signed" for a pending proposal.
+
+### 19.4 CHANGE BOUNDARY AND NEXT DECISION
+
+**ROOT CAUSE:** current Native diplomacy combines automatic offer drafting, ratification, execution and Revamp feature gating; a simple prompt action cannot safely target the existing automatic path.
+
+**TOUCH NOW:** this architecture Markdown section ONLY, on the docs branch.
+
+**DO NOT TOUCH NOW:** Native production code, public Bellum API, old 1.4.8 build gates, CR source, Relay backend/Relay Bridge, AI Influence Bellum Bridge, CRBellumBridge prototype branch, save types, `main`, releases.
+
+**MUST FIX IN FUTURE:** expose legal treaty **preview** and idempotent **submission/receipt** while preserving Bellum's gameplay validation; ensure LLM controls initiation, responses and proposed terms; define autonomous foreign-peace fences separately from internal civil-war mechanics and mandatory emergency paths.
+
+**MUST NOT CHANGE:** council ratification semantics, player choice, lawful term validation, existing hostage/tribute/territory/prisoner effects, old save compatibility, ordinary non-LLM behavior when no authority is registered.
+
+**Next isolated stage:** inspect all direct and indirect callers of `TryQueueParley` / `ApplyTreaty(Core)`, save fields and treaty term validation before defining exact production file/function touch set. No implementation in this stage; first finish the pending Bannerlord 1.5.7 compatibility build and game tests before claiming combined integration ready.
+
+**Documentation diff only.** Test cases are defined but **not run**; no build/live log evidence exists for this new LLM negotiation contract.
