@@ -51,6 +51,7 @@ def preview(facts: dict) -> dict:
         ("actorAlive", "actor_alive_unknown"),
         ("actorRulesSource", "actor_rulership_unknown"),
         ("actorControlledByPlayer", "actor_player_status_unknown"),
+        ("targetControlledByPlayer", "target_response_authority_unknown"),
         ("sourceValidPermanent", "source_permanence_unknown"),
         ("targetValidPermanent", "target_permanence_unknown"),
         ("sameRealm", "realm_identity_unknown"),
