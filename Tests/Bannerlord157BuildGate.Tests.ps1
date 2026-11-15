@@ -37,6 +37,9 @@ Check ($source.Contains('BELLUM157_BUILD') -and $source.Contains('1.5.7') -and
     $source.Contains('GetVersionInfo') -and $source.Contains('GetAssemblyName') -and
     $source.Contains('PreflightOnly') -and $source.Contains('dotnet restore') -and
     $source.Contains('dotnet build')) 'real_157_version_and_build_contract'
+Check ($source.Contains('(?:e|v)?1\.(?:4|5)\.[0-9]+') -and
+    -not [regex]::IsMatch('1.0.0.0','(?<![0-9])(?:e|v)?1\.(?:4|5)\.[0-9]+') -and
+    [regex]::IsMatch('e1.5.7','(?<![0-9])(?:e|v)?1\.(?:4|5)\.[0-9]+')) 'assembly_version_1_0_not_game_version'
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('bellum157 gate ' + [Guid]::NewGuid().ToString('N'))
 try {
     Blocked (Join-Path $temp 'not-installed') 20 'missing_game_folder' 'absent_game_never_builds'
