@@ -118,6 +118,14 @@ internal static class CadetHouseholdPreparationTests
         _cadet = Blank<Clan>(); _cadet.StringId = "bc_partition_estate_test";
         _foreign = Blank<Clan>(); _foreign.StringId = "independent_child_house";
         _home = Blank<Settlement>(); _realm = Blank<Kingdom>();
+        // The native HomeSettlement getter may inline past its Harmony prefix.
+        // An empty estate must still have a real residence in the stub source clan.
+        var nativeHome = AccessTools.Field(typeof(Clan), "_home")
+            ?? AccessTools.Field(typeof(Clan), "_homeSettlement")
+            ?? AccessTools.Field(typeof(Clan), "<HomeSettlement>k__BackingField");
+        if (nativeHome == null)
+            throw new InvalidOperationException("Cadet fixture: native Clan.HomeSettlement field missing.");
+        nativeHome.SetValue(_source, _home);
         var behavior = new PartitionSuccessionBehavior();
         var manager = new Manager();
         var prepare = AccessTools.Method(typeof(PartitionSuccessionBehavior), "PrepareAbdicationCadet");
