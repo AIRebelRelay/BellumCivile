@@ -175,6 +175,14 @@ internal static class Program
                 MarriageDowrySimulation.Run(Check);
                 Console.WriteLine($"{_checks} marriage dowry simulation checks passed.");
             }
+            else if (args.Contains("--separate-spouse-157"))
+            {
+                TestHouseholdFoundation();
+                SeparateSpouseBirthOccupationTests.Run(Check);
+                PregnancyVisitGuardTests.Run(Check);
+                TestSeparateSpouseHouseholds();
+                Console.WriteLine($"{_checks} 1.5.7 separate-spouse checks passed.");
+            }
             else if (args.Contains("--marriage-households"))
             {
                 MarriageHouseholdTests.Run(Check);
@@ -3454,12 +3462,22 @@ internal static class Program
         Check(original.Count(c => c.Calls(getter)) == 2 && modified.Count(c => c.Calls(replacement)) == 2,
             "Both player-parent and NPC birth clan branches use the household resolver");
         Check(modified.Count(c => c.Calls(getter)) == 0, "No birth branch retains the native father/player clan override");
+        var occupationGetter = AccessTools.PropertyGetter(typeof(Hero), nameof(Hero.Occupation));
+        var occupationReplacement = AccessTools.Method(typeof(SeparateSpouseBirthClanPatch), nameof(SeparateSpouseBirthClanPatch.ResolveBirthOccupation));
+        Check(original.Count(c => c.Calls(occupationGetter)) == 2 && modified.Count(c => c.Calls(occupationReplacement)) == 2,
+            "Both native birth occupation paths use the eligibility-aware newborn resolver");
+        Check(modified.Count(c => c.Calls(occupationGetter)) == 0,
+            "No newborn path retains the native wanderer occupation getter");
         Check(original.Sum(c => c.labels.Count) == modified.Sum(c => c.labels.Count)
             && original.Sum(c => c.blocks.Count) == modified.Sum(c => c.blocks.Count), "Birth patch retains native branch and exception metadata");
         bool rejected = false;
         try { SeparateSpouseBirthClanPatch.Transpiler(original.Where(c => !c.Calls(getter))).ToList(); }
         catch (InvalidOperationException) { rejected = true; }
         Check(rejected, "Changed native birth anchors fail explicitly");
+        bool occupationRejected = false;
+        try { SeparateSpouseBirthClanPatch.Transpiler(original.Where(c => !c.Calls(occupationGetter))).ToList(); }
+        catch (InvalidOperationException) { occupationRejected = true; }
+        Check(occupationRejected, "Changed native newborn occupation anchors fail explicitly");
         Hero mother = (Hero)FormatterServices.GetUninitializedObject(typeof(Hero));
         Hero father = (Hero)FormatterServices.GetUninitializedObject(typeof(Hero));
         Clan maternal = (Clan)FormatterServices.GetUninitializedObject(typeof(Clan));
