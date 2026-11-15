@@ -602,6 +602,26 @@
         "responseAuthority": "npc",
         "reasonIncludes": []
       }
+    },
+    {
+      "id": "target_response_authority_unknown",
+      "facts": {
+        "targetControlledByPlayer": null,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "unknown",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "unknown",
+        "reasonIncludes": [
+          "target_response_authority_unknown",
+          "target_player_status_unknown"
+        ]
+      }
     }
   ]
 }
