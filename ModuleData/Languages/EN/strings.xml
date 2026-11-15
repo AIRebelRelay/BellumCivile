@@ -64,9 +64,9 @@
     <string id="BC_Concept_peace_parleys_and_treaty_terms_Title" text="Peace Parleys and Treaty Terms" />
     <string id="BC_Concept_peace_parleys_and_treaty_terms_Text" text="The Peace Parley allows warring realms to turn military results into a negotiated agreement. With the War and Peace Revamp enabled, both councils assess the terms according to leverage, exhaustion and their political interests.{newline}{newline}Player rulers can edit demands and offerings involving fiefs, prisoners, wealth and political concessions. Player vassals support or oppose the agreement through their council position and influence commitment. Rulers then decide whether to accept their council's judgment or pay the applicable cost to override opposition.{newline}{newline}War Score supplies the demand budget. Offerings provide additional bargaining credit at a reduced value and within a cap, allowing one side to concede something useful in exchange for a stronger demand elsewhere. Excessive drafts show overwhelming opposition and must be brought within the available budget before they can be imposed.{newline}{newline}Victorious houses expect the treaty to make worthwhile use of their success. Territorial demands, reparations and tribute offer different ways to claim those gains, subject to what is available and affordable. Defeated houses weigh the burden of concessions against the prospects of continued resistance.{newline}{newline}Internal wars use a restricted parley focused on white peace or concession to the conflict's demand. Its result follows the rules of the rebellion or feud being settled.{newline}{newline}Open negotiations through the Diplomacy menu and inspect each council's assessment to understand which terms encourage agreement or provoke resistance.{newline}{newline}{BC_CONCEPT_BELLUM_CIVILE_LINK}" />
     <string id="BC_Concept_hostages_and_pledges_of_peace_Title" text="Hostages and Pledges of Peace" />
-    <string id="BC_Concept_hostages_and_pledges_of_peace_Text" text="A hostage pledge secures peace by placing a blood relative of one ruler in the other realm's custody. The family member's safety gives the supplying house a powerful reason to preserve the agreement.{newline}{newline}Peace parleys can demand or offer an eligible relative for fifty days by default. The duration can be negotiated in ten-day steps, from thirty to one thousand days. A longer pledge costs more War Score, while a shorter pledge costs less. Reciprocal hostages share the same term, and existing agreements keep their promised duration. Their position in the relevant succession determines the pledge's base value, and children can serve as hostages. The captive remains in their own house while being held in an eligible stronghold of the receiving realm.{newline}{newline}Lords weigh the security of the agreement against its restrictions on future action. Long pledges face increasing opposition, while exhausted houses value time to recover.{newline}{newline}Active treaty custody prevents ordinary ransom and escape. The encyclopedia and Clan menu identify the captive as a peace hostage, and ransom brokers explain the diplomatic reason for their detention.{newline}{newline}At expiry, the hostage is returned. Replacement of either recorded ruling house can also end the arrangement. War breaks the pledge and requires a decision about the captive: release, continued ordinary imprisonment or execution. NPC rulers choose according to personality and circumstances, while player captors receive a choice. Ordinary prisoners can again be ransomed, escape or be rescued.{newline}{newline}Dedicated dungeon dialogue lets a player captor honorably return a hostage early or order their execution, with consequences for relations and honor. If the other realm also holds a hostage, its ruler determines that person's fate in response.{newline}{newline}{BC_CONCEPT_BELLUM_CIVILE_LINK}" />
+    <string id="BC_Concept_hostages_and_pledges_of_peace_Text" text="A hostage pledge secures peace by placing a blood relative of one ruler in the other realm's custody. The family member's safety gives the supplying house a powerful reason to preserve the agreement.{newline}{newline}Peace parleys can demand or offer an eligible relative, starting at the minimum duration configured in Mod Options (fifty days by default). Duration is negotiated in ten-day steps up to one thousand days. Each extra ten days beyond the recorded starting duration costs one additional War Score. Reciprocal hostages share the same term. Existing agreements and pending negotiations retain their recorded rules, prices and durations. Their position in the relevant succession determines the pledge's base value, and children can serve as hostages. The captive remains in their own house while being held in an eligible stronghold of the receiving realm.{newline}{newline}Lords weigh the security of the agreement against its restrictions on future action. Additional time beyond the recorded starting duration faces increasing opposition, while exhausted houses value time to recover.{newline}{newline}Active treaty custody prevents ordinary ransom and escape. The encyclopedia and Clan menu identify the captive as a peace hostage, and ransom brokers explain the diplomatic reason for their detention.{newline}{newline}At expiry, the hostage is returned. Replacement of either recorded ruling house can also end the arrangement. War breaks the pledge and requires a decision about the captive: release, continued ordinary imprisonment or execution. NPC rulers choose according to personality and circumstances, while player captors receive a choice. Ordinary prisoners can again be ransomed, escape or be rescued.{newline}{newline}Dedicated dungeon dialogue lets a player captor honorably return a hostage early or order their execution, with consequences for relations and honor. If the other realm also holds a hostage, its ruler determines that person's fate in response.{newline}{newline}{BC_CONCEPT_BELLUM_CIVILE_LINK}" />
     <string id="BC_Concept_client_kingdoms_and_liberty_desire_Title" text="Client Kingdoms and Liberty Desire" />
-    <string id="BC_Concept_client_kingdoms_and_liberty_desire_Text" text="A client kingdom keeps its ruler and identity while accepting a stronger realm's authority over foreign affairs. Its suzerain provides protection, and the client follows its lead in diplomacy and war.{newline}{newline}Clientage maintains an alliance and trade relationship between the realms. The client joins the suzerain's wars and peaces, with its independent diplomacy restricted by that obligation. A ruler may accept this position through a treaty or seek protection during a desperate defensive war. Accepting such an appeal includes joining the client's defense.{newline}{newline}The suzerain can strengthen the relationship by granting eligible personally held land. Peace terms can also recognize qualifying territory occupied by a client, allowing it to retain gains from a shared campaign.{newline}{newline}Liberty Desire measures the pressure for independence. Relative strength, relations, personality, burdens, claims and political conditions determine how tolerable the arrangement feels. Generous treatment and good relations can support loyalty alongside military dominance.{newline}{newline}A client seeking liberation must also judge its military prospects and readiness. Crown preparations can encourage that effort, while the eventual declaration follows the liberation requirements. If the suzerain collapses, its clients are released.{newline}{newline}The Diplomacy overview identifies client relationships and provides a Liberty Desire tooltip showing the pressures at work.{newline}{newline}{BC_CONCEPT_BELLUM_CIVILE_LINK}" />
+    <string id="BC_Concept_client_kingdoms_and_liberty_desire_Text" text="A client kingdom keeps its ruler and identity while accepting a stronger realm's authority over foreign affairs. Its suzerain provides protection, and the client follows its lead in diplomacy and war.{newline}{newline}Clientage maintains an alliance and trade relationship between the realms. The client joins the suzerain's wars and peaces, with its independent diplomacy restricted by that obligation. A ruler may accept this position through a treaty or seek protection during a desperate defensive war. Accepting such an appeal includes joining the client's defense.{newline}{newline}The suzerain can strengthen the relationship by granting eligible personally held land. Peace terms can also recognize qualifying territory occupied by a client, allowing it to retain gains from a shared campaign.{newline}{newline}The player, when ruling a suzerain realm, may personally grant a client ruler independence. The alliance and trade agreement continue on ordinary terms, while the former client regains control of its foreign affairs. This generosity earns a lasting personal favor between the rulers; existing wars and alliance obligations remain in force.{newline}{newline}Liberty Desire measures the pressure for independence. Relative strength, relations, personality, burdens, claims and political conditions determine how tolerable the arrangement feels. Generous treatment and good relations can support loyalty alongside military dominance.{newline}{newline}A client seeking liberation must also judge its military prospects and readiness. Crown preparations can encourage that effort, while the eventual declaration follows the liberation requirements. If the suzerain collapses, its clients are released.{newline}{newline}The Diplomacy overview identifies client relationships and provides a Liberty Desire tooltip showing the pressures at work.{newline}{newline}{BC_CONCEPT_BELLUM_CIVILE_LINK}" />
     <string id="BC_Concept_relations_kinship_and_political_memory_Title" text="Relations, Kinship and Political Memory" />
     <string id="BC_Concept_relations_kinship_and_political_memory_Text" text="Relations combine personal affinities, current circumstances and memories of past dealings. These explain why friendship can endure hardship and why a political injury can remain important years after the event.{newline}{newline}Among nobles, personality and culture contribute an enduring foundation. Kinship supplies a family bond, using the strongest applicable relationship. Political conditions such as shared allegiance, court affiliation, contested titles and prisoner custody add motives that change as the situation changes.{newline}{newline}Event memories record assistance, betrayal, shared battles, political support and punishment. Ordinary temporary memories retain their effect for their duration, then expire. The length reflects the event's significance and the configured memory-duration setting.{newline}{newline}Personal memories concern particular characters. House memories belong to the families involved and survive changes of clan leader, allowing a successor to inherit gratitude or resentment from an earlier generation.{newline}{newline}Relatives within the same clan have individual relationships, and notables remember relevant dealings in their communities. Their opinions can therefore reflect both familiar ties and the player's actions.{newline}{newline}The encyclopedia relation tooltip lists the active motives and memories. It helps the player identify a temporary grievance, an ongoing political dispute or a lasting family bond, and decide which relationships can be improved by changing the circumstances.{newline}{newline}{BC_CONCEPT_BELLUM_CIVILE_LINK}" />
     <string id="BC_Concept_intrigue_and_proxy_warfare_Title" text="Intrigue and Proxy Warfare" />
@@ -112,8 +112,10 @@
     <string id="BC_MCM_EnableWarScoreMapWidget_Hint" text="Shows every active conflict involving the player's current realm at the top-right of the campaign map, using the opposing realm's banner and Bellum War Score. This includes foreign wars, civil wars, and claim feuds in which the player is a participant. Requires the War &amp; Peace Logic Revamp. Default: On." />
     <string id="BC_MCM_EnableClientStateMapWidget" text="Enable Campaign Map Client State Widget" />
     <string id="BC_MCM_EnableClientStateMapWidget_Hint" text="When the player rules a suzerain realm, shows its client kingdoms at the top-left of the campaign map with their current Liberty Desire. Requires the War &amp; Peace Logic Revamp. Default: On." />
-    <string id="BC_MCM_WarDurationReluctance" text="War Duration Reluctance Period" />
-    <string id="BC_MCM_WarDurationReluctance_Hint" text="Days over which the full -100 peace reluctance decays to 0. Enthusiasm below 10 softens this penalty. After this period, enthusiasm below 10 grants +30 peace support, and zero enthusiasm allows an exhausted internal opponent to consider conceding at more than 10 War Score. This setting never blocks peace proposals. Default: 100 days." />
+    <string id="BC_MCM_WarDurationReluctance" text="Early-War Reluctance (Strength and Days)" />
+    <string id="BC_MCM_WarDurationReluctance_Hint" text="Sets both the initial peace-utility penalty and its duration: 50 starts at -50 and decays by one point daily to zero on day 50. Increasing makes resistance stronger and longer; decreasing makes it weaker and shorter. Enthusiasm below 10 proportionally softens the penalty. After this period, enthusiasm below 10 grants +30 peace support, and zero enthusiasm permits an exhausted internal opponent to consider conceding above 10 War Score. This never blocks peace proposals. Bellum default: 50 strength/days." />
+    <string id="BC_MCM_HostageMinimumDuration" text="Minimum Hostage Pact Duration (Days)" />
+    <string id="BC_MCM_HostageMinimumDuration_Hint" text="Minimum and starting duration for new hostage pacts, rounded up to the next ten days. Increasing makes new pacts start longer; decreasing makes them start shorter. NPC rulers negotiate from this baseline. Each extra ten days costs 1 War Score; council duration penalties and recovery benefits count only time beyond the saved baseline. Existing pacts and pending negotiations retain their recorded rules, prices and durations. Bellum default: 50 days." />
     <string id="BC_MCM_MinimumPeaceBeforeRenewedWar" text="Minimum Peace Before Renewed War" />
     <string id="BC_MCM_MinimumPeaceBeforeRenewedWar_Hint" text="Minimum number of days two realms must remain at peace before Bellum&apos;s AI will consider another offensive against the same realm. A value of 0 disables this waiting period. Client liberation wars remain exempt. Default: 20." />
     <string id="BC_Parley_Reason_LengthyPact" text="This pact would bind our hands for too long." />
@@ -389,7 +391,7 @@
     <string id="BC_MCM_ArmyPersonalFriendRelation" text="Personal Army Favor Relation" />
     <string id="BC_MCM_ArmyPersonalFriendRelation_Hint" text="Minimum relation at which a lord outside your de facto authority may answer your call for friendship's sake, either through the army menu or in person. Default: 60." />
     <string id="BC_MCM_EnableBellumMarriage" text="Enable Strategic Marriage Logic" />
-    <string id="BC_MCM_EnableBellumMarriage_Hint" text="When enabled, Bellum adds strategic NPC marriage logic for dynastic survival, royal pacification, and foreign royal alliances. Disable this to leave NPC matchmaking to vanilla or another mod. Default: On." />
+    <string id="BC_MCM_EnableBellumMarriage_Hint" text="When enabled, Bellum gives NPC houses separate annual chances to arrange family and retainer marriages, balancing bloodline survival, household manpower and suitable political ties. Only family-to-family marriages create new house-level marriage ties. Disable this to leave NPC matchmaking to vanilla or another mod. Default: On." />
     <string id="BC_MCM_BellumOnlyMarriage" text="Block Vanilla Dice-Roll Marriage Logic" />
     <string id="BC_MCM_BellumOnlyMarriage_Hint" text="When enabled alongside Strategic Marriage Logic, Bellum replaces vanilla NPC marriage rolls and automatic offers to the player clan with its strategic matchmaking. Disable this to allow vanilla rolls alongside Bellum's matches. Default: On." />
     <string id="BC_MCM_MarriageMaleMinAge" text="Male Minimum Marriage Age" />
@@ -520,15 +522,15 @@
     <string id="BC_RelationMemory_PoliticalMemory" text="Political memory" />
 
     <!-- Marriage dialogue -->
-    <string id="BC_Marriage_SpecificProposal" text="I would like to propose an alliance between our families through marriage." />
+    <string id="BC_Marriage_SpecificProposal" text="I would like to discuss a marriage between our households." />
     <string id="BC_Marriage_ChoosePlayerPrompt" text="And whose hand are you offering?" />
     <string id="BC_Marriage_PlayerSelf" text="My own hand." />
     <string id="BC_Marriage_PlayerRelative" text="The hand of {BC_PLAYER_CANDIDATE.NAME}." />
     <string id="BC_Marriage_PlayerRelativeOther" text="I am thinking of a different person." />
-    <string id="BC_Marriage_ChooseOtherPrompt" text="And whose hand from my family do you seek?" />
+    <string id="BC_Marriage_ChooseOtherPrompt" text="And whose hand from my household do you seek?" />
     <string id="BC_Marriage_OtherRelative" text="I seek the hand of {BC_OTHER_CANDIDATE.NAME}." />
     <string id="BC_Marriage_OtherRelativeOther" text="I was thinking of someone else." />
-    <string id="BC_Marriage_BackToPlayerChoice" text="I should offer a different member of my family." />
+    <string id="BC_Marriage_BackToPlayerChoice" text="I should offer a different member of my household." />
     <string id="BC_Marriage_ConfirmPrompt" text="A specific match, then. Let us speak of the terms." />
     <string id="BC_Marriage_DiscussTerms" text="Very good. Let us discuss the terms." />
     <string id="BC_Marriage_NeverMind" text="Actually, never mind." />
@@ -685,6 +687,7 @@
     <string id="BC_Hierarchy_TierDuchy" text="Duchy" />
     <string id="BC_Hierarchy_TierCounty" text="County" />
     <string id="BC_Hierarchy_TierBarony" text="Barony" />
+    <string id="BC_Hierarchy_TierLordship" text="Lordship" />
     <string id="BC_Hierarchy_FabricationProgress" text="Claim fabrication: {PROGRESS}% ({DAYS} days remaining)" />
     <string id="BC_Hierarchy_ClaimProgress" text="Claim Progress" />
     <string id="BC_Hierarchy_ClaimProgressValue" text="{PROGRESS}% ({DAYS} days remaining)" />
@@ -909,7 +912,7 @@
     <string id="BC_UI_Hint_FactionType_Militarists" text="Advocates constant war, military prestige, and rule by strength rather than compromise." />
     <string id="BC_UI_Hint_FactionType_Aristocrats" text="Defends noble privilege, inheritance, and the political rights of the great clans." />
     <string id="BC_UI_Hint_FactionType_Populists" text="Advocates broader opportunity, relief for lesser lords, and policies favoring the common people." />
-    <string id="BC_UI_Hint_StartClaimFeud" text="Press your {CLAIM_STRENGTH} claim to the {TITLE_NAME}.&#xA;&#xA;Current holder: {HOLDER_CLAN}&#xA;Feud pressure score: {SCORE}&#xA;&#xA;Starting this feud will begin a private dispute between your house and the title holder. If tensions escalate, the matter may be brought before the ruler." />
+    <string id="BC_UI_Hint_StartClaimFeud" text="Press your {CLAIM_STRENGTH} claim to the {TITLE_NAME}.&#xA;&#xA;Current holder: {HOLDER_CLAN}&#xA;&#xA;Starting this feud will begin a private dispute between your house and the title holder. If tensions escalate, the matter may be brought before the ruler." />
     <string id="BC_UI_Hint_FactionType_WithReason" text="{DESCRIPTION}&#xA;&#xA;Unavailable: {REASON}" />
     <string id="BC_UI_Leave" text="Leave" />
     <string id="BC_UI_Join" text="Join" />
@@ -1211,7 +1214,66 @@
     <string id="BC_Resolution_AsylumPending" text="Stripped of their lands, the {CLAN_NAME} have fled into exile and sent envoys seeking asylum." />
     <string id="BC_Resolution_PlayerExpelled" text="Stripped of your lands, you have been cast out of the realm. Seek your fortune elsewhere." />
     <string id="BC_ExileRecovered" text="After a long exile, the {CLAN_NAME} have found refuge in {KINGDOM_NAME}." />
-    <string id="BC_Asylum_Title" text="Request for Asylum" />
+    <string id="BC_Asylum_Title" text="Asylum Request" />
+    <string id="BC_Asylum_AddressLady" text="lady" />
+    <string id="BC_Asylum_AddressLord" text="lord" />
+    <string id="BC_Asylum_NoEstates" text="You have no vacant estate that can be granted to this house." />
+    <string id="BC_Asylum_AudienceOpening" text="My {BC_ASYLUM_LIEGE_TITLE}, {BC_ASYLUM_EXPLANATION} I would pledge allegiance to you and be counted among your loyal followers." />
+    <string id="BC_Asylum_ResumePetition" text="Let us speak of your request to enter my service." />
+    <string id="BC_Asylum_ResumeAnswer" text="My sword is yours, if you will receive me." />
+    <string id="BC_Asylum_AudienceAccept" text="I shall be pleased to accept your sword into my service, if you are ready to swear homage to me." />
+    <string id="BC_Asylum_AudienceAcceptEstate" text="As a token of my esteem, I would grant you a fief to help maintain your men." />
+    <string id="BC_Asylum_AudienceRefuse" text="I cannot accept your service. You must seek another liege." />
+    <string id="BC_Asylum_AudienceRefused" text="Then I shall trouble you no further, my {?PLAYER.GENDER}lady{?}lord{\?}." />
+    <string id="BC_Asylum_AudiencePostpone" text="I must give this more thought." />
+    <string id="BC_Asylum_AudiencePostponed" text="As you wish. I can wait here another {BC_ASYLUM_DAYS} days, but then I must seek another liege." />
+    <string id="BC_Asylum_EstatesPrompt" text="You honor me, my {?PLAYER.GENDER}lady{?}lord{\?}. Which lands would you have me hold?" />
+    <string id="BC_Asylum_EstateChoice" text="{BC_ASYLUM_ESTATE}." />
+    <string id="BC_Asylum_MoreEstates" text="I am considering another estate." />
+    <string id="BC_Asylum_ReconsiderEstate" text="Let me reconsider the grant." />
+    <string id="BC_Asylum_EstateSelected" text="I would be honored to hold it in your service." />
+    <string id="BC_Asylum_EstatePromise" text="As a token of my esteem and to help you maintain your men, I grant you {BC_ASYLUM_ESTATE} as your fief. Go to them, protect them, and collect your dues." />
+    <string id="BC_Asylum_EstateUnavailable" text="It seems those lands can no longer be granted. Perhaps another estate?" />
+    <string id="BC_Asylum_OathReady" text="I am ready, my {?PLAYER.GENDER}lady{?}lord{\?}." />
+    <string id="BC_Asylum_OathPrompt" text="Good. Then repeat the words of the oath with me: {BC_ASYLUM_OATH_1}" />
+    <string id="BC_Asylum_OathFirst" text="I swear homage to you as lawful {BC_ASYLUM_LIEGE_TITLE}." />
+    <string id="BC_Asylum_OathBond" text="Will you stand beside me against my enemies and uphold the laws of this realm?" />
+    <string id="BC_Asylum_OathSecond" text="I will be your loyal {?CONVERSATION_NPC.GENDER}follower{?}man{\?} as long as my breath remains..." />
+    <string id="BC_Asylum_OathThird" text="And I will be at your side to fight your enemies, should you need my sword." />
+    <string id="BC_Asylum_OathFourth" text="And I shall defend your rights and the rights of your legitimate heirs." />
+    <string id="BC_Asylum_OathAccepted" text="Very well. You have given me your solemn oath. From this day forward you are my sworn vassal. I give you my protection, and pledge to uphold your rights according to the laws and customs of the realm." />
+    <string id="BC_Asylum_OathThanks" text="I thank you, my {?PLAYER.GENDER}lady{?}lord{\?}." />
+    <string id="BC_Asylum_Conclude" text="I have great hopes for you. Serve me well and I promise you will rise high." />
+    <string id="BC_Asylum_AwaitCommands" text="I await your commands, my {?PLAYER.GENDER}lady{?}lord{\?}." />
+    <string id="BC_Asylum_ServicePledge" text="I shall serve you faithfully, my {?PLAYER.GENDER}lady{?}lord{\?}." />
+    <string id="BC_Asylum_GrantUnavailable" text="It seems that grant can no longer be made. We may speak of it another time." />
+    <string id="BC_Asylum_OathChanged" text="It seems matters have changed. We must speak of this another time." />
+    <string id="BC_Asylum_VisitStale" text="This matter will have to wait until another time." />
+    <string id="BC_Asylum_EndChangedAudience" text="Let us leave this for another time." />
+    <string id="BC_Asylum_ExplainIndependence" text="We rose against {REALM} to win our independence. We were defeated, and my house was banished." />
+    <string id="BC_Asylum_ExplainAbdication" text="We sought to depose the ruler of {REALM}, but were defeated. My house was banished." />
+    <string id="BC_Asylum_ExplainClaimant" text="We pressed a claim to the crown of {REALM}, but our cause was lost and my house was banished." />
+    <string id="BC_Asylum_ExplainTreason" text="I was condemned for treason in {REALM}. I say I was unjustly accused." />
+    <string id="BC_Asylum_ExplainSecessionLoyalist" text="We fought to keep {REALM} together. When we were defeated, my house was driven into exile." />
+    <string id="BC_Asylum_ExplainLoyalist" text="We stood by our former ruler in {REALM}. With that cause lost, my house was banished." />
+    <string id="BC_Asylum_ExplainDestroyed" text="With the fall of {REALM}, my house has been left without a liege." />
+    <string id="BC_Asylum_ExplainExpelled" text="My house was driven out of {REALM}. We have no lands left to call our own." />
+    <string id="BC_Asylum_ExplainDeparture" text="My house has left the service of {REALM}. We seek a new liege." />
+    <string id="BC_Asylum_ExplainUnknown" text="My house has fallen on hard times. We have no lands left to call our own." />
+    <string id="BC_Asylum_FormerRealm" text="our former realm" />
+    <string id="BC_Asylum_VisitExpired" text="Having received no answer to their petition, the {CLAN} have departed to seek protection elsewhere." />
+    <string id="BC_Asylum_GrantChanged" text="The {CLAN} have sworn homage, but the promised estate is no longer available. You may endow their house with another vacant village." />
+    <string id="BC_Asylum_VisitNotice" text="A messenger brings you a letter from {CLAN_LEADER} of the {CLAN_NAME}.&#xA;&#xA;{LETTER_CONTEXT} {?LEADER_FEMALE}She{?}He{\?} asks for an audience in {SETTLEMENT}, offering {?LEADER_FEMALE}her{?}his{\?} sword in vassalage if you will receive {?LEADER_FEMALE}her{?}him{\?}.&#xA;&#xA;{CLAN_LEADER} will await your answer in the keep for {DAYS} days before seeking another liege." />
+    <string id="BC_Asylum_LetterUnknown" text="The house has fallen on hard times and seeks a new home." />
+    <string id="BC_Asylum_LetterDestroyed" text="With the fall of {OLD_KINGDOM}, the house has been left without a home." />
+    <string id="BC_Asylum_LetterDeparture" text="The house has left the service of {OLD_KINGDOM} and seeks a new liege." />
+    <string id="BC_Asylum_LetterExile" text="The letter tells how the house was forced to flee {OLD_KINGDOM}." />
+    <string id="BC_Asylum_Understood" text="Understood." />
+    <string id="BC_Lordship_InvalidVassal" text="Choose the adult head of a landless vassal house, without an existing personal estate. This village must be vacant and controlled by your house, not awaiting allocation." />
+    <string id="BC_Lordship_RecipientDescriptionExtended" text="Choose a member of your household or the head of a landless vassal house to receive {LORDSHIP}. Its revenues will support the holder or their house for as long as the personal grant remains in force." />
+    <string id="BC_Lordship_VassalOffer" text="I would endow your house with an estate to help maintain your household and men." />
+    <string id="BC_RelationMemory_AsylumGranted" text="Granted our house asylum" />
+    <string id="BC_RelationMemory_AsylumRefused" text="Refused our house asylum" />
     <string id="BC_Asylum_Desc" text="An envoy from {CLAN_LEADER} of the {CLAN_NAME} has arrived, presenting a formal request of asylum for their family as they flee persecution in their homeland.{EXILE_CONTEXT}{COURT_CONTEXT}&#xA;&#xA;Will you take them under your protection?" />
     <string id="BC_Asylum_RequestDesc" text="An envoy from {CLAN_LEADER} of the {CLAN_NAME} has arrived, seeking a new home and protection for their landless family.{EXILE_CONTEXT}{COURT_CONTEXT}&#xA;&#xA;Will you accept their allegiance?" />
     <string id="BC_Asylum_Cause_RealmDestroyed" text="&#xA;&#xA;Their former realm, {OLD_KINGDOM}, has fallen, leaving their house without a liege." />
@@ -1795,6 +1857,7 @@
     <string id="BC_Msg_AvoidedWar_InstallRuler" text="to surrender the crown to {LEADER_NAME} of the {CLAN_NAME}" />
     <string id="BC_Msg_AvoidedWar_Abdication" text="to abdicate the throne" />
     <string id="BC_Msg_AvoidedWar_Independence" text="to recognize the independence of the {REALM_NAME}" />
+    <string id="BC_Msg_AvoidedWar_IndependenceRealms" text="to recognize the independence of these realms: {REALM_NAMES}" />
     <string id="BC_FacName_Coalition" text="{FACTION_NAME}" />
     <string id="BC_Msg_RealmFractures" text="The realm fractures. {LEADER_NAME} has raised their banners in open rebellion against {KINGDOM_NAME}." />
 
@@ -2243,6 +2306,10 @@
     <string id="BC_Parley_SignTreaty" text="Sign Treaty" />
     <string id="BC_Parley_RejectTreatyDisabledHint" text="Only your ruler might outright reject a treaty of peace" />
     <string id="BC_Parley_ForcedTreatyRejectHint" text="Terminal war score compels both realms to conclude a treaty of peace." />
+    <string id="BC_Parley_CapitulatedDraftHint" text="Your realm has capitulated. The victorious ruler dictates the terms of peace; you can no longer alter them." />
+    <string id="BC_Parley_CapitulatedBudgetHint" text="The victor must revise these demands to fit the available war score. Continue to refresh the terms for review; no influence will be spent." />
+    <string id="BC_Parley_CapitulatedSignHint" text="Accept the terms dictated by the victorious ruler." />
+    <string id="BC_Parley_CapitulatedDraftRevised" text="The victorious ruler has revised the terms of peace. Review the updated demands before signing." />
     <string id="BC_Parley_SignTreatyDisabledHint" text="You need to select an outcome and how much you want to support that outcome." />
     <string id="BC_Parley_SignTreatyHint" text="Submit the drafted treaty to both councils. Committed influence will be spent even if ratification fails." />
     <string id="BC_Parley_ResetTreatyHint" text="Restore the treaty to the terms first presented at this parley." />
@@ -2345,6 +2412,12 @@
     <string id="BC_Parley_OutcomeRulerRejectedBody" text="You have rejected the proposed treaty between {FIRST_REALM} and {SECOND_REALM}. The parley has ended without agreement, and the war continues." />
     <string id="BC_Parley_OutcomeCouncilRejectedBody" text="The proposed treaty between {FIRST_REALM} and {SECOND_REALM} failed to secure the assent of both realms. The parley has ended without agreement, and the war continues." />
     <string id="BC_Parley_OutcomeCancelledBody" text="The proposed treaty between {FIRST_REALM} and {SECOND_REALM} is no longer valid because the war or one of its parties has ceased to exist. The obsolete parley has been dismissed." />
+    <string id="BC_Parley_OutcomeWhitePeaceCancelledBody" text="The proposed white peace between {FIRST_REALM} and {SECOND_REALM} no longer meets the conditions for an automatic settlement. The parley has closed without applying any treaty terms." />
+    <string id="BC_Parley_OutcomeQuestCancelledBody" text="An active campaign quest prevents peace between {FIRST_REALM} and {SECOND_REALM}. The parley has closed without agreement." />
+    <string id="BC_Parley_OutcomeAllianceCancelledBody" text="An active call-to-arms agreement prevents a separate peace between {FIRST_REALM} and {SECOND_REALM}. The parley has closed without spending influence or applying any treaty terms. The war continues." />
+    <string id="BC_Parley_OutcomeBalanceCancelledBody" text="The balance of the war between {FIRST_REALM} and {SECOND_REALM} has changed, and the proposed terms no longer reflect its outcome. The parley has closed without agreement." />
+    <string id="BC_Parley_OutcomeHostageCancelledBody" text="The promised royal hostage could not be delivered, so the treaty between {FIRST_REALM} and {SECOND_REALM} could not be concluded. The parley has closed without agreement." />
+    <string id="BC_Parley_OutcomeOtherCancelledBody" text="The proposed treaty between {FIRST_REALM} and {SECOND_REALM} can no longer be concluded under the current circumstances. The parley has closed without agreement." />
     <string id="BC_Parley_MajorityFailed" text="REJECTED: NAY MAJORITY" />
     <string id="BC_Parley_CouncilStatus" text="{REALM}: {STATUS}&#xA;YAY {YAY} / NAY {NAY} | Participation {PARTICIPATION}/{QUORUM}" />
     <string id="BC_Parley_PredictedOutcomeHint" text="{FIRST_REALM}&#xA;&#xA;{SECOND_REALM}" />
@@ -2353,12 +2426,19 @@
     <string id="BC_Parley_Commitment" text="Influence commitment: {VALUE}" />
     <string id="BC_Parley_RulerLacksInfluenceToOppose" text="I lack the influence to oppose my vassals." />
     <string id="BC_Parley_RulerYieldsToCouncil" text="I will not defy my vassals over these terms." />
+    <string id="BC_Parley_RulerCompelledToAccept" text="The war is decided; we must accept these terms." />
+    <string id="BC_Parley_AbstainNeutral" text="Neither side makes a convincing case; I will abstain." />
+    <string id="BC_Parley_AbstainInsufficientInfluence" text="I lack the influence to cast my vote." />
+    <string id="BC_Parley_AbstainProtectedInfluence" text="I must reserve my influence for other obligations." />
+    <string id="BC_Parley_AbstainUnspecified" text="I will abstain from this vote." />
+    <string id="BC_Parley_PlayerPositionPending" text="I have not yet declared my position." />
     <string id="BC_Parley_RulerOverridesForPeace" text="I will spend my influence to secure this peace despite my vassals." />
     <string id="BC_Parley_RulerOverridesAgainstPeace" text="I will spend my influence to reject these terms despite my vassals." />
     <string id="BC_Parley_Committed" text="commits {VALUE}" />
     <string id="BC_Parley_WarScore" text="War Score: {VALUE}" />
     <string id="BC_Diplomacy_WarScore" text="War Score" />
     <string id="BC_StorylineWar_PeaceBlocked" text="The active campaign quest requires this war to continue until one side is decisively defeated." />
+    <string id="BC_AllianceWar_PeaceBlocked" text="{CALLED_REALM} is bound by its call-to-arms agreement with {CALLING_REALM} and cannot negotiate a separate peace with {ENEMY_REALM} while that agreement remains active." />
     <string id="BC_Parley_DraftedTermsBudget" text="Drafted Terms ({USED} / {BUDGET} WS)" />
     <string id="BC_Parley_Term_WhitePeace" text="White Peace" />
     <string id="BC_Parley_Term_RetainFief" text="Retain {FIEF_NAME}" />
@@ -2370,7 +2450,7 @@
     <!-- Treaty council motive labels -->
     <string id="BC_Parley_CouncilMemberName" text="{HERO_NAME} {CLAN_NAME}" />
     <string id="BC_Parley_Reason_LowEnthusiasm" text="I am exhausted by this conflict." />
-    <string id="BC_Parley_Reason_EarlyWar" text="We have only just taken up arms; we should see this campaign through." />
+    <string id="BC_Parley_Reason_EarlyWar" text="We should continue this war longer for the sake of honor." />
     <string id="BC_Parley_Reason_InconclusiveWar" text="This war has not yet yielded a decisive result." />
     <string id="BC_Parley_Reason_ProlongedExhaustion" text="We are completely exhausted." />
     <string id="BC_Parley_Reason_UnreasonableDemands" text="The enemy is making unreasonable demands." />
@@ -2529,9 +2609,9 @@
     <!-- Release localization audit additions -->
     <string id="BC_MCM_Group_Notifications" text="Notifications" />
     <string id="BC_MCM_Notifications" text="Bellum Civile Notifications" />
-    <string id="BC_MCM_Notifications_Hint" text="Disabled: hides optional Bellum Civile chat messages. Kingdom Only: shows political events involving your kingdom, rebel side, or clan. Global: shows Bellum Civile political events from all kingdoms. Default: Kingdom Only." />
+    <string id="BC_MCM_Notifications_Hint" text="Disabled: hides optional Bellum Civile chat messages. Local &amp; Major Events: shows events involving your kingdom, rebel side, or clan, plus major events worldwide. Global: shows political events from all kingdoms. Personal messages remain visible. Default: Local &amp; Major Events." />
     <string id="BC_MCM_NotifDisabled" text="Disabled" />
-    <string id="BC_MCM_NotifKingdomOnly" text="Kingdom Only" />
+    <string id="BC_MCM_NotifKingdomOnly" text="Local &amp; Major Events" />
     <string id="BC_MCM_NotifGlobal" text="Global" />
     <string id="BC_Tribunal_Remaining" text="{COUNT} defeated clans still await judgment in this tribunal, including this one." />
     <string id="BC_CivilWar_CollapseStalemate" text="With both sides stripped of their last strongholds, the civil war sputters out. The rebels return to the fold, though the realm lies broken and landless." />
@@ -4217,6 +4297,24 @@
     <string id="BC_CrownEmergencyAccession" text="The nobles of {REALM} have chosen {HEIR} to bear the Crown." />
     <string id="BC_CrossClanEstateInherited" text="Following the death of {PARENT}, {HEIR} has received {POSSESSIVE} lawful share of the estates of {HOUSE} into the keeping of {RECIPIENT}." />
     <string id="BC_CrownLawfulAccession" text="Following the death of {RULER}, the Crown of {REALM} passes to {HEIR} by right of succession." />
+    <string id="BC_RecruitmentRank_PeerRefusal" text="We stand as peers in rank. I will not swear fealty to you." />
+    <string id="BC_RecruitmentRank_HigherRefusal" text="My title stands above yours. I will not swear fealty to a ruler of lesser rank." />
+    <string id="BC_CrownDeparture_Dialogue" text="{ADDRESS}, the Crown of {REALM} has passed to me. To take my place as sovereign, I must establish a household of my own and leave {SOURCE_CLAN}. {FAMILY_TIES}" />
+    <string id="BC_CrownDeparture_Acknowledge" text="I understand. Go and take your rightful place." />
+    <string id="BC_CrownDeparture_LetterTitle" text="A Crown for {HEIR}" />
+    <string id="BC_CrownDeparture_LetterAcknowledge" text="I understand." />
+    <string id="BC_CrownDeparture_LetterBody" text="A sealed letter from {HEIR} reaches you.&#xA;&#xA;&quot;{ADDRESS}, I have left {SOURCE_CLAN} to assume the Crown of {REALM}. I now lead {NEW_CLAN}, a household of my own. {FAMILY_TIES}&quot;" />
+    <string id="BC_CrownDeparture_LetterMinor" text="Word reaches you that {HEIR} has left {SOURCE_CLAN} to assume the Crown of {REALM}. The new household, {NEW_CLAN}, will be led by a regent until {HEIR} comes of age." />
+    <string id="BC_CrownDeparture_LetterHistorical" text="Word reaches you that {HEIR} left {SOURCE_CLAN} to assume the Crown of {REALM}, establishing a new household, {NEW_CLAN}." />
+    <string id="BC_CrownDeparture_MarriageWife" text="Whatever duties this crown brings, I remain your wife." />
+    <string id="BC_CrownDeparture_MarriageHusband" text="Whatever duties this crown brings, I remain your husband." />
+    <string id="BC_CrownDeparture_FamilyUnchanged" text="My duties may change, but we are still family." />
+    <string id="BC_CrownDeparture_AddressWife" text="My wife" />
+    <string id="BC_CrownDeparture_AddressHusband" text="My husband" />
+    <string id="BC_CrownDeparture_AddressDaughter" text="My daughter" />
+    <string id="BC_CrownDeparture_AddressSon" text="My son" />
+    <string id="BC_CrownDeparture_AddressSister" text="Sister" />
+    <string id="BC_CrownDeparture_AddressBrother" text="Brother" />
     <string id="BC_CrownVoluntaryAccession" text="{RULER} has laid down the Crown of {REALM}. By right of succession, {HEIR} now reigns." />
     <string id="BC_CrownForcedAccession" text="{RULER} has been compelled to relinquish the Crown of {REALM}. By right of succession, {HEIR} now reigns." />
     <string id="BC_AbdicationUnavailable" text="The Crown cannot be relinquished at this time." />
@@ -4743,6 +4841,17 @@
     <string id="BC_TitleGrantLegalRights" text="Legal rights only" />
     <string id="BC_TitleGrantMemory" text="Granted me a title" />
     <string id="BC_TitleGrantNoInfluence" text="You need 100 influence to grant this title." />
+    <string id="BC_TitleGrantOfferTitle" text="A Royal Honor" />
+    <string id="BC_TitleGrantOfferBody" text="An envoy from {RULER} brings word that the Crown wishes to bestow {TITLE} upon your household, honoring your house's claim.&#xA;&#xA;{RIGHTS}&#xA;Your household will remain a vassal of {REALM}. This grant does not include its subordinate towns or castles.&#xA;&#xA;Refusing this honor will offend {RULER}. (Relations: {PENALTY})" />
+    <string id="BC_TitleGrantOfferBothRights" text="The grant conveys both lawful title and practical authority." />
+    <string id="BC_TitleGrantOfferLegalRights" text="The grant conveys lawful title only; practical authority remains unchanged." />
+    <string id="BC_TitleGrantOfferPracticalRights" text="The grant conveys practical authority only; lawful ownership remains unchanged." />
+    <string id="BC_TitleGrantOfferAccept" text="Accept the honor" />
+    <string id="BC_TitleGrantOfferRefuse" text="Refuse" />
+    <string id="BC_TitleGrantOfferUnavailable" text="The Crown's offer is no longer available. No response has been delivered." />
+    <string id="BC_TitleGrantOfferDeclined" text="You have declined {RULER}'s offer of {TITLE}. The grant has been withdrawn." />
+    <string id="BC_TitleGrantOfferRefusalMemory" text="Refused my title grant" />
+    <string id="BC_TitleGrantOfferPending" text="The Crown has offered {TITLE} to your household and awaits your answer before {DATE}. No rights or influence change hands until you accept." />
     <string id="BC_TitleGrantPetitionBegun" text="The nobility of {REALM} petitions the Crown to bestow {TITLE} upon {RECIPIENT}, citing the house's lawful claim. They ask that their appeal be honored before {DATE}." />
     <string id="BC_TitleGrantPetitionLabel" text="Petition for {TITLE} for {RECIPIENT}" />
     <string id="BC_TitleGrantPracticalRights" text="Practical rights only" />
@@ -5158,12 +5267,12 @@
     <string id="BC_Council_CandidateCompetenceHint" text="{DESCRIPTION}&#10;&#10;{COMPETENCE}&#10;{REQUIREMENTS}&#10;Personal competence before council-wide bonuses. Skills count up to 300 and attributes up to 10." />
     <string id="BC_ClientGrantLabel" text="Grant {FIEF} to {CLIENT}" />
     <string id="BC_CrownActionClientGrant" text="Grant land to a client state" />
-    <string id="BC_CrownActionClientGrantHint" text="Bestow a personally held town or castle on a client realm. Costs 100 influence. Your last fief, besieged or disputed land, wartime occupations and holdings awaiting distribution cannot be granted." />
+    <string id="BC_CrownActionClientGrantHint" text="Bestow a personally held town or castle on a client realm for distribution by its council. Costs 100 influence. Your last fief, besieged or disputed land, wartime occupations and holdings awaiting distribution cannot be granted." />
     <string id="BC_ClientGrantChooseFief" text="Which holding will you bestow upon a client realm?" />
-    <string id="BC_CrownDirectClientGrant" text="This permanently transfers the holding to the client's ruling house, without a distribution vote. Only legal rights you possess accompany the land; higher titles and historical boundaries remain unchanged. The client ruler gains +25 relations for ten years (modified by your memory-duration setting), capped at +50 from active grants." />
+    <string id="BC_CrownDirectClientGrant" text="This permanently transfers the holding to the client realm. Its ruler will hold it pending a normal fief distribution vote, which decides the receiving house. Only legal rights you possess accompany the land; higher titles and historical boundaries remain unchanged. The client ruler gains +25 relations for ten years (modified by your memory-duration setting), capped at +50 from active grants." />
     <string id="BC_ClientGrantMemory" text="Enlarged our realm" />
-    <string id="BC_ClientGrantStatus" text="A voluntary grant to a client realm, costing 100 influence. No distribution vote is held. Only the Crown's own rights accompany the holding; higher titles are not granted." />
-    <string id="BC_ClientGrantDelivered" text="{RULER} has granted {FIEF} to {CLIENT}, entrusting its lands to {RECIPIENT}. The gift strengthens their realm and gives its ruler cause to remember this generosity." />
+    <string id="BC_ClientGrantStatus" text="A voluntary grant to a client realm, costing 100 influence. The client's council will distribute the holding through a normal fief vote. Only the Crown's own rights accompany the holding; higher titles are not granted." />
+    <string id="BC_ClientGrantDelivered" text="{RULER} has granted {FIEF} to {CLIENT}. Its council will decide which house receives the holding through a normal fief distribution vote. The gift strengthens their realm and gives its ruler cause to remember this generosity." />
     <string id="BC_ClientGrantCancelled" text="The Crown's intended grant of {FIEF} to {CLIENT} could not be completed. No further transfer will be attempted under this authorization." />
     <string id="BC_Treaty_ClientOccupation" text="Recognize {CLIENT}'s possession of {FIEF}" />
     <string id="BC_Treaty_SummaryClientOccupation" text="{FROM_REALM} recognizes {CLIENT}'s possession of {FIEF}" />
@@ -6995,6 +7104,9 @@
     <string id="BC_EstatePreview_LegacyPending" text="Older recorded allocations are preserved. Pending shares may include foreign beneficiaries and are not recalculated under the current same-realm rule." />
     <string id="BC_EstatePreview_MoreAssets" text="Plus {COUNT} more" />
     <string id="BC_EstatePreview_CrownEstateAsset" text="{ASSET} (Crown estate)" />
+    <string id="BC_EstatePreview_CrownEstateKind" text="Crown estate" />
+    <string id="BC_EstatePreview_SovereignKind" text="Sovereign succession" />
+    <string id="BC_EstatePreview_HeroHint" text="{KIND} - {SOURCE}" />
     <string id="BC_EstateInheritance_Reverted" text="Following the death of {PARENT}, {ESTATE} of {HOUSE} reverted to {RECIPIENT}, the ruling house of {REALM}, because no eligible blood heir remained within the realm." />
     <string id="BC_EstateInheritance_Delivered" text="Following the death of {PARENT}, {HEIR} inherited {ESTATE} from {HOUSE}. The inheritance is now held by {RECIPIENT} in {REALM}." />
     <string id="BC_EstateInheritance_NoRealm" text="an independent house" />
@@ -7051,9 +7163,28 @@
     <string id="BC_RealmPeaceInterruptedTitle" text="Royal Peace Settlement Interrupted" />
     <string id="BC_RealmPeaceInterruptedChat" text="The Royal Peace decree in {REALM} took effect, but some private conflicts could not be safely settled." />
     <string id="BC_RealmPeaceInterruptedBody" text="The decree's influence cost has been paid and its prohibition remains in force until {DATE}. Settlement was interrupted; no further automatic attempt will repeat a partially applied transfer. The remaining conflicts require investigation using the Bellum log." />
-    <string id="BC_EstatePreview_CrownEstateKind" text="Crown estate" />
-    <string id="BC_EstatePreview_SovereignKind" text="Sovereign succession" />
-    <string id="BC_EstatePreview_HeroHint" text="{KIND} - {SOURCE}" />
+    <string id="BC_Parley_VoteBalance" text="{YAY}% YAY / {NAY}% NAY" />
+    <string id="BC_Parley_RulerDecisionBalance" text="Ruler decision" />
+    <string id="BC_Parley_UncommittedBalance" text="Uncommitted" />
+    <string id="BC_Parley_CouncilUnavailable" text="The council's decision is unavailable." />
+    <string id="BC_Parley_NoVassalCouncil" text="There is no vassal council in {REALM}." />
+    <string id="BC_Parley_CouncilNoCommitments" text="The council of {REALM} has committed no influence." />
+    <string id="BC_Parley_CouncilSupportsTally" text="The council of {REALM} supports this treaty, with {YAY} influence committed YAY against {NAY} committed NAY." />
+    <string id="BC_Parley_CouncilOpposesTally" text="The council of {REALM} opposes this treaty, with {NAY} influence committed NAY against {YAY} committed YAY." />
+    <string id="BC_Parley_CouncilTiedTally" text="The council of {REALM} is divided, with {NAY} influence committed NAY against {YAY} committed YAY." />
+    <string id="BC_Parley_BudgetBlocksDecision" text="The draft exceeds the available war score and cannot be ratified." />
+    <string id="BC_Parley_CompulsoryDecision" text="Peace is compulsory; {REALM} must accept these terms." />
+    <string id="BC_Parley_NoRulerDecision" text="No ruler is available to approve this treaty." />
+    <string id="BC_Parley_RulerWouldOverrideAccept" text="{RULER} would approve the treaty with {COST} additional influence to overrule the council." />
+    <string id="BC_Parley_RulerWouldOverrideReject" text="{RULER} would reject the treaty with {COST} additional influence to overrule the council." />
+    <string id="BC_Parley_RulerWouldAccept" text="{RULER} would approve the treaty." />
+    <string id="BC_Parley_RulerWouldReject" text="{RULER} would reject the treaty." />
+    <string id="BC_Parley_RulerLacksInfluenceToApprove" text="I lack the influence to secure this peace against my vassals." />
+    <string id="BC_Parley_OrdinaryVoteCommitment" text="Council vote commitment" />
+    <string id="BC_Parley_AdditionalOverrideCommitment" text="Additional override commitment" />
+    <string id="BC_Parley_OutcomeUnavailable" text="Predicted outcome unavailable" />
+    <string id="BC_Parley_VassalInvalidBudgetHint" text="This draft exceeds the available war score. Submit a valid vote to close the failed parley without spending influence; the treaty will not take effect." />
+    <string id="BC_Parley_OutcomeBudgetCancelledBody" text="The proposed treaty between {FIRST_REALM} and {SECOND_REALM} exceeds the available war score and could not be ratified. The parley has closed without spending influence or applying any treaty terms. The war continues." />
     <string id="BC_HeroFamily_Header" text="Family" />
     <string id="BC_HeroFamily_Parents" text="Parents" />
     <string id="BC_HeroFamily_Grandparents" text="Grandparents" />
@@ -7077,6 +7208,475 @@
     <string id="BC_HeroFamily_Brother" text="Brother" />
     <string id="BC_HeroFamily_Granddaughter" text="Granddaughter" />
     <string id="BC_HeroFamily_Grandson" text="Grandson" />
+    <string id="BC_Hierarchy_Holder" text="Holder" />
+    <string id="BC_Lordship_AlreadyHolds" text="This character already holds {LORDSHIP}." />
+    <string id="BC_Lordship_Attend" text="I Will Attend to It" />
+    <string id="BC_Lordship_Changed" text="This grant is no longer available." />
+    <string id="BC_Lordship_ChooseVillage" text="Choose a village grant for {HERO}. Its revenues will belong exclusively to the holder." />
+    <string id="BC_Lordship_CommandRequired" text="This retainer needs a lordship grant or an active indenture before leading a clan party." />
+    <string id="BC_Lordship_NoPartyLeader" text="Your clan has no available family members or retainers with a lordship grant or active indenture to lead a new party." />
+    <string id="BC_Lordship_Count" text="Village Grants ({COUNT})" />
+    <string id="BC_Lordship_Dame" text="Dame" />
+    <string id="BC_Lordship_DialogueAccept" text="You honor me, my {?PLAYER.GENDER}lady{?}lord{\?}. I will hold {VILLAGE} faithfully in your service." />
+    <string id="BC_Lordship_DialogueAnother" text="I am considering another estate." />
+    <string id="BC_Lordship_DialogueCancel" text="Let us leave this for another time." />
+    <string id="BC_Lordship_DialogueGrant" text="I grant you {LORDSHIP}. Its revenues shall be yours, in return for faithful service to my house." />
+    <string id="BC_Lordship_DialogueOffer" text="You have served my household faithfully. I would entrust an estate to you." />
+    <string id="BC_Lordship_DialogueResponse" text="You honor me. Which lands would you have me hold?" />
+    <string id="BC_Lordship_DialogueRevoke" text="Your tenure of {VILLAGE} is at an end. Its revenues will return to the household." />
+    <string id="BC_Lordship_DialogueRevokeOffer" text="We must speak of {LORDSHIP}, which you hold from my household." />
+    <string id="BC_Lordship_DialogueRevokeResponse" text="What is your wish?" />
+    <string id="BC_Lordship_DialogueSelected" text="{VILLAGE}? I would be honored to hold it in your service." />
+    <string id="BC_Lordship_DialogueSurrender" text="As you command. I surrender {LORDSHIP}." />
+    <string id="BC_Lordship_DialogueUnavailable" text="It seems that grant can no longer be made. We may speak of it another time." />
+    <string id="BC_Lordship_DialogueVillage" text="{LORDSHIP}." />
+    <string id="BC_Lordship_GovernorRequired" text="This retainer needs a lordship grant or an active indenture before serving as governor." />
+    <string id="BC_Lordship_GrantPlural" text="Endow Retainers" />
+    <string id="BC_Lordship_GrantTitle" text="Grant {LORDSHIP_TYPE}" />
+    <string id="BC_Lordship_IncomeAssigned" text="{VILLAGE}: revenues assigned to {HERO}" />
+    <string id="BC_Lordship_InvalidMember" text="Choose an eligible adult member of your household." />
+    <string id="BC_Lordship_MigrationBody" text="The following retainers command parties or govern settlements in your name without lordship grants or active indentures:&#10;{RETAINERS}&#10;&#10;Grant them land or agree an indenture within five days if they are to remain in these posts. Those who remain unsupported will be relieved of their duties." />
+    <string id="BC_Lordship_MigrationChoose" text="Choose a retainer to receive a village endowment. The holder alone will receive its revenues." />
+    <string id="BC_Lordship_MigrationTitle" text="Retainers Await Endowment" />
+    <string id="BC_Lordship_Name" text="Lordship of {VILLAGE}" />
+    <string id="BC_Lordship_NotOwner" text="Only the holder of the parent barony may make this grant." />
+    <string id="BC_Lordship_AwaitingAllocation" text="This barony is awaiting allocation. Its temporary custodian cannot grant its village revenues." />
+    <string id="BC_Lordship_NoVacancies" text="None of your villages are available for a grant." />
+    <string id="BC_Lordship_Occupied" text="{LORDSHIP} already has a holder." />
+    <string id="BC_Lordship_RecipientDescription" text="Choose a member of your household to receive {LORDSHIP}. Its revenues will belong exclusively to the holder for as long as they hold the grant." />
+    <string id="BC_Lordship_Retainer" text="Retainer" />
+    <string id="BC_Lordship_Retainers" text="Retainers" />
+    <string id="BC_Lordship_RevenueHint" text="The holder alone will receive the revenues of {LORDSHIP}." />
+    <string id="BC_Lordship_RevokeConfirm" text="Revoke {LORDSHIP} from {HERO}? Relations will decrease by 15. A retainer without another lordship or active indenture will also be relieved of party command or governorship when it is safe." />
+    <string id="BC_Lordship_RevokeHint" text="Return the revenues of {LORDSHIP} to the household. Relations decrease by 15." />
+    <string id="BC_Lordship_RevokeTitle" text="Revoke {LORDSHIP_TYPE}" />
+    <string id="BC_Lordship_Sir" text="Sir" />
+    <string id="BC_Lordship_TooltipLabel" text="Lordship" />
+    <string id="BC_RelationMemory_LordshipGranted" text="Granted me a lordship" />
+    <string id="BC_RelationMemory_LordshipRevoked" text="Revoked my lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_s_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_s_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_w_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_w_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Empire_femaleRetainerRank" text="Farisa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Empire_retainerRank" text="Faris" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Kingdom_femaleRetainerRank" text="Farisa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Kingdom_retainerRank" text="Faris" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Empire_femaleRetainerRank" text="Marchoges" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Empire_retainerRank" text="Marchog" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Kingdom_femaleRetainerRank" text="Marchoges" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Kingdom_retainerRank" text="Marchog" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Empire_femaleRetainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Empire_retainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Kingdom_femaleRetainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Kingdom_retainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Empire_femaleRetainerRank" text="Hirðkona" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Empire_retainerRank" text="Hirðmaðr" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Kingdom_femaleRetainerRank" text="Hirðkona" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Kingdom_retainerRank" text="Hirðmaðr" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Empire_femaleRetainerRank" text="Riterin" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Empire_retainerRank" text="Riter" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Kingdom_femaleRetainerRank" text="Riterin" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Kingdom_retainerRank" text="Riter" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Empire_femaleRetainerRank" text="Druzhinnitsa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Empire_retainerRank" text="Druzhinnik" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Kingdom_femaleRetainerRank" text="Druzhinnitsa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Kingdom_retainerRank" text="Druzhinnik" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Empire_femaleRetainerRank" text="Chevaleresse" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Empire_retainerRank" text="Chevaler" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Kingdom_femaleRetainerRank" text="Chevaleresse" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Kingdom_retainerRank" text="Chevaler" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_s_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_s_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_w_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_w_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Empire_femaleRetainerRank" text="Farisa" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Empire_retainerRank" text="Faris" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Kingdom_femaleRetainerRank" text="Farisa" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Kingdom_retainerRank" text="Faris" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Empire_femaleRetainerRank" text="Banridire" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Empire_retainerRank" text="Ridire" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Kingdom_femaleRetainerRank" text="Banridire" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Kingdom_retainerRank" text="Ridire" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Empire_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Empire_femaleRetainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Empire_retainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Kingdom_femaleRetainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Kingdom_retainerRank" text="Nökör" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Empire_femaleRetainerRank" text="Hirðkona" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Empire_retainerRank" text="Hirðmaðr" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Kingdom_femaleRetainerRank" text="Hirðkona" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Kingdom_retainerRank" text="Hirðmaðr" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleRetainerRank" text="Riterin" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_retainerRank" text="Riter" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleRetainerRank" text="Riterin" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_retainerRank" text="Riter" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Empire_femaleRetainerRank" text="Druzhinnitsa" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Empire_retainerRank" text="Druzhinnik" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Kingdom_femaleRetainerRank" text="Druzhinnitsa" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Kingdom_retainerRank" text="Druzhinnik" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Empire_femaleRetainerRank" text="Militissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Empire_retainerRank" text="Miles" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Kingdom_femaleRetainerRank" text="Militissa" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Kingdom_retainerRank" text="Miles" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_s_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_s_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_w_Kingdom_femaleRetainerRank" text="Pronoiarissa" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_w_Kingdom_retainerRank" text="Pronoiarios" />
+    <string id="BC_RelationMemory_LordshipReturned" text="Returned a granted lordship" />
+    <string id="BC_Lordship_VassalAward" text="As a token of my esteem and to help you maintain your men, I grant you {LORDSHIP} as your fief. Go to them, protect them, and collect your dues." />
+    <string id="BC_Lordship_VassalReturn" text="I wish to return {LORDSHIP} to your house." />
+    <string id="BC_Lordship_VassalReturnWarning" text="I bestowed it as a mark of my favor. I shall accept its return, though I cannot help but take it as a slight." />
+    <string id="BC_Lordship_VassalReturnHouseWarning" text="My house bestowed it as a mark of favor. I shall accept its return, though I cannot help but take it as a slight." />
+    <string id="BC_Lordship_VassalReturnConfirm" text="I am resolved. I return {LORDSHIP}." />
+    <string id="BC_Lordship_VassalReturnCancel" text="Then I shall continue to hold it." />
+    <string id="BC_Lordship_VassalReturnDone" text="So be it. {LORDSHIP} returns to my house." />
+    <string id="BC_Lordship_VassalReturnUnavailable" text="It seems that grant is no longer yours to return." />
+    <string id="BC_Lordship_LocalWelcome" text="Greetings, my {?PLAYER.GENDER}lady{?}lord{\?}. We have heard that {GRANTOR} has placed our village under your protection. We hope you will be a good {?PLAYER.GENDER}lady{?}lord{\?} to us." />
+    <string id="BC_TitleAcquired_Header" text="Title Acquired" />
+    <string id="BC_TitleAcquired_Body" text="New holder of the {TITLE} is {HOLDER}." />
+    <string id="BC_Lordship_Format" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Barony_lordshipName" text="Lordship" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Barony_lordshipFormat" text="{TITLE_NOUN} of {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Barony_lordshipFormat" text="{TITLE_NOUN} tōn {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Barony_lordshipName" text="Feodum" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Barony_lordshipName" text="Baile" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Barony_lordshipFormat" text="{TITLE_NOUN} na {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Barony_lordshipName" text="Nutug" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Barony_lordshipFormat" text="{VILLAGE} {TITLE_NOUN}" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Barony_lordshipName" text="Iqta" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Barony_lordshipName" text="Pomestie" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Barony_lordshipName" text="Lén" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_lordshipName" text="Lehen" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Barony_lordshipFormat" text="{TITLE_NOUN} tōn {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Barony_lordshipFormat" text="{TITLE_NOUN} tōn {VILLAGE}" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Barony_lordshipFormat" text="{TITLE_NOUN} tōn {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Barony_lordshipName" text="Fief" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Barony_lordshipFormat" text="{VILLAGE} {TITLE_NOUN}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Barony_lordshipName" text="Maenor" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Barony_lordshipFormat" text="{TITLE_NOUN} y {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Barony_lordshipName" text="Nutug" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Barony_lordshipFormat" text="{VILLAGE} {TITLE_NOUN}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Barony_lordshipName" text="Iqta" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Barony_lordshipName" text="Pomestie" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Barony_lordshipName" text="Lén" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Barony_lordshipName" text="Lehen" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Barony_lordshipName" text="Pronoia" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Barony_lordshipFormat" text="{TITLE_NOUN} {VILLAGE}" />
+    <string id="BC_Lordship_ReplacementTitle" text="Appoint a New Commander" />
+    <string id="BC_Lordship_ReplacementBody" text="{HERO} must relinquish command of {PARTY}. Choose a new commander to keep the party in the field, or order it disbanded." />
+    <string id="BC_Lordship_ReplacementCost" text="Assigning this commander costs {COST} denars." />
+    <string id="BC_Lordship_ReplacementAppoint" text="Appoint" />
+    <string id="BC_Lordship_ReplacementDisband" text="Disband Party" />
+    <string id="BC_Indenture_Label" text="Indenture" />
+    <string id="BC_Indenture_DaysRemaining" text="{DAYS} {?DAYS > 1}days{?}day{\?} remaining" />
+    <string id="BC_Indenture_Unavailable" text="This indenture can no longer be agreed. We must speak of it another time." />
+    <string id="BC_Indenture_TooEarly" text="This indenture may be renewed when seven days or fewer remain." />
+    <string id="BC_Indenture_NotEnoughGold" text="You need {GOLD} denars to agree to these terms." />
+    <string id="BC_Indenture_Expired" text="{HERO}'s indenture has expired." />
+    <string id="BC_Indenture_Renewed" text="Your indenture with {HERO} has been renewed." />
+    <string id="BC_Indenture_RenewalTitle" text="Indenture Nearing Its End" />
+    <string id="BC_Indenture_RenewalBody" text="Your indenture with {HERO} ends in {DAYS} {?DAYS > 1}days{?}day{\?}. Will you retain their services for another term?" />
+    <string id="BC_Indenture_Renew" text="Renew Indenture" />
+    <string id="BC_Indenture_LetExpire" text="Let It Expire" />
+    <string id="BC_Indenture_TermCost" text="{TERM} - {GOLD} denars" />
+    <string id="BC_Indenture_RenewalTerms" text="{HERO} offers to serve for another term, with the fee payable in advance." />
+    <string id="BC_Indenture_Agree" text="Agree" />
+    <string id="BC_Indenture_TermOne" text="One year" />
+    <string id="BC_Indenture_TermTwo" text="Two years" />
+    <string id="BC_Indenture_TermThree" text="Three years" />
+    <string id="BC_Indenture_DialogueOffer" text="I would have you serve as a captain of my household." />
+    <string id="BC_Indenture_DialogueRenew" text="Our indenture is nearing its end. I would retain your service." />
+    <string id="BC_Indenture_DialogueResponse" text="What terms do you offer?" />
+    <string id="BC_Indenture_DialogueLandless" text="I have no lands to grant you for your service. Instead, I would retain you for a fee, with the terms set down in an indenture." />
+    <string id="BC_Indenture_DialogueLanded" text="Rather than grant you an estate, I would retain your services for a fee, with the terms set down in an indenture." />
+    <string id="BC_Indenture_DialogueTerms" text="Name the term and the fee." />
+    <string id="BC_Indenture_DialogueOne" text="For one year, at a fee of 5,000 denars." />
+    <string id="BC_Indenture_DialogueTwo" text="For two years, at a fee of 8,000 denars." />
+    <string id="BC_Indenture_DialogueThree" text="For three years, at a fee of 13,000 denars." />
+    <string id="BC_Indenture_DialogueSelected" text="{BC_INDENTURE_TERM}, then, at a fee of {BC_INDENTURE_FEE} denars. You shall have my service until that term is done." />
+    <string id="BC_Indenture_DialogueConfirm" text="Agreed. Here is your fee." />
+    <string id="BC_Indenture_DialogueAccept" text="Then I pledge you my service. I shall lead your men and serve your household faithfully." />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_n_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_s_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_w_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Empire_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_s_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_s_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_w_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_w_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_kingdom_empire_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Vlandia_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Battania_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Khuzait_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Aserai_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Sturgia_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Nord_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Kingdom_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Kingdom_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Empire_mercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Empire_femaleMercenaryLeaderRank" text="Captain" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_s_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_s_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_w_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_w_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_kingdom_empire_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Empire_mercenaryLeaderRank" text="Capitaneus" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Empire_femaleMercenaryLeaderRank" text="Capitanea" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Kingdom_mercenaryLeaderRank" text="Capitaneus" />
+    <string id="BC_TitleStyle_Immersive_culture_Vlandia_Kingdom_femaleMercenaryLeaderRank" text="Capitanea" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Empire_mercenaryLeaderRank" text="Captaen" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Empire_femaleMercenaryLeaderRank" text="Captaen" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Kingdom_mercenaryLeaderRank" text="Captaen" />
+    <string id="BC_TitleStyle_Immersive_culture_Battania_Kingdom_femaleMercenaryLeaderRank" text="Captaen" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Empire_mercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Empire_femaleMercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Kingdom_mercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Immersive_culture_Khuzait_Kingdom_femaleMercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Empire_mercenaryLeaderRank" text="Qaid" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Empire_femaleMercenaryLeaderRank" text="Qaida" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Kingdom_mercenaryLeaderRank" text="Qaid" />
+    <string id="BC_TitleStyle_Immersive_culture_Aserai_Kingdom_femaleMercenaryLeaderRank" text="Qaida" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Empire_mercenaryLeaderRank" text="Sotnik" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Empire_femaleMercenaryLeaderRank" text="Sotnitsa" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Kingdom_mercenaryLeaderRank" text="Sotnik" />
+    <string id="BC_TitleStyle_Immersive_culture_Sturgia_Kingdom_femaleMercenaryLeaderRank" text="Sotnitsa" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Empire_mercenaryLeaderRank" text="Höfuðsmaðr" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Empire_femaleMercenaryLeaderRank" text="Höfuðskona" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Kingdom_mercenaryLeaderRank" text="Höfuðsmaðr" />
+    <string id="BC_TitleStyle_Immersive_culture_Nord_Kingdom_femaleMercenaryLeaderRank" text="Höfuðskona" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_mercenaryLeaderRank" text="Houbetman" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Empire_femaleMercenaryLeaderRank" text="Houbetvrouwe" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_mercenaryLeaderRank" text="Houbetman" />
+    <string id="BC_TitleStyle_Immersive_culture_Rhodok_Kingdom_femaleMercenaryLeaderRank" text="Houbetvrouwe" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_n_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_s_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Immersive_culture_Empire_w_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_s_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_s_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_w_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_w_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_kingdom_empire_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Empire_mercenaryLeaderRank" text="Capitaine" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Empire_femaleMercenaryLeaderRank" text="Capitaine" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Kingdom_mercenaryLeaderRank" text="Capitaine" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Vlandia_Kingdom_femaleMercenaryLeaderRank" text="Capitaine" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Empire_mercenaryLeaderRank" text="Capten" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Empire_femaleMercenaryLeaderRank" text="Capten" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Kingdom_mercenaryLeaderRank" text="Capten" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Battania_Kingdom_femaleMercenaryLeaderRank" text="Capten" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Empire_mercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Empire_femaleMercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Kingdom_mercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Khuzait_Kingdom_femaleMercenaryLeaderRank" text="Yüzbaşı" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Empire_mercenaryLeaderRank" text="Qaid" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Empire_femaleMercenaryLeaderRank" text="Qaida" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Kingdom_mercenaryLeaderRank" text="Qaid" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Aserai_Kingdom_femaleMercenaryLeaderRank" text="Qaida" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Empire_mercenaryLeaderRank" text="Sotnik" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Empire_femaleMercenaryLeaderRank" text="Sotnitsa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Kingdom_mercenaryLeaderRank" text="Sotnik" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Sturgia_Kingdom_femaleMercenaryLeaderRank" text="Sotnitsa" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Empire_mercenaryLeaderRank" text="Höfuðsmaðr" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Empire_femaleMercenaryLeaderRank" text="Höfuðskona" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Kingdom_mercenaryLeaderRank" text="Höfuðsmaðr" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Nord_Kingdom_femaleMercenaryLeaderRank" text="Höfuðskona" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Empire_mercenaryLeaderRank" text="Houbetman" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Empire_femaleMercenaryLeaderRank" text="Houbetvrouwe" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Kingdom_mercenaryLeaderRank" text="Houbetman" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Rhodok_Kingdom_femaleMercenaryLeaderRank" text="Houbetvrouwe" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_n_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_s_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Empire_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Empire_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Kingdom_mercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Bannerkings_culture_Empire_w_Kingdom_femaleMercenaryLeaderRank" text="Lochagos" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Kingdom_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Kingdom_femaleRetainerRank" text="Dame" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Empire_retainerRank" text="Sir" />
+    <string id="BC_TitleStyle_Anglicized_culture_Rhodok_Empire_femaleRetainerRank" text="Dame" />
+    <string id="BC_Indenture_Captain" text="Captain" />
+    <string id="BC_Marriage_PlayerCandidateChoice" text="{?BC_PLAYER_IS_SELF}My own hand.{?}The hand of {BC_PLAYER_CANDIDATE.NAME}.{\?}" />
+    <string id="BC_Marriage_CandidateMarried" text="{HERO} is already married." />
+    <string id="BC_Marriage_CandidateMinor" text="{HERO} has not yet reached marriageable age." />
+    <string id="BC_Marriage_CandidatePrisoner" text="{HERO} is being held prisoner." />
+    <string id="BC_Marriage_CandidateTraveling" text="{HERO} is currently traveling." />
+    <string id="BC_Marriage_CandidateUnavailable" text="{HERO} is unavailable for marriage at present." />
+    <string id="BC_Marriage_CandidateMilitary" text="{HERO} is currently occupied with military duties." />
+    <string id="BC_Marriage_CandidateEngaged" text="{HERO} is already promised in another marriage offer." />
+    <string id="BC_Marriage_CandidateSameSex" text="This marriage requires a bride and a groom." />
+    <string id="BC_Marriage_CandidatePairRestricted" text="{HERO} cannot marry {OTHER} under the current marriage rules." />
+    <string id="BC_Marriage_CandidateNoMatch" text="There is no eligible match for {HERO} in this household at present." />
     <string id="BC_ClientRelease_Open" text="I would speak of your realm's obligations to my crown." />
     <string id="BC_ClientRelease_Question" text="What would you ask of us?" />
     <string id="BC_ClientRelease_Proposal" text="I would release {BC_RELEASE_CLIENT} from its oath of obedience. Our realms would remain allies, but yours would answer to no overlord." />
@@ -7089,5 +7689,230 @@
     <string id="BC_ClientRelease_Failure" text="{BC_RELEASE_FAILURE}" />
     <string id="BC_ClientRelease_Hint" text="Grants independence without payment. The alliance and trade agreement continue on ordinary terms. Existing wars and alliance obligations remain unchanged. Grants +{RELATION} personal relations for {YEARS} years; an active gratitude memory cannot stack or be renewed." />
     <string id="BC_RelationMemory_GrantedRealmIndependence" text="Granted my realm its independence" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulPatrolRecruitment" text="Successful patrol recruitment" />
+    <string id="BC_CouncilIncident_ReasonFailedPatrolRecruitment" text="Failed patrol recruitment" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedPatrolRecruitment" text="Successful limited patrol recruitment" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedPatrolRecruitment" text="Failed limited patrol recruitment" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulRemountRequisition" text="Successful remount requisition" />
+    <string id="BC_CouncilIncident_ReasonFailedRemountRequisition" text="Failed remount requisition" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedRemountRequisition" text="Successful limited remount requisition" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedRemountRequisition" text="Failed limited remount requisition" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulSuppressionOfRoadBrigands" text="Successful suppression of road brigands" />
+    <string id="BC_CouncilIncident_ReasonFailedSuppressionOfRoadBrigands" text="Failed suppression of road brigands" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedSweepAgainstRoadBrigands" text="Successful limited sweep against road brigands" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedSweepAgainstRoadBrigands" text="Failed limited sweep against road brigands" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulRevisionOfTheMusterRolls" text="Successful revision of the muster rolls" />
+    <string id="BC_CouncilIncident_ReasonFailedRevisionOfTheMusterRolls" text="Failed revision of the muster rolls" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulTrialOfRevisedMusterRolls" text="Successful trial of revised muster rolls" />
+    <string id="BC_CouncilIncident_ReasonFailedTrialOfRevisedMusterRolls" text="Failed trial of revised muster rolls" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLiveSteelMilitiaExercises" text="Successful live-steel militia exercises" />
+    <string id="BC_CouncilIncident_ReasonFailedLiveSteelMilitiaExercises" text="Failed live-steel militia exercises" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulSupervisedLiveSteelExercises" text="Successful supervised live-steel exercises" />
+    <string id="BC_CouncilIncident_ReasonFailedSupervisedLiveSteelExercises" text="Failed supervised live-steel exercises" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulHarvestExemptions" text="Successful harvest exemptions" />
+    <string id="BC_CouncilIncident_ReasonFailedHarvestExemptions" text="Failed harvest exemptions" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedHarvestExemptions" text="Successful limited harvest exemptions" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedHarvestExemptions" text="Failed limited harvest exemptions" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulRegulationOfCampFollowers" text="Successful regulation of camp followers" />
+    <string id="BC_CouncilIncident_ReasonFailedRegulationOfCampFollowers" text="Failed regulation of camp followers" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedRegulationOfCampFollowers" text="Successful limited regulation of camp followers" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedRegulationOfCampFollowers" text="Failed limited regulation of camp followers" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulRegulationOfArmyForaging" text="Successful regulation of army foraging" />
+    <string id="BC_CouncilIncident_ReasonFailedRegulationOfArmyForaging" text="Failed regulation of army foraging" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedArmyForaging" text="Successful limited army foraging" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedArmyForaging" text="Failed limited army foraging" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulAuditOfArmyQuartermasters" text="Successful audit of army quartermasters" />
+    <string id="BC_CouncilIncident_ReasonFailedAuditOfArmyQuartermasters" text="Failed audit of army quartermasters" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedAuditOfArmyQuartermasters" text="Successful limited audit of army quartermasters" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedAuditOfArmyQuartermasters" text="Failed limited audit of army quartermasters" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulDoubleAgentOperation" text="A successful double-agent operation" />
+    <string id="BC_CouncilIncident_ReasonCompromisedDoubleAgentOperation" text="A compromised double-agent operation" />
+    <string id="BC_CouncilIncident_ReasonUsefulControlledExchangeWithAForeignAgent" text="A useful controlled exchange with a foreign agent" />
+    <string id="BC_CouncilIncident_ReasonFailedControlledExchangeWithAForeignAgent" text="A failed controlled exchange with a foreign agent" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulReformOfCovertWarrants" text="A successful reform of covert warrants" />
+    <string id="BC_CouncilIncident_ReasonDeepeningParanoiaWithinTheCourt" text="Deepening paranoia within the court" />
+    <string id="BC_CouncilIncident_ReasonProtectedChannelsForTrustedOperatives" text="Protected channels for trusted operatives" />
+    <string id="BC_CouncilIncident_ReasonCompromisedChannelsForTrustedOperatives" text="Compromised channels for trusted operatives" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulPurgeOfCompromisedGuards" text="A successful purge of compromised guards" />
+    <string id="BC_CouncilIncident_ReasonDisastrousPurgeOfThePalaceGuard" text="A disastrous purge of the palace guard" />
+    <string id="BC_CouncilIncident_ReasonDiscreetRemovalOfCompromisedGuards" text="A discreet removal of compromised guards" />
+    <string id="BC_CouncilIncident_ReasonFailedPartialRotationOfThePalaceGuard" text="A failed partial rotation of the palace guard" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulDeceptionAgainstSuspectedConspirators" text="A successful deception against suspected conspirators" />
+    <string id="BC_CouncilIncident_ReasonExposedFabricationOfTreason" text="An exposed fabrication of treason" />
+    <string id="BC_CouncilIncident_ReasonUsefulFalseMessageAmongConspirators" text="A useful false message among conspirators" />
+    <string id="BC_CouncilIncident_ReasonExposedFalseMessageAmongConspirators" text="An exposed false message among conspirators" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulOperationAgainstHostileClaimants" text="A successful operation against hostile claimants" />
+    <string id="BC_CouncilIncident_ReasonFailedOperationAgainstHostileClaimants" text="A failed operation against hostile claimants" />
+    <string id="BC_CouncilIncident_ReasonUsefulApproachToHostileClaimAgents" text="A useful approach to hostile claim agents" />
+    <string id="BC_CouncilIncident_ReasonExposedApproachToHostileClaimAgents" text="An exposed approach to hostile claim agents" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulInfiltrationOfAnUndergroundNetwork" text="A successful infiltration of an underground network" />
+    <string id="BC_CouncilIncident_ReasonFailedInfiltrationOfAnUndergroundNetwork" text="A failed infiltration of an underground network" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulDisruptionOfConspiratorialCouriers" text="A successful disruption of conspiratorial couriers" />
+    <string id="BC_CouncilIncident_ReasonFailedDisruptionOfConspiratorialCouriers" text="A failed disruption of conspiratorial couriers" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulCampaignOfHostilePamphlets" text="A successful campaign of hostile pamphlets" />
+    <string id="BC_CouncilIncident_ReasonExposedCampaignOfHostilePamphlets" text="An exposed campaign of hostile pamphlets" />
+    <string id="BC_CouncilIncident_ReasonCredibleCampaignOfSelectedRumors" text="A credible campaign of selected rumors" />
+    <string id="BC_CouncilIncident_ReasonExposedCampaignOfSelectedRumors" text="An exposed campaign of selected rumors" />
+    <string id="BC_CouncilIncident_ReasonDiscreetArrangementWithARivalServant" text="A discreet arrangement with a rival servant" />
+    <string id="BC_CouncilIncident_ReasonExposedAttemptToBribeARivalServant" text="An exposed attempt to bribe a rival servant" />
+    <string id="BC_CouncilIncident_ReasonDiscreetExchangeWithARivalServant" text="A discreet exchange with a rival servant" />
+    <string id="BC_CouncilIncident_ReasonCompromisedExchangeWithARivalServant" text="A compromised exchange with a rival servant" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulRebuttalOfHostileRumors" text="A successful rebuttal of hostile rumors" />
+    <string id="BC_CouncilIncident_ReasonDisastrousRebuttalOfHostileRumors" text="A disastrous rebuttal of hostile rumors" />
+    <string id="BC_CouncilIncident_ReasonMeasuredRebuttalOfHostileRumors" text="A measured rebuttal of hostile rumors" />
+    <string id="BC_CouncilIncident_ReasonFailedSelectiveRebuttalOfHostileRumors" text="A failed selective rebuttal of hostile rumors" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulCouncilReportingReforms" text="Successful council reporting reforms" />
+    <string id="BC_CouncilIncident_ReasonFailedCouncilReportingReforms" text="Failed council reporting reforms" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulTrialOfSharedCouncilReports" text="A successful trial of shared council reports" />
+    <string id="BC_CouncilIncident_ReasonFailedTrialOfSharedCouncilReports" text="A failed trial of shared council reports" />
+    <string id="BC_CouncilIncident_ReasonUsefulLessonsDrawnFromAnAncientTreatise" text="Useful lessons drawn from an ancient treatise" />
+    <string id="BC_CouncilIncident_ReasonMisguidedReformsDrawnFromAnAncientTreatise" text="Misguided reforms drawn from an ancient treatise" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulTrialOfAncientCouncilPractices" text="A successful trial of ancient council practices" />
+    <string id="BC_CouncilIncident_ReasonFailedTrialOfAncientCouncilPractices" text="A failed trial of ancient council practices" />
+    <string id="BC_CouncilIncident_ReasonExposureOfACourtSycophant" text="The exposure of a court sycophant" />
+    <string id="BC_CouncilIncident_ReasonDestructiveInquiryIntoCourtSycophancy" text="A destructive inquiry into court sycophancy" />
+    <string id="BC_CouncilIncident_ReasonCarefulReviewOfAlteredCouncilReports" text="A careful review of altered council reports" />
+    <string id="BC_CouncilIncident_ReasonExposedReviewOfCouncilReports" text="An exposed review of council reports" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulArbitrationOfACouncilRivalry" text="The successful arbitration of a council rivalry" />
+    <string id="BC_CouncilIncident_ReasonFailedArbitrationBetweenRivalCouncillors" text="A failed arbitration between rival councillors" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulWorkingAccordBetweenRivalCouncillors" text="A successful working accord between rival councillors" />
+    <string id="BC_CouncilIncident_ReasonCollapsedAccordBetweenRivalCouncillors" text="A collapsed accord between rival councillors" />
+    <string id="BC_CouncilIncident_ReasonExposureOfABribedCouncilMediator" text="The exposure of a bribed council mediator" />
+    <string id="BC_CouncilIncident_ReasonWideningScandalAmongCouncilMediators" text="A widening scandal among council mediators" />
+    <string id="BC_CouncilIncident_ReasonDiscreetInquiryIntoABribedMediator" text="A discreet inquiry into a bribed mediator" />
+    <string id="BC_CouncilIncident_ReasonCompromisedInquiryIntoABribedMediator" text="A compromised inquiry into a bribed mediator" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulSettlementOfCouncilDeadlock" text="A successful settlement of council deadlock" />
+    <string id="BC_CouncilIncident_ReasonFailedSettlementImposedUponTheCouncil" text="A failed settlement imposed upon the council" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedCouncilSettlement" text="A successful limited council settlement" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedCouncilSettlement" text="A failed limited council settlement" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulHearingOfFactionDemands" text="A successful hearing of faction demands" />
+    <string id="BC_CouncilIncident_ReasonDisastrousHearingOfFactionDemands" text="A disastrous hearing of faction demands" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLimitedFactionHearing" text="A successful limited faction hearing" />
+    <string id="BC_CouncilIncident_ReasonFailedLimitedFactionHearing" text="A failed limited faction hearing" />
+    <string id="BC_CouncilIncident_ReasonRestorationOfCompromisedFactionChannels" text="The restoration of compromised faction channels" />
+    <string id="BC_CouncilIncident_ReasonFailedPurgeOfFactionIntermediaries" text="A failed purge of faction intermediaries" />
+    <string id="BC_CouncilIncident_ReasonDiscreetRestorationOfFactionChannels" text="A discreet restoration of faction channels" />
+    <string id="BC_CouncilIncident_ReasonSuspiciousReplacementOfFactionIntermediaries" text="A suspicious replacement of faction intermediaries" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulPublicFactionPetition" text="A successful public faction petition" />
+    <string id="BC_CouncilIncident_ReasonDisorderlyPublicFactionPetition" text="A disorderly public faction petition" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulPrivateFactionDeputation" text="A successful private faction deputation" />
+    <string id="BC_CouncilIncident_ReasonFailedPrivateFactionDeputation" text="A failed private faction deputation" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulExaminationOfConcealedServiceLedgers" text="A successful examination of concealed service ledgers" />
+    <string id="BC_CouncilIncident_ReasonFailedSeizureOfNobleServiceLedgers" text="A failed seizure of noble service ledgers" />
+    <string id="BC_CouncilIncident_ReasonDiscreetExaminationOfConcealedServiceLedgers" text="A discreet examination of concealed service ledgers" />
+    <string id="BC_CouncilIncident_ReasonExposedExaminationOfNobleServiceLedgers" text="An exposed examination of noble service ledgers" />
+    <string id="BC_CouncilIncident_ReasonWellJudgedNobleExemption" text="A well-judged noble exemption" />
+    <string id="BC_CouncilIncident_ReasonDivisiveNobleExemption" text="A divisive noble exemption" />
+    <string id="BC_CouncilIncident_ReasonNarrowExemptionFromDisputedService" text="A narrow exemption from disputed service" />
+    <string id="BC_CouncilIncident_ReasonFailedCompromiseOverDisputedService" text="A failed compromise over disputed service" />
+    <string id="BC_CouncilIncident_ReasonDisciplinedRoyalAssessmentCommission" text="A disciplined royal assessment commission" />
+    <string id="BC_CouncilIncident_ReasonDiscreditedRoyalAssessmentCommission" text="A discredited royal assessment commission" />
+    <string id="BC_CouncilIncident_ReasonUsefulProvincialAssessment" text="A useful provincial assessment" />
+    <string id="BC_CouncilIncident_ReasonFailedProvincialAssessment" text="A failed provincial assessment" />
+    <string id="BC_CouncilIncident_ReasonExposureOfCorruptInfrastructureContracts" text="The exposure of corrupt infrastructure contracts" />
+    <string id="BC_CouncilIncident_ReasonFailedPurgeOfRoyalContractors" text="A failed purge of royal contractors" />
+    <string id="BC_CouncilIncident_ReasonDiscreetReformOfRoyalContracts" text="A discreet reform of royal contracts" />
+    <string id="BC_CouncilIncident_ReasonExposedInquiryIntoRoyalContracts" text="An exposed inquiry into royal contracts" />
+    <string id="BC_CouncilIncident_ReasonWellOrganizedLaborLevy" text="A well-organized labor levy" />
+    <string id="BC_CouncilIncident_ReasonRuinousLaborLevy" text="A ruinous labor levy" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLocalLaborLevy" text="A successful local labor levy" />
+    <string id="BC_CouncilIncident_ReasonFailedLocalLaborLevy" text="A failed local labor levy" />
+    <string id="BC_CouncilIncident_ReasonEfficientResponseToMaterialShortages" text="An efficient response to material shortages" />
+    <string id="BC_CouncilIncident_ReasonWastefulResponseToMaterialShortages" text="A wasteful response to material shortages" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulPrioritySupplyProgram" text="A successful priority supply program" />
+    <string id="BC_CouncilIncident_ReasonFailedPrioritySupplyProgram" text="A failed priority supply program" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulCleansingOfRoyalGranaries" text="A successful cleansing of royal granaries" />
+    <string id="BC_CouncilIncident_ReasonDisastrousCleansingOfRoyalGranaries" text="A disastrous cleansing of royal granaries" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulTreatmentOfMajorGranaries" text="A successful treatment of major granaries" />
+    <string id="BC_CouncilIncident_ReasonFailedTreatmentOfMajorGranaries" text="A failed treatment of major granaries" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulResponseToGrainHoarding" text="A successful response to grain hoarding" />
+    <string id="BC_CouncilIncident_ReasonDisastrousInterventionInTheGrainMarket" text="A disastrous intervention in the grain market" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulContractsWithGrainMerchants" text="Successful contracts with grain merchants" />
+    <string id="BC_CouncilIncident_ReasonFailedContractsWithGrainMerchants" text="Failed contracts with grain merchants" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulReformOfProvisionDistribution" text="A successful reform of provision distribution" />
+    <string id="BC_CouncilIncident_ReasonFailedReformOfProvisionDistribution" text="A failed reform of provision distribution" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulInspectionsOfVulnerableSupplyRoutes" text="Successful inspections of vulnerable supply routes" />
+    <string id="BC_CouncilIncident_ReasonFailedInspectionsOfVulnerableSupplyRoutes" text="Failed inspections of vulnerable supply routes" />
+    <string id="BC_CouncilIncident_ReasonPersuasiveReconstructionOfTheRoyalLineage" text="A persuasive reconstruction of the royal lineage" />
+    <string id="BC_CouncilIncident_ReasonExposedFabricationOfTheRoyalLineage" text="An exposed fabrication of the royal lineage" />
+    <string id="BC_CouncilIncident_ReasonUsefulPrivateGenealogy" text="A useful private genealogy" />
+    <string id="BC_CouncilIncident_ReasonCompromisedPrivateGenealogy" text="A compromised private genealogy" />
+    <string id="BC_CouncilIncident_ReasonContainmentOfACompromisedInformant" text="The containment of a compromised informant" />
+    <string id="BC_CouncilIncident_ReasonEscapeOfACompromisedInformant" text="The escape of a compromised informant" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulDeceptionOfALooseLippedInformant" text="A successful deception of a loose-lipped informant" />
+    <string id="BC_CouncilIncident_ReasonFailedDeceptionOfALooseLippedInformant" text="A failed deception of a loose-lipped informant" />
+    <string id="BC_CouncilIncident_ReasonDiscreetArrangementWithCooperativeRecordKeepers" text="A discreet arrangement with cooperative record-keepers" />
+    <string id="BC_CouncilIncident_ReasonExposedAttemptToBribeArchivalClerks" text="An exposed attempt to bribe archival clerks" />
+    <string id="BC_CouncilIncident_ReasonDiscreetApproachToArchivalClerks" text="A discreet approach to archival clerks" />
+    <string id="BC_CouncilIncident_ReasonCompromisedApproachToArchivalClerks" text="A compromised approach to archival clerks" />
+    <string id="BC_CouncilIncident_ReasonCelebratedDiplomaticEmbassy" text="A celebrated diplomatic embassy" />
+    <string id="BC_CouncilIncident_ReasonHumiliatedDiplomaticEmbassy" text="A humiliated diplomatic embassy" />
+    <string id="BC_CouncilIncident_ReasonWellJudgedDiplomaticGift" text="A well-judged diplomatic gift" />
+    <string id="BC_CouncilIncident_ReasonInsultingDiplomaticGift" text="An insulting diplomatic gift" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulSeasonOfDiplomaticCourtship" text="A successful season of diplomatic courtship" />
+    <string id="BC_CouncilIncident_ReasonScandalousSeasonOfDiplomaticCourtship" text="A scandalous season of diplomatic courtship" />
+    <string id="BC_CouncilIncident_ReasonDiscreetExchangeOfDiplomaticIntroductions" text="A discreet exchange of diplomatic introductions" />
+    <string id="BC_CouncilIncident_ReasonCompromisedExchangeOfDiplomaticIntroductions" text="A compromised exchange of diplomatic introductions" />
+    <string id="BC_CouncilIncident_ReasonDignifiedSettlementOfABorderIncident" text="A dignified settlement of a border incident" />
+    <string id="BC_CouncilIncident_ReasonHumiliatingApologyForABorderIncident" text="A humiliating apology for a border incident" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulLocalBorderSettlement" text="A successful local border settlement" />
+    <string id="BC_CouncilIncident_ReasonFailedLocalBorderSettlement" text="A failed local border settlement" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulBanquetOfReconciliation" text="A successful banquet of reconciliation" />
+    <string id="BC_CouncilIncident_ReasonDisastrousBanquetOfReconciliation" text="A disastrous banquet of reconciliation" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulPrivateSupperWithEstrangedVassals" text="A successful private supper with estranged vassals" />
+    <string id="BC_CouncilIncident_ReasonFailedPrivateSupperWithEstrangedVassals" text="A failed private supper with estranged vassals" />
+    <string id="BC_CouncilIncident_ReasonMasterfulArbitrationOfNobleHuntingRights" text="A masterful arbitration of noble hunting rights" />
+    <string id="BC_CouncilIncident_ReasonFailedArbitrationOfNobleHuntingRights" text="A failed arbitration of noble hunting rights" />
+    <string id="BC_CouncilIncident_ReasonSuccessfulCompromiseOverNobleHuntingRights" text="A successful compromise over noble hunting rights" />
+    <string id="BC_CouncilIncident_ReasonFailedCompromiseOverNobleHuntingRights" text="A failed compromise over noble hunting rights" />
+    <string id="BC_CouncilIncident_ReasonWellReceivedCeremonialDignity" text="A well-received ceremonial dignity" />
+    <string id="BC_CouncilIncident_ReasonRidiculedCeremonialDignity" text="A ridiculed ceremonial dignity" />
+    <string id="BC_CouncilIncident_ReasonTactfulPrivateCommendation" text="A tactful private commendation" />
+    <string id="BC_CouncilIncident_ReasonDivisivePrivateCommendation" text="A divisive private commendation" />
+    <string id="BC_CourtAgendaAnnouncementPending" text="Current agenda: To be announced in the following days." />
+    <string id="BC_VoluntaryPact_AllianceSupport" text="Voluntary hostage pact" />
+    <string id="BC_VoluntaryPact_VoteApprove" text="Approve" />
+    <string id="BC_VoluntaryPact_VoteReject" text="Reject" />
+    <string id="BC_VoluntaryPact_ApproveDescription" text="Approve the proposed exchange of hostages and pledge of peace." />
+    <string id="BC_VoluntaryPact_RejectDescription" text="Reject the proposed pledge of peace." />
+    <string id="BC_VoluntaryPact_VoteTitle" text="Hostage pledge of peace" />
+    <string id="BC_VoluntaryPact_VoteApproved" text="The council has approved the proposed pledge." />
+    <string id="BC_VoluntaryPact_VoteRejected" text="The council has rejected the proposed pledge." />
+    <string id="BC_VoluntaryPact_VoteInvalid" text="The proposed pledge could no longer be decided." />
+    <string id="BC_VoluntaryPact_HostageToBeChosen" text="a relative chosen by its ruler" />
+    <string id="BC_VoluntaryPact_BallotDescription" text="{SOURCE} and {TARGET} would pledge peace for {DAYS} days. {SOURCE} would offer {SOURCE_HOSTAGE}; {TARGET} would offer {TARGET_HOSTAGE}. The proposing house would pay {GOLD} denars to the receiving house." />
+    <string id="BC_VoluntaryPact_DeclineOffer" text="Decline the proposal" />
+    <string id="BC_VoluntaryPact_ChooseHostage" text="{SOURCE} proposes a pledge of peace for {DAYS} days, offering {HOSTAGE} as a hostage and {GOLD} denars to your house. Choose a relative to offer in return, or decline the proposal." />
+    <string id="BC_VoluntaryPact_ChooseHostageTitle" text="A Pledge of Peace" />
+    <string id="BC_VoluntaryPact_ConfirmChoice" text="Confirm" />
+    <string id="BC_VoluntaryPact_Unavailable" text="A pledge cannot be proposed under the current circumstances." />
+    <string id="BC_VoluntaryPact_MercenaryBlocked" text="Mercenary clans cannot propose a pledge for the realm." />
+    <string id="BC_VoluntaryPact_WarOrAllianceBlocked" text="The realms must be at peace and not already allied." />
+    <string id="BC_VoluntaryPact_ClientBlocked" text="Both realms must be sovereign to exchange hostages." />
+    <string id="BC_VoluntaryPact_ExistingBlocked" text="These realms already have a pledge or a proposal in progress." />
+    <string id="BC_VoluntaryPact_InfluenceBlocked" text="Your clan needs 100 influence to propose this pledge." />
+    <string id="BC_VoluntaryPact_HoldingBlocked" text="Each ruling house needs a secure settlement to receive a hostage." />
+    <string id="BC_VoluntaryPact_HostageBlocked" text="Each ruling house needs an eligible relative to offer as a hostage." />
+    <string id="BC_VoluntaryPact_NeighborBlocked" text="Only neighboring realms can propose this pledge." />
+    <string id="BC_VoluntaryPact_OfferHostageTitle" text="Offer a Hostage" />
+    <string id="BC_VoluntaryPact_OfferHostageBody" text="Choose a relative of your ruling house to offer as a pledge of peace." />
+    <string id="BC_VoluntaryPact_Next" text="Next" />
+    <string id="BC_VoluntaryPact_Cancel" text="Cancel" />
+    <string id="BC_VoluntaryPact_DurationHelp" text="Enter a duration from {MINIMUM} to 1000 days, in steps of 10." />
+    <string id="BC_VoluntaryPact_DurationTitle" text="Pledge Duration" />
+    <string id="BC_VoluntaryPact_PaymentHelp" text="Enter the denars your house will offer. Enter 0 to offer no payment." />
+    <string id="BC_VoluntaryPact_PaymentTitle" text="Offer Compensation" />
+    <string id="BC_VoluntaryPact_ConfirmBody" text="Offer {HOSTAGE} to {TARGET} for a pledge of peace lasting {DAYS} days, with {GOLD} denars in compensation. Filing this proposal costs 100 influence; the other ruler will choose a hostage in return." />
+    <string id="BC_VoluntaryPact_ConfirmTitle" text="Propose a Pledge" />
+    <string id="BC_VoluntaryPact_Submit" text="Propose" />
+    <string id="BC_VoluntaryPact_UnavailableTitle" text="Pledge Unavailable" />
+    <string id="BC_VoluntaryPact_Ok" text="Done" />
+    <string id="BC_VoluntaryPact_ActionDescription" text="Propose a mutual hostage pledge of peace." />
+    <string id="BC_VoluntaryPact_ResultSigned" text="{SOURCE} and {TARGET} have exchanged hostages and pledged peace for {DAYS} days." />
+    <string id="BC_VoluntaryPact_ResultSourceRejected" text="The council of {SOURCE} rejected the proposed pledge with {TARGET}." />
+    <string id="BC_VoluntaryPact_ResultTargetRejected" text="The council of {TARGET} rejected the proposed pledge with {SOURCE}." />
+    <string id="BC_VoluntaryPact_ResultDeclined" text="The ruler of {TARGET} declined the proposed pledge with {SOURCE}." />
+    <string id="BC_VoluntaryPact_ResultInvalid" text="The proposed pledge between {SOURCE} and {TARGET} could no longer be concluded." />
+    <string id="BC_VoluntaryPact_RefusalCooldown" text="These realms recently rejected a pledge. Another proposal may be made in {DAYS} days." />
   </strings>
 </base>

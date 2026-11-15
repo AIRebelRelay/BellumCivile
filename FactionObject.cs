@@ -905,61 +905,23 @@ namespace BellumCivile
             switch (Type)
             {
                 case FactionType.Independence:
-                    IndependentKingdomProfile independenceProfile = IndependentKingdomProfileHelper.Create(Leader, ParentKingdom);
-                    TextObject newName = independenceProfile.Name;
-
-                    string indepStringId = ParentKingdom.StringId + "_indep_" + Leader.StringId;
-                    Kingdom independentKingdom = Kingdom.All.FirstOrDefault(k => k.StringId == indepStringId && !k.IsEliminated)
-                        ?? KingdomCreationSafetyHelper.CreateKingdom(indepStringId, Leader);
-                    if (!KingdomCreationSafetyHelper.PrepareRuler(independentKingdom, Leader, "accepted independence"))
-                        return UltimatumResolution.Failed;
-
-                    Settlement indSettlement = Leader.Settlements.FirstOrDefault() ?? ParentKingdom.Settlements.FirstOrDefault() ?? Settlement.All.FirstOrDefault(s => s.IsTown || s.IsCastle);
-
-                    var independentVisuals = KingdomVisualHelper.ResolveBreakawayKingdomVisuals(ParentKingdom, Leader, indepStringId);
-
-                    independentKingdom.InitializeKingdom(
-                        independenceProfile.Name,
-                        independenceProfile.Name,
-                        independenceProfile.Culture ?? ParentKingdom.Culture,
-                        independentVisuals.Banner,
-                        independentVisuals.PrimaryColor,
-                        independentVisuals.SecondaryColor,
-                        indSettlement,
-                        independenceProfile.EncyclopediaText,
-                        independenceProfile.EncyclopediaTitle,
-                        independenceProfile.RulerTitle);
-                    KingdomVisualHelper.ApplyKingdomPalette(independentKingdom, independentVisuals);
-                    RegisterIndependentRealmSourceTitle(independentKingdom, independenceProfile, "accepted independence ultimatum");
-                    RebelPolicyHelper.ApplyIndependencePolicyProfile(this, independentKingdom);
-
-                    bool preserveIndependenceClanBanners = !independentVisuals.RecolorMemberClans;
-                    Dictionary<Clan, Banner> preservedIndependenceBanners = preserveIndependenceClanBanners
-                        ? KingdomVisualHelper.CaptureClanBannersToPreserve(Members)
-                        : new Dictionary<Clan, Banner>();
-                    KingdomVisualHelper.ApplyJoinToKingdomWithBannerPolicy(Leader, independentKingdom, preserveIndependenceClanBanners, showNotification: false);
-                    independentKingdom.RulingClan = Leader;
-                    Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>()
-                        ?.ClearTemporaryKingdomRepair(independentKingdom);
-
-                    foreach (Clan member in Members.ToList())
+                    Clan independenceLeader = Leader;
+                    CivilWarResolutionBehavior independenceResolution = Campaign.Current.GetCampaignBehavior<CivilWarResolutionBehavior>();
+                    if (independenceResolution == null
+                        || !independenceResolution.TryAcceptIndependence(this, out List<Kingdom> independentKingdoms))
                     {
-                        if (member != Leader && !member.IsEliminated)
-                            KingdomVisualHelper.ApplyJoinToKingdomWithBannerPolicy(member, independentKingdom, preserveIndependenceClanBanners, showNotification: false);
+                        _ultimatumResolved = false;
+                        return UltimatumResolution.Failed;
                     }
 
-                    if (Leader?.Kingdom == independentKingdom && independentKingdom.RulingClan != Leader)
-                        independentKingdom.RulingClan = Leader;
-
-                    if (preserveIndependenceClanBanners)
-                        KingdomVisualHelper.RestoreClanBanners(preservedIndependenceBanners);
-                    else
-                        KingdomVisualHelper.ReapplyKingdomPaletteAfterClanChanges(independentKingdom, independentVisuals);
-
-                    Campaign.Current.GetCampaignBehavior<IdeologyBehavior>()?.RefreshKingdomIdeologies(independentKingdom);
-
-                    acceptedDemandDetail = new TextObject("{=BC_Msg_AvoidedWar_Independence}to recognize the independence of the {REALM_NAME}");
-                    acceptedDemandDetail.SetTextVariable("REALM_NAME", independentKingdom.Name);
+                    // Membership callbacks may have elected another faction leader during departure.
+                    // Keep the original sponsor for the completed ultimatum's notice and summary.
+                    Leader = independenceLeader;
+                    acceptedDemandDetail = independentKingdoms.Count == 1
+                        ? new TextObject("{=BC_Msg_AvoidedWar_Independence}to recognize the independence of the {REALM_NAME}")
+                            .SetTextVariable("REALM_NAME", independentKingdoms[0].Name)
+                        : new TextObject("{=BC_Msg_AvoidedWar_IndependenceRealms}to recognize the independence of these realms: {REALM_NAMES}")
+                            .SetTextVariable("REALM_NAMES", string.Join(", ", independentKingdoms.Select(k => k.Name.ToString())));
                     break;
 
                 case FactionType.Abdication:
@@ -1051,17 +1013,6 @@ namespace BellumCivile
             Campaign.Current.GetCampaignBehavior<RebellionSummaryBehavior>()?.RecordOutcome(this, RebellionSummaryOutcome.AcceptedUltimatum);
             Campaign.Current.GetCampaignBehavior<FactionManagerBehavior>()?.RemoveFaction(this);
             return UltimatumResolution.DemandsAccepted;
-        }
-
-        private static void RegisterIndependentRealmSourceTitle(Kingdom independentKingdom, IndependentKingdomProfile profile, string reason)
-        {
-            if (independentKingdom == null || !profile.UsesExistingSourceTitle)
-                return;
-
-            FeudalTitleBehavior titleBehavior = Campaign.Current?.GetCampaignBehavior<FeudalTitleBehavior>();
-            FeudalTitleRecord sourceTitle = titleBehavior?.GetTitle(profile.SourceTitleId);
-            if (sourceTitle != null)
-                titleBehavior.RegisterIndependentRealmShell(independentKingdom, sourceTitle, reason);
         }
 
         private UltimatumResolution RefuseDemandsAndRebel(CivilWarPlayerCallContext explicitPlayerCall, bool suppressAutomaticPlayerChoice)
@@ -1165,12 +1116,6 @@ namespace BellumCivile
             if (!KingdomCreationSafetyHelper.IsValidFounder(Leader))
             {
                 failureReason = "the faction has no living clan leader";
-                return false;
-            }
-
-            if (ParentKingdom == null)
-            {
-                failureReason = "the faction has no parent kingdom";
                 return false;
             }
 
@@ -1358,14 +1303,34 @@ namespace BellumCivile
             return false;
         }
 
+        private bool TryGetRebellionCrown(out Clan crown, out string failureReason)
+        {
+            crown = ParentKingdom?.RulingClan;
+            failureReason = null;
+            if (ParentKingdom == null || ParentKingdom.IsEliminated
+                || !NobleClanEligibilityHelper.IsValidRulingClan(crown, ParentKingdom))
+                failureReason = "the parent kingdom has no valid reigning clan";
+            else if (Leader == crown)
+                failureReason = "the faction leader is the parent kingdom's reigning clan";
+            return failureReason == null;
+        }
+
+        private bool RebellionCrownUnchanged(Clan expected, out string failureReason)
+        {
+            if (!TryGetRebellionCrown(out Clan current, out failureReason)) return false;
+            if (current == expected) return true;
+            failureReason = "the parent kingdom's ruler changed during rebellion startup";
+            return false;
+        }
+
         internal bool TryValidateActiveRebellion(out Kingdom rebelKingdom, out string failureReason)
         {
             rebelKingdom = GetRebelKingdom();
             failureReason = null;
 
-            if (ParentKingdom == null)
+            if (ParentKingdom == null || ParentKingdom.IsEliminated)
             {
-                failureReason = "the parent kingdom is missing";
+                failureReason = "the parent kingdom is missing or eliminated";
                 return false;
             }
 

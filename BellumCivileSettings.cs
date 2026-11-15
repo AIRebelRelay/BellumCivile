@@ -76,13 +76,17 @@ namespace BellumCivile
         [SettingPropertyGroup(War, GroupOrder = WarGroupOrder)]
         public bool EnableClientStateMapWidget { get; set; } = true;
 
-        [SettingPropertyInteger("{=BC_MCM_WarDurationReluctance}War Duration Reluctance Period", 1, 500, Order = 5, RequireRestart = false, HintText = "{=BC_MCM_WarDurationReluctance_Hint}Days over which the full -100 peace reluctance decays to 0. Enthusiasm below 10 softens this penalty. After this period, enthusiasm below 10 grants +30 peace support, and zero enthusiasm allows an exhausted internal opponent to consider conceding at more than 10 War Score. This setting never blocks peace proposals. Default: 100 days.")]
+        [SettingPropertyInteger("{=BC_MCM_WarDurationReluctance}Early-War Reluctance (Strength and Days)", 1, 500, Order = 5, RequireRestart = false, HintText = "{=BC_MCM_WarDurationReluctance_Hint}Sets both the initial peace-utility penalty and its duration: 50 starts at -50 and decays by one point daily to zero on day 50. Increasing makes resistance stronger and longer; decreasing makes it weaker and shorter. Enthusiasm below 10 proportionally softens the penalty. After this period, enthusiasm below 10 grants +30 peace support, and zero enthusiasm permits an exhausted internal opponent to consider conceding above 10 War Score. This never blocks peace proposals. Bellum default: 50 strength/days.")]
         [SettingPropertyGroup(War, GroupOrder = WarGroupOrder)]
         public int WarDurationReluctanceDays { get; set; } = C.WarPeaceDurationReluctanceDays;
 
         [SettingPropertyInteger("{=BC_MCM_MinimumPeaceBeforeRenewedWar}Minimum Peace Before Renewed War", 0, 500, Order = 6, RequireRestart = false, HintText = "{=BC_MCM_MinimumPeaceBeforeRenewedWar_Hint}Minimum number of days two realms must remain at peace before Bellum's AI will consider another offensive against the same realm. A value of 0 disables this waiting period. Client liberation wars remain exempt. Default: 20.")]
         [SettingPropertyGroup(War, GroupOrder = WarGroupOrder)]
         public int MinimumPeaceBeforeRenewedWarDays { get; set; } = C.WarPeaceRevampRecentPeaceBlockDays;
+
+        [SettingPropertyInteger("{=BC_MCM_HostageMinimumDuration}Minimum Hostage Pact Duration (Days)", 10, 1000, Order = 7, RequireRestart = false, HintText = "{=BC_MCM_HostageMinimumDuration_Hint}Minimum and starting duration for new hostage pacts, rounded up to the next ten days. Increasing makes new pacts start longer; decreasing makes them start shorter. NPC rulers negotiate from this baseline. Each extra ten days costs 1 War Score; council duration penalties and recovery benefits count only time beyond the saved baseline. Existing pacts and pending negotiations retain their recorded rules, prices and durations. Bellum default: 50 days.")]
+        [SettingPropertyGroup(War, GroupOrder = WarGroupOrder)]
+        public int HostagePactMinimumDurationDays { get; set; } = HostagePactRules.DefaultDurationDays;
 
         [SettingPropertyInteger("{=BC_MCM_TreatyReparationsPerWarScore}Reparations per War Score", 0, 100000, Order = 10, RequireRestart = false, HintText = "{=BC_MCM_TreatyReparationsPerWarScore_Hint}Denars paid as immediate reparations for each War Score spent on the treaty term. A value of 0 disables reparations. Default: 5,000 denars per War Score.")]
         [SettingPropertyGroup(War, GroupOrder = WarGroupOrder)]
@@ -157,6 +161,10 @@ namespace BellumCivile
         [SettingPropertyInteger("{=BC_MCM_ClientLiberationWillingness}AI Client Liberation Willingness Threshold", 0, 100, Order = 80, RequireRestart = false, HintText = "{=BC_MCM_ClientLiberationWillingness_Hint}War Will plus liberation resolve required for AI liberation proposals and Crown preparations. Increasing reduces client liberation instability; decreasing increases it. Zero removes only this willingness check, not liberty desire, power, influence, cooldown or voting requirements. Player actions, existing proposals and foreign-war thresholds are unchanged. Bellum default: 75.")]
         [SettingPropertyGroup(InternalInstability, GroupOrder = InternalInstabilityGroupOrder)]
         public int ClientLiberationWillingnessThreshold { get; set; } = (int)C.WarPeaceRevampWarProposalThreshold;
+
+        [SettingPropertyInteger("{=BC_MCM_CivilWarGrace}Post-Civil-War Grace Period (Years)", 0, 5, Order = 90, RequireRestart = false, HintText = "{=BC_MCM_CivilWarGrace_Hint}Realm-wide recovery after a civil war against the crown ends. Increasing reduces instability by delaying new rebellions; decreasing increases instability by shortening the delay. Zero disables new postwar grace periods. The duration is recorded when settlement begins; existing periods are unchanged. Applies to player and AI rebellions, including court coalitions and succession disputes. Private feuds, Enforce Peace, committed armed challenges and resistance to treason judgments are unaffected. Personal challenge cooldowns remain separate. New campaigns also receive one initial year of pacification, independently of this setting. Bellum default: 2 years.")]
+        [SettingPropertyGroup(InternalInstability, GroupOrder = InternalInstabilityGroupOrder)]
+        public int CivilWarGraceYears { get; set; } = 2;
 
         [SettingPropertyInteger("{=BC_MCM_CivilWarGrace}Post-Civil-War Grace Period (Years)", 0, 5, Order = 90, RequireRestart = false, HintText = "{=BC_MCM_CivilWarGrace_Hint}Realm-wide recovery after a civil war against the crown ends. Increasing reduces instability by delaying new rebellions; decreasing increases instability by shortening the delay. Zero disables new postwar grace periods. The duration is recorded when settlement begins; existing periods are unchanged. Applies to player and AI rebellions, including court coalitions and succession disputes. Private feuds, Enforce Peace, committed armed challenges and resistance to treason judgments are unaffected. Personal challenge cooldowns remain separate. New campaigns also receive one initial year of pacification, independently of this setting. Bellum default: 2 years.")]
         [SettingPropertyGroup(InternalInstability, GroupOrder = InternalInstabilityGroupOrder)]
@@ -279,7 +287,7 @@ namespace BellumCivile
         [SettingPropertyGroup(ArmyLoyalty, GroupOrder = ArmyLoyaltyGroupOrder)]
         public int ArmyPersonalFriendRelationThreshold { get; set; } = C.ArmyPersonalFriendRelationThreshold;
 
-        [SettingPropertyBool("{=BC_MCM_EnableBellumMarriage}Enable Strategic Marriage Logic", Order = 0, RequireRestart = false, HintText = "{=BC_MCM_EnableBellumMarriage_Hint}When enabled, Bellum adds strategic NPC marriage logic for dynastic survival, royal pacification, and foreign royal alliances. Disable this to leave NPC matchmaking to vanilla or another mod. Default: On.")]
+        [SettingPropertyBool("{=BC_MCM_EnableBellumMarriage}Enable Strategic Marriage Logic", Order = 0, RequireRestart = false, HintText = "{=BC_MCM_EnableBellumMarriage_Hint}When enabled, Bellum gives NPC houses separate annual chances to arrange family and retainer marriages, balancing bloodline survival, household manpower and suitable political ties. Only family-to-family marriages create new house-level marriage ties. Disable this to leave NPC matchmaking to vanilla or another mod. Default: On.")]
         [SettingPropertyGroup(Marriage, GroupOrder = MarriageGroupOrder)]
         public bool EnableBellumStrategicMarriageLogic { get; set; } = true;
 
@@ -326,12 +334,12 @@ namespace BellumCivile
         // Retained without an MCM attribute so old campaigns can migrate their configured drift speed exactly.
         public float DynamicRelationWeeklyDrift { get; set; } = C.DynamicRelationWeeklyDrift;
 
-        [SettingPropertyDropdown("{=BC_MCM_Notifications}Bellum Civile Notifications", Order = 0, RequireRestart = false, HintText = "{=BC_MCM_Notifications_Hint}Disabled: hides optional Bellum Civile chat messages. Kingdom Only: shows political events involving your kingdom, rebel side, or clan. Global: shows Bellum Civile political events from all kingdoms. Default: Kingdom Only.")]
+        [SettingPropertyDropdown("{=BC_MCM_Notifications}Bellum Civile Notifications", Order = 0, RequireRestart = false, HintText = "{=BC_MCM_Notifications_Hint}Disabled: hides optional Bellum Civile chat messages. Local & Major Events: shows events involving your kingdom, rebel side, or clan, plus major events worldwide. Global: shows political events from all kingdoms. Personal messages remain visible. Default: Local & Major Events.")]
         [SettingPropertyGroup(Notifications, GroupOrder = NotificationsGroupOrder)]
         public Dropdown<string> BellumCivileNotifications { get; set; } = new Dropdown<string>(new string[]
         {
             "{=BC_MCM_NotifDisabled}Disabled",
-            "{=BC_MCM_NotifKingdomOnly}Kingdom Only",
+            "{=BC_MCM_NotifKingdomOnly}Local & Major Events",
             "{=BC_MCM_NotifGlobal}Global"
         }, selectedIndex: 1);
 

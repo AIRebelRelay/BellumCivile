@@ -95,6 +95,7 @@ namespace BellumCivile.Behaviors
 
         public override void SyncData(IDataStore dataStore)
         {
+            SyncTermPreparationData(dataStore);
             SyncInstabilityData(dataStore);
             dataStore.SyncData("BC_CourtTrade_RepeatUntil", ref _tradeRepeatUntil);
             _tradeRepeatUntil = _tradeRepeatUntil ?? new Dictionary<string, double>();
@@ -213,6 +214,7 @@ namespace BellumCivile.Behaviors
             if (faction == null)
                 agenda = agenda?.IsPolicy == false || agenda?.PlayerSelectionConfirmed == true || agenda?.State == CourtAgendaState.AwaitingPlayerDecision
                     ? agenda : _agendas.LastOrDefault(a => a.Manual && a.Realm == realm && a.Sponsor == realm?.RulingClan) ?? agenda;
+            if (AwaitingTermAnnouncement(realm, faction, agenda)) return null;
             agenda?.GetObjective();
             return agenda;
         }
@@ -233,6 +235,8 @@ namespace BellumCivile.Behaviors
 
         private string DescribeAgendaEntry(Kingdom realm, FactionObject faction, bool compact, CourtAgendaRecord agenda)
         {
+            if (AwaitingTermAnnouncement(realm, faction, agenda))
+                return new TextObject("{=BC_CourtAgendaAnnouncementPending}Current agenda: To be announced in the following days.").ToString();
             if (agenda == null && faction == null && realm?.RulingClan == Clan.PlayerClan)
                 return new TextObject("{=BC_CrownNoProceedings}Current agenda: No business before the Crown").ToString();
             var text = new TextObject(compact ? "{=BC_CurrentAgendaCompact}Current agenda: {OBJECTIVE} ({STATUS})"
@@ -269,7 +273,7 @@ namespace BellumCivile.Behaviors
             else if (IsDynastic(agenda)) status = DynasticStatus(agenda);
             else if (IsTrade(agenda)) status = TradeStatus(agenda);
             else if (IsTitleGrant(agenda)) status = TitleGrantStatus(agenda);
-            else if (IsClientGrant(agenda)) status = new TextObject("{=BC_ClientGrantStatus}A voluntary grant to a client realm, costing 100 influence. No distribution vote is held. Only the Crown's own rights accompany the holding; higher titles are not granted.");
+            else if (IsClientGrant(agenda)) status = new TextObject("{=BC_ClientGrantStatus}A voluntary grant to a client realm, costing 100 influence. The client's council will distribute the holding through a normal fief vote. Only the Crown's own rights accompany the holding; higher titles are not granted.");
             else if (IsRally(agenda)) status = RallyStatus(agenda);
             else if (IsLiberation(agenda)) status = new TextObject("{=BC_CourtLiberationStatus}Preparations strengthen the realm's desire for self-rule by +20 during this term. A declaration still requires sufficient readiness, war enthusiasm and the usual vote. Beginning the war completes this objective; it does not guarantee independence.");
             else if (IsProtection(agenda)) status = new TextObject("{=BC_ProtectionStatus}A single appeal for protection this term. Submission requires the protector to join the named war; no faction mood reward or penalty applies.");
@@ -369,10 +373,14 @@ namespace BellumCivile.Behaviors
             foreach (var agenda in _agendas.ToList())
                 if (!ValidRealm(agenda.Realm) && (agenda.IsUnopened || agenda.IsFiled)) Cancel(agenda, "realm_invalid");
 
-            foreach (Kingdom realm in Kingdom.All.Where(ValidRealm).ToList())
+            var realms = Kingdom.All.Where(ValidRealm).ToList();
+            var renewed = new HashSet<string>(realms.Where(QueueCourtTerm).Select(r => r.StringId));
+            foreach (Kingdom realm in realms)
             {
                 if (!TryGetCourtRuler(realm, out Clan house, out Hero ruler)) continue;
                 ElectiveSuccessionBehavior.Instance?.CheckMandate(realm);
+                if (!CourtRulerUnchanged(realm, house, ruler)) continue;
+                if (renewed.Contains(realm.StringId)) ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);
                 if (!CourtRulerUnchanged(realm, house, ruler)) continue;
                 HereditaryLoyaltyBehavior.Instance?.Maintain(realm);
                 if (!CourtRulerUnchanged(realm, house, ruler)) continue;
@@ -380,18 +388,6 @@ namespace BellumCivile.Behaviors
                 if (!CourtRulerUnchanged(realm, house, ruler)) continue;
                 MaintainCouncilVacancyPriority(realm);
                 if (!CourtRulerUnchanged(realm, house, ruler)) continue;
-                if (!_nextTerms.TryGetValue(realm.StringId, out var next))
-                {
-                    double interval = BellumCivileOptions.CourtTermDays;
-                    _nextTerms[realm.StringId] = CampaignTime.Days((float)CourtAgendaRules.NextBoundary(CampaignTime.Now.ToDays, interval));
-                }
-                else if (next.IsPast)
-                {
-                    // Publish the next boundary first; inquiries cannot reopen the same term.
-                    _nextTerms[realm.StringId] = CampaignTime.Now + CampaignTime.Days(BellumCivileOptions.CourtTermDays);
-                    OpenTerm(realm, manager, ideology);
-                }
-
                 foreach (var faction in manager.GetFactionsInKingdom(realm).Where(f => f.IsIdeology).ToList())
                 {
                     if (!CourtRulerUnchanged(realm, house, ruler)) break;
@@ -417,6 +413,7 @@ namespace BellumCivile.Behaviors
                     Advance(agenda, ideology);
                 }
             }
+            PrepareQueuedCourtTerms(realms, manager, ideology);
             foreach (string key in _reconsiderAfter.Where(p => p.Value.IsPast).Select(p => p.Key).ToList()) _reconsiderAfter.Remove(key);
             foreach (string key in _mandateSettledUntil.Where(p => p.Value.IsPast).Select(p => p.Key).ToList()) _mandateSettledUntil.Remove(key);
             foreach (string key in _emergencyAfter.Where(p => p.Value.IsPast).Select(p => p.Key).ToList()) _emergencyAfter.Remove(key);
@@ -431,15 +428,13 @@ namespace BellumCivile.Behaviors
             foreach (var agenda in _agendas) agenda.GetObjective();
         }
 
-        private void OpenTerm(Kingdom realm, FactionManagerBehavior manager, IdeologyBehavior ideology)
+        private void OpenTerm(Kingdom realm, FactionManagerBehavior manager, IdeologyBehavior ideology, CourtTermPreparationRecord term)
         {
             if (!TryGetCourtRuler(realm, out Clan house, out Hero ruler)) return;
             foreach (var old in _agendas.Where(a => a.Realm == realm && a.State == CourtAgendaState.AwaitingNomination).ToList())
                 if (ValidPlayerAgenda(old)) UpdatePlayerAgenda(old);
             if (!CourtRulerUnchanged(realm, house, ruler)) return;
             ideology.BeginCourtTerm(realm);
-            if (!CourtRulerUnchanged(realm, house, ruler)) return;
-            ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);
             if (!CourtRulerUnchanged(realm, house, ruler)) return;
             OpenCrownTerm(realm, manager);
             if (!CourtRulerUnchanged(realm, house, ruler)) return;
@@ -462,14 +457,13 @@ namespace BellumCivile.Behaviors
                 if (owner == null && _agendas.Any(a => a.Realm == realm && a.Sponsor == realm.RulingClan && a.IsFiled)) continue;
                 Clan sponsor = owner?.Leader ?? realm.RulingClan;
                 if (!Eligible(sponsor, realm)) continue;
-                int nominationDays = CourtAgendaRules.NominationDays(BellumCivileOptions.CourtTermDays);
-                int earliest = nominationDays + 1;
-                int latest = Math.Max(earliest, (int)BellumCivileOptions.CourtTermDays - BellumCivileOptions.PoliticalDeliberationDays);
+                int nominationDays = term.NominationDays;
+                CourtTermScheduler.SessionOffsets(term, CampaignTime.Now.ToDays, out int earliest, out int latest);
                 var agenda = new CourtAgendaRecord { Realm = realm, Faction = owner, Sponsor = sponsor,
                     NominationWindowDays = nominationDays, State = CourtAgendaState.NotProposed,
                     SessionDate = CampaignTime.Now + CampaignTime.Days(earliest + MBRandom.RandomInt(latest - earliest + 1)) };
-                agenda.FreezeSchedule(BellumCivileOptions.CourtTermDays, BellumCivileOptions.PoliticalDeliberationDays);
-                agenda.GetObjective().FreezeTerm(CampaignTime.Now.ToDays, _nextTerms[realm.StringId].ToDays);
+                agenda.FreezeSchedule(term.TermDays, term.DeliberationDays);
+                agenda.GetObjective().FreezeTerm(CampaignTime.Now.ToDays, term.EndDay);
                 _agendas.Add(agenda);
                 if (owner == null && AssignPriorityDecree(agenda)) continue;
                 if (owner == null && AssignPriorityRoyalPeace(agenda)) continue;
@@ -490,7 +484,8 @@ namespace BellumCivile.Behaviors
                 if (playerLed && owner.Mood <= -60 && manager.HasCivilWarGrace(realm) != true) agenda.CrisisInterventionPending = true;
                 selecting.Add(agenda);
             }
-            var choices = _objectiveSelector.SelectBatch(context,
+            var choices = selecting.Count == 0 ? new CourtObjectiveChoice[0] : _objectiveSelector.SelectBatch(
+                context,
                 selecting.Select(a => new CourtObjectiveOwner(a.Faction, a.Sponsor)).ToList(), new[] { "council_appointment", CourtMandateRules.Kind },
                     () => MBRandom.RandomFloat,
                     (owner, candidate) => BellumCivileDebug.TraceIfEnabled("court-objectives",
@@ -707,8 +702,8 @@ namespace BellumCivile.Behaviors
             message.SetTextVariable("POLICY", policy.Name);
             BellumCivileNotifications.Show(message, obsoleteMandate ? BellumNotificationColors.Politics
                 : passed ? BellumNotificationColors.Success : BellumNotificationColors.Danger, primaryKingdom: realm);
-            BellumCivileLogger.Log($"Court agenda concluded; realm={realm.StringId}; policy={policy.StringId}; result={agenda.State}; paid={agenda.PaidInfluence}.");
             RecordCourtPolicyVotePublicProvenance(agenda, policy, abolish, passed, obsoleteMandate);
+            BellumCivileLogger.Log($"Court agenda concluded; realm={realm.StringId}; policy={policy.StringId}; result={agenda.State}; paid={agenda.PaidInfluence}.");
         }
     }
 }

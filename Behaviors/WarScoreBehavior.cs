@@ -337,6 +337,8 @@ namespace BellumCivile.Behaviors
                     && (war.AttackerKingdomId == proposer.Kingdom.StringId || war.DefenderKingdomId == proposer.Kingdom.StringId))
                 .Where(war => !IsAuxiliaryClientWar(war))
                 .Where(war => !IsStorylineProtectedForeignWar(war))
+                .Where(war => !AlliancePeaceRestriction.IsPeaceBlocked(
+                    ResolveKingdom(war.AttackerKingdomId), ResolveKingdom(war.DefenderKingdomId)))
                 .Where(war => war.CanReconsiderPeace(CurrentDay))
                 .Where(war => !requireLowWill || CourtAgendaBehavior.EffectiveWarWill(proposer,war,
                     Campaign.Current.GetCampaignBehavior<WarPeaceRevampBehavior>()?.GetWarWill(proposer) ?? 50) < BellumCivileOptions.WarWillPeaceThreshold)
@@ -1239,6 +1241,13 @@ namespace BellumCivile.Behaviors
                 }
 
                 if (IsAuxiliaryClientWar(war))
+                {
+                    war.ClearTerminalResolution();
+                    TouchRuntimeRevision();
+                    return false;
+                }
+
+                if (AlliancePeaceRestriction.IsPeaceBlocked(attacker, defender))
                 {
                     war.ClearTerminalResolution();
                     TouchRuntimeRevision();

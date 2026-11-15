@@ -91,7 +91,7 @@ namespace BellumCivile.ViewModelMixin
             EncyclopediaHeroFamilyPrefabPatch.InsertSection(_document);
         }
 
-        [PrefabExtensionXmlDocument]
+        [PrefabExtensionXmlNode]
         [UsedImplicitly]
         public XmlDocument GetPrefabExtension() => _document;
     }

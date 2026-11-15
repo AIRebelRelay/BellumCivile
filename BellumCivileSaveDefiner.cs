@@ -16,6 +16,16 @@ namespace BellumCivile
 
         protected override void DefineClassTypes()
         {
+            AddClassDefinition(typeof(VoluntaryPactDecision), 148);
+            AddClassDefinition(typeof(VoluntaryPactDecision.PactOutcome), 149);
+            AddClassDefinition(typeof(CourtTermPreparationRecord), 145);
+            AddClassDefinition(typeof(RetainerIndentureRecord), 144);
+            AddClassDefinition(typeof(LordshipCommandTransferRecord), 143);
+            AddClassDefinition(typeof(AsylumVisitRecord), 142);
+            AddClassDefinition(typeof(PersonalLordshipRecord), 138);
+            AddClassDefinition(typeof(LordshipAppointmentRecord), 139);
+            AddClassDefinition(typeof(LordshipIncomeCredit), 140);
+            AddClassDefinition(typeof(TitleAcquiredMapNotification), 141);
             AddClassDefinition(typeof(RestoredRealmCreationRecord), 137);
             AddClassDefinition(typeof(CivilWarGraceRecord), 136);
             AddClassDefinition(typeof(RoyalPeaceDecreeRecord), 135);
@@ -107,6 +117,7 @@ namespace BellumCivile
             AddClassDefinition(typeof(CouncilSalaryCredit), 114);
             AddClassDefinition(typeof(HostagePactRecord), 115);
             AddClassDefinition(typeof(TreatyHostageRecord), 116);
+            AddClassDefinition(typeof(VoluntaryPactProposalRecord), 146);
             AddClassDefinition(typeof(CourtRallyRecord), 104);
             AddClassDefinition(typeof(CourtMandateRecord), 105);
             AddClassDefinition(typeof(CourtMandatePledge), 106);
@@ -159,10 +170,20 @@ namespace BellumCivile
             AddEnumDefinition(typeof(HostagePactPhase), 117);
             AddEnumDefinition(typeof(HostagePactEndReason), 118);
             AddEnumDefinition(typeof(HostageCustodyOutcome), 119);
+            AddEnumDefinition(typeof(VoluntaryPactProposalPhase), 147);
         }
 
         protected override void DefineContainerDefinitions()
         {
+            ConstructContainerDefinition(typeof(List<VoluntaryPactProposalRecord>));
+            ConstructContainerDefinition(typeof(Dictionary<string, CourtTermPreparationRecord>));
+            ConstructContainerDefinition(typeof(Dictionary<string, AsylumVisitRecord>));
+            ConstructContainerDefinition(typeof(List<TitleAcquiredMapNotification>));
+            ConstructContainerDefinition(typeof(List<PersonalLordshipRecord>));
+            ConstructContainerDefinition(typeof(List<LordshipAppointmentRecord>));
+            ConstructContainerDefinition(typeof(List<LordshipCommandTransferRecord>));
+            ConstructContainerDefinition(typeof(List<RetainerIndentureRecord>));
+            ConstructContainerDefinition(typeof(List<LordshipIncomeCredit>));
             ConstructContainerDefinition(typeof(List<CivilWarGraceRecord>));
             ConstructContainerDefinition(typeof(List<RestoredRealmCreationRecord>));
             ConstructContainerDefinition(typeof(List<RoyalPeaceDecreeRecord>));
