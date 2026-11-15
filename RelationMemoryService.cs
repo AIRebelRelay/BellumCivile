@@ -68,6 +68,7 @@ namespace BellumCivile
         public const string RecentFavor = "recent_favor";
         public const string CourtTitleGrant = "court_title_grant";
         public const string ClientLandGrant = "client_land_grant";
+        public const string GrantedRealmIndependence = "granted_realm_independence";
         public const string DeliveredNoblePrisoners = "delivered_noble_prisoners";
         public const string RecentGrievance = "recent_grievance";
         public const string KilledKinsman = "killed_kinsman";
@@ -377,6 +378,9 @@ namespace BellumCivile
                     break;
                 case LiberatedMyRealm:
                     text = new TextObject("{=BC_RelationMemory_LiberatedMyRealm}Liberated my realm");
+                    break;
+                case GrantedRealmIndependence:
+                    text = new TextObject("{=BC_RelationMemory_GrantedRealmIndependence}Granted my realm its independence");
                     break;
                 case BrokeTreatyOrAlliance:
                     text = new TextObject("{=BC_RelationMemory_BrokeTreatyOrAlliance}Broke a treaty or alliance");
