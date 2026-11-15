@@ -1303,26 +1303,6 @@ namespace BellumCivile
             return false;
         }
 
-        private bool TryGetRebellionCrown(out Clan crown, out string failureReason)
-        {
-            crown = ParentKingdom?.RulingClan;
-            failureReason = null;
-            if (ParentKingdom == null || ParentKingdom.IsEliminated
-                || !NobleClanEligibilityHelper.IsValidRulingClan(crown, ParentKingdom))
-                failureReason = "the parent kingdom has no valid reigning clan";
-            else if (Leader == crown)
-                failureReason = "the faction leader is the parent kingdom's reigning clan";
-            return failureReason == null;
-        }
-
-        private bool RebellionCrownUnchanged(Clan expected, out string failureReason)
-        {
-            if (!TryGetRebellionCrown(out Clan current, out failureReason)) return false;
-            if (current == expected) return true;
-            failureReason = "the parent kingdom's ruler changed during rebellion startup";
-            return false;
-        }
-
         internal bool TryValidateActiveRebellion(out Kingdom rebelKingdom, out string failureReason)
         {
             rebelKingdom = GetRebelKingdom();
