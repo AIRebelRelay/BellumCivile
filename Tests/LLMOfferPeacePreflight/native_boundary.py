@@ -45,7 +45,7 @@ BLOCKED_CALLS = (
     r"\bRegisterEvents\s*\(",
     r"\bMBRandom\s*\.",
     r"\bAddEvent\s*\(",
-    r"\b(?:_wars|_clients|_proposals|_councilSnapshots|_warWillByClanId|_targetScoresByClanId)\s*=",
+    r"\b(?:_wars|_clients|_proposals|_councilSnapshots|_warWillByClanId|_targetScoresByClanId)\s*=(?!=)",
     r"\b(?:_wars|_clients|_proposals|_councilSnapshots|_warWillByClanId|_targetScoresByClanId)\s*\.\s*(?:Add|Remove|RemoveAll|Clear|Insert)\s*\(",
 )
 
@@ -146,6 +146,10 @@ def self_test() -> None:
     ]:
         if not any(re.search(pattern, body(unsafe)) for pattern in BLOCKED_CALLS):
             raise AssertionError(f"scanner failed to reject {unsafe}")
+    # A null/equality *read* must not be confused with a field write.
+    if any(re.search(pattern, body("if (_wars == null || _clients == null) return;"))
+           for pattern in BLOCKED_CALLS):
+        raise AssertionError("scanner falsely flagged an equality-only read")
     if any(re.search(pattern, body("// BeginParley()\nvar x = 1;"))
            for pattern in BLOCKED_CALLS):
         raise AssertionError("scanner falsely flagged a comment")
