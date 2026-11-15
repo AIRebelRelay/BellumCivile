@@ -246,6 +246,11 @@ internal static class Program
                 FiefAllocationTests.Run(Check);
                 Console.WriteLine($"{_checks} fief allocation checks passed.");
             }
+            else if (args.Contains("--grant-fief-closure"))
+            {
+                GrantFiefClosureTests.Run(Check);
+                Console.WriteLine($"{_checks} native grant-fief closure checks passed.");
+            }
             else if (args.Contains("--vote-lobbying"))
             {
                 VoteLobbyingArmyTests.Run(Check);
