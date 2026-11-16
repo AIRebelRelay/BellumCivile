@@ -2,8 +2,8 @@
 <Module>
     <Name value="Bellum Civile"/>
     <Id value="BellumCivile"/>
-    <!-- 1.4.11r (r=Relay) QA identity; numeric 4th part for Bannerlord ApplicationVersion. -->
-    <Version value="v1.4.11.1"/>
+    <!-- 1.4.12b CR alpha identity; numeric 4th part for Bannerlord ApplicationVersion. -->
+    <Version value="v1.4.12.1"/>
 	<DefaultModule value="false"/>
 	<ModuleCategory value="Singleplayer"/>
 	<Official value="false"/>
