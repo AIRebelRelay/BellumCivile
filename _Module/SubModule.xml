@@ -3,7 +3,7 @@
     <Name value="Bellum Civile"/>
     <Id value="BellumCivile"/>
     <!-- 1.4.12b CR alpha identity; numeric 4th part for Bannerlord ApplicationVersion. -->
-    <Version value="v1.4.12.1"/>
+    <Version value="v1.4.12.2"/>
 	<DefaultModule value="false"/>
 	<ModuleCategory value="Singleplayer"/>
 	<Official value="false"/>

@@ -7,7 +7,7 @@ This README provides a technical orientation and maintenance reference for contr
 | Item | Current state |
 | --- | --- |
 | Documentation revision | October 13, 2026 |
-| Source candidate | Bellum Civile 1.4.12b CR alpha 1 (module/file version 1.4.12.1; runtime parity not certified) |
+| Source candidate | Bellum Civile 1.4.12b CR alpha 2 (module/file version 1.4.12.2; runtime parity not certified) |
 | Target game version | Bannerlord 1.4.8 |
 | Core runtime | .NET Framework 4.7.2 (`net472`) |
 | Required mod dependencies | Harmony, UIExtenderEx, Mod Configuration Menu v5 |
@@ -1014,10 +1014,10 @@ The engine harness accepts an installation path as its first positional argument
 
 ### Logs and Console Tools
 
-Logs live under the user's Documents folder:
+Logs and yearly reports live in the installed Bellum module's own logs folder:
 
 ```text
-Mount and Blade II Bannerlord/Configs/ModLogs/
+Modules/BellumCivile/logs/
   BellumCivileYYYYMMDD.log
   BellumCivileYYYYMMDD_1.log ...
   bellumcivile_yearlyreports.txt

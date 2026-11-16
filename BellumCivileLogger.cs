@@ -26,12 +26,17 @@ namespace BellumCivile
             AppDomain.CurrentDomain.ProcessExit += (_, __) => CloseLogWriter();
         }
 
-        private static string LogDirectory =>
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                "Mount and Blade II Bannerlord",
-                "Configs",
-                "ModLogs");
+        private static string LogDirectory => ResolveLogDirectory(typeof(BellumCivileLogger).Assembly.Location);
+
+        internal static string ResolveLogDirectory(string assemblyLocation)
+        {
+            var client = new DirectoryInfo(Path.GetDirectoryName(Path.GetFullPath(assemblyLocation)));
+            if (!string.Equals(client.Name, "Win64_Shipping_Client", StringComparison.OrdinalIgnoreCase)
+                || client.Parent == null || !string.Equals(client.Parent.Name, "bin", StringComparison.OrdinalIgnoreCase)
+                || client.Parent.Parent == null)
+                throw new InvalidOperationException("Bellum DLL must be installed in its module's bin/Win64_Shipping_Client folder.");
+            return Path.Combine(client.Parent.Parent.FullName, "logs");
+        }
 
         private static string YearlyReportsPath =>
             Path.Combine(LogDirectory, "bellumcivile_yearlyreports.txt");
