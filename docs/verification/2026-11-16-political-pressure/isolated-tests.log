@@ -1,0 +1,50 @@
+PASS recorded will and applied pressure copy exact scope and values
+PASS missing will stays unknown without inserting initial value
+PASS recorded zero remains zero
+PASS finite stored value is never silently clamped or recomputed
+PASS pressure deltas are not added to already recorded will
+PASS missing will storage remains unavailable and null
+PASS missing pressure storage is explicit while stored will stays usable
+PASS both absent sections remain absent
+PASS empty pressure storage is known empty
+PASS pressure zero expiry is nonexpiring
+PASS negative expiry preserves Native nonexpiring semantics
+PASS expiry at capture day is excluded without ending source
+PASS past positive expiry is excluded
+PASS future expiry remains included
+PASS positive negative and zero amounts preserve recorded signs
+PASS ended pressure remains excluded
+PASS other clan pressure and will are excluded
+PASS corrupt other-clan numeric state does not contaminate scope
+PASS null row fails closed without removing it
+PASS duplicate pressure IDs fail closed
+PASS blank pressure ID fails closed
+PASS nonfinite stored will fails closed
+PASS infinite stored will fails closed
+PASS nonfinite pressure amount fails closed
+PASS infinite pressure amount fails closed
+PASS unknown reason enum fails closed
+PASS unknown reason zero remains valid without invented text
+PASS nonfinite expiry fails closed before expiration filtering
+PASS infinite expiry fails closed
+PASS future creation day fails closed
+PASS negative creation day fails closed
+PASS invalid capture day fails closed
+PASS null clan is unavailable
+PASS eliminated clan is unavailable
+PASS detached same-ID clan is unavailable
+PASS blank clan ID is unavailable
+PASS missing behavior is explicit
+PASS capacity overflow has no partial data or will fallback
+PASS capacity boundary stays complete and ordinal sorted
+PASS expired records do not consume active capacity
+PASS later source mutation cannot change captured snapshot
+PASS read preserves every saved pressure field and storage identity
+PASS returned collection is immutable
+PASS private reason contexts and future target preference are absent
+PASS existing GetWarWill still materializes initial value when explicitly called
+PASS existing PeekWarWill still uses initial default without insertion
+PASS actual guard rejects worker-thread read
+PASS actual guard rejects missing integration
+PASS actual guard rejects missing campaign
+RESULT 49 named cases PASS; actual records and extracted methods; Native boundary doubles, not a shipping build or game test.

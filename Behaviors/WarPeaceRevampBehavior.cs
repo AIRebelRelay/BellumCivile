@@ -102,6 +102,12 @@ namespace BellumCivile.Behaviors
             }
         }
 
+        // Passive integration read: no getters, defaults, collection initialization or gameplay effects.
+        internal PoliticalPressureStateSnapshot GetExistingPoliticalPressureStateSnapshot(Clan clan, float day)
+        {
+            return PoliticalPressureStateReader.Read(clan, day, _warWillByClanId, _pressureRecords);
+        }
+
         public float GetWarWill(Clan clan)
         {
             if (clan == null || string.IsNullOrWhiteSpace(clan.StringId))
