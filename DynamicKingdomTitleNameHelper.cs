@@ -460,6 +460,17 @@ namespace BellumCivile
             }
         }
 
+        // Read the existing native registry only; do not resolve, seed, repair or return a mutable TextObject.
+        internal static bool TryReadExistingNativeName(Kingdom kingdom, out string name)
+        {
+            name = null;
+            if (kingdom == null) return false;
+            TextObject recorded = ResolveRecordedNativeText(kingdom, KingdomDisplayNameField.Name);
+            if (recorded == null) return false;
+            name = recorded.CopyTextObject()?.ToString();
+            return true;
+        }
+
         public static string GetNativeName(Kingdom kingdom)
         {
             return GetNativeNameText(kingdom)?.ToString();
