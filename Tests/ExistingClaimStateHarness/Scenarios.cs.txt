@@ -1,0 +1,117 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+public static class ExistingClaimStateScenarios
+{
+    private static int count;
+    private static Clan clan;
+    private static FeudalTitleBehavior behavior;
+    private static void Check(bool ok, string why) { if (!ok) throw new Exception(why); }
+    private static void Case(string name, Action run) {
+        clan = new Clan { StringId = "house" }; Clan.All = new List<Clan> { clan };
+        behavior = new FeudalTitleBehavior(); Campaign.Current = new Campaign { Titles = behavior }; CampaignTime.Now.ToDays = 100;
+        run(); count++; Console.WriteLine("PASS " + name);
+    }
+    private static FeudalClaimRecord Row(string id = "claim", string house = "house", float expiry = -1,
+        string source = "partition_bloodright", string sourceHero = "ancestor", string carrier = "carrier", int depth = 0) {
+        return new FeudalClaimRecord(id, house, "title", FeudalClaimStrength.Strong, source, sourceHero, "origin", 90, expiry, depth, carrier);
+    }
+    private static FeudalTitleRecord Title(bool active = true, string id = "title") {
+        return new FeudalTitleRecord(id, "secret_name", FeudalTitleType.Kingdom, "other", "other", "", "", "realm", 50, 90, active);
+    }
+    private static void Set(object row, string field, object value) { row.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(row, value); }
+    private static ClaimStateSnapshot Read() { return BellumIntegration.GetExistingClaimState(clan); }
+    private static void Invalid(FeudalClaimRecord row) { behavior.FixtureClaims.Add(row); Check(Read().Status == ClaimStateStatus.InvalidRecords && Read().Claims.Count == 0, "corrupt data leaked"); }
+    public static void Run() {
+        Case("active claim is copied with exact clan day and strength", () => {
+            behavior.FixtureClaims.Add(Row()); behavior.FixtureTitles.Add("title", Title()); var s = Read(); var r = s.Claims.Single();
+            Check(s.Status == ClaimStateStatus.Recorded && s.ClanId == "house" && s.CapturedDay == 100 && s.ActiveRecordCount == 1, "scope");
+            Check(r.ClaimId == "claim" && r.TargetTitleId == "title" && r.Strength == FeudalClaimStrength.Strong && r.CreatedDay == 90 && r.ExpiresDay == -1 && r.TargetState == ClaimTargetState.Active, "copy");
+        });
+        Case("expiry zero is expired unlike pressure zero", () => { behavior.FixtureClaims.Add(Row(expiry:0)); Check(Read().Claims.Count == 0, "zero expiry became permanent"); });
+        Case("expiry at current day is excluded", () => { behavior.FixtureClaims.Add(Row(expiry:100)); Check(Read().Claims.Count == 0, "expiry boundary"); });
+        Case("future expiry remains active", () => { behavior.FixtureClaims.Add(Row(expiry:101)); Check(Read().Claims.Count == 1, "future claim lost"); });
+        Case("negative expiry retains existing no-expiry semantics", () => { behavior.FixtureClaims.Add(Row(expiry:-5)); Check(Read().Claims.Count == 1, "negative expiry changed"); });
+        Case("float-day precision matches native active predicate", () => {
+            CampaignTime.Now.ToDays = 100.000001; behavior.FixtureClaims.Add(Row(expiry:100)); Check(Read().CapturedDay == 100 && Read().Claims.Count == 0, "precision diverged");
+        });
+        Case("inactive saved flag is excluded without reactivation", () => { var c = Row(); c.SetActive(false); behavior.FixtureClaims.Add(c); Check(Read().Claims.Count == 0 && !c.IsActive, "reactivated claim"); });
+        Case("other clan is excluded", () => { behavior.FixtureClaims.Add(Row(house:"other")); Check(Read().Claims.Count == 0, "other clan leak"); });
+        Case("barred hereditary carrier is excluded", () => { Campaign.Current.Integration.Bar("carrier"); behavior.FixtureClaims.Add(Row()); Check(Read().Claims.Count == 0, "barred carrier exposed"); });
+        Case("empty hereditary carrier falls back to barred source hero", () => { Campaign.Current.Integration.Bar("ancestor"); behavior.FixtureClaims.Add(Row(carrier:"")); Check(Read().Claims.Count == 0, "fallback ignored"); });
+        Case("current eligible carrier wins over barred source hero", () => { Campaign.Current.Integration.Bar("ancestor"); behavior.FixtureClaims.Add(Row()); Check(Read().Claims.Count == 1, "wrong hereditary person"); });
+        Case("generation depth makes otherwise ordinary source hereditary", () => { Campaign.Current.Integration.Bar("carrier"); behavior.FixtureClaims.Add(Row(source:"ordinary",depth:1)); Check(Read().Claims.Count == 0, "depth ignored"); });
+        Case("all hereditary source labels use barred filter", () => {
+            Campaign.Current.Integration.Bar("carrier");
+            foreach (var label in new[] { "partition_bloodright", "partition_inherited_claim", "inherited_blood_claim", "marriage_birthright", "royal_heiress_player_marriage" }) behavior.FixtureClaims.Add(Row(label,source:label));
+            Check(Read().Claims.Count == 0, "hereditary source bypass");
+        });
+        Case("nonhereditary claim preserves existing barred-person semantics", () => {
+            Campaign.Current.Integration.Bar("carrier"); Campaign.Current.Integration.Bar("ancestor"); behavior.FixtureClaims.Add(Row(source:"fabricated")); Check(Read().Claims.Count == 1, "ordinary claim incorrectly barred");
+        });
+        Case("missing title is explicit without dropping the claim", () => { behavior.FixtureClaims.Add(Row()); Check(Read().Claims.Single().TargetState == ClaimTargetState.Missing, "missing title hidden"); });
+        Case("missing title collection remains null and unknown", () => {
+            behavior.FixtureTitles = null; behavior.FixtureClaims.Add(Row()); Check(Read().Claims.Single().TargetState == ClaimTargetState.RecordsUnavailable && behavior.FixtureTitles == null, "title state invented");
+        });
+        Case("inactive title is explicit and not reactivated", () => { behavior.FixtureTitles.Add("title", Title(false)); behavior.FixtureClaims.Add(Row()); Check(Read().Claims.Single().TargetState == ClaimTargetState.Inactive, "inactive title promoted"); });
+        Case("dissolved title takes precedence over active flag", () => {
+            var t = Title(); Set(t, "_isDeliberatelyDissolved", true); behavior.FixtureTitles.Add("title", t); behavior.FixtureClaims.Add(Row()); Check(Read().Claims.Single().TargetState == ClaimTargetState.Dissolved, "dissolved title promoted");
+        });
+        Case("mismatched target dictionary identity fails closed", () => { behavior.FixtureTitles.Add("title", Title(id:"wrong")); Invalid(Row()); });
+        Case("null claim storage remains null and unavailable", () => { behavior.FixtureClaims = null; Check(Read().Status == ClaimStateStatus.UninitializedRecords && behavior.FixtureClaims == null, "storage initialized"); });
+        Case("empty saved list is recorded empty", () => { Check(Read().Status == ClaimStateStatus.Recorded && Read().Claims.Count == 0, "empty misreported"); });
+        Case("missing behavior is explicit", () => { Campaign.Current.Titles = null; Check(Read().Status == ClaimStateStatus.BehaviorUnavailable, "missing service"); });
+        Case("null clan is unavailable", () => { Check(BellumIntegration.GetExistingClaimState(null).Status == ClaimStateStatus.UnavailableClan, "null accepted"); });
+        Case("eliminated clan is unavailable", () => { clan.IsEliminated = true; Check(Read().Status == ClaimStateStatus.UnavailableClan, "eliminated accepted"); });
+        Case("detached same-ID clan object is rejected", () => { Check(BellumIntegration.GetExistingClaimState(new Clan { StringId = "house" }).Status == ClaimStateStatus.UnavailableClan, "stale object"); });
+        Case("blank clan ID is rejected", () => { clan.StringId = " "; Check(Read().Status == ClaimStateStatus.UnavailableClan, "blank ID"); });
+        Case("null saved row fails closed without repair", () => { behavior.FixtureClaims.Add(null); Check(Read().Status == ClaimStateStatus.InvalidRecords && behavior.FixtureClaims.Single() == null, "null repaired"); });
+        Case("duplicate claim IDs fail closed without choosing a winner", () => { behavior.FixtureClaims.Add(Row()); Invalid(Row()); });
+        Case("distinct claims to one title are not normalized", () => { behavior.FixtureClaims.Add(Row("a")); behavior.FixtureClaims.Add(Row("b")); Check(Read().Claims.Count == 2 && behavior.FixtureClaims.All(c => c.IsActive), "normalized claims"); });
+        Case("blank claim ID fails closed", () => { Invalid(Row(" ")); });
+        Case("blank target fails closed", () => { var c = Row(); Set(c,"_targetTitleId",""); Invalid(c); });
+        Case("unknown strength fails closed", () => { var c = Row(); Set(c,"_strength",(FeudalClaimStrength)99); Invalid(c); });
+        Case("nonfinite expiry is invalid rather than silently expired", () => { Invalid(Row(expiry:float.NaN)); });
+        Case("infinite expiry fails closed", () => { Invalid(Row(expiry:float.PositiveInfinity)); });
+        Case("future created day fails closed", () => { var c = Row(); Set(c,"_createdDay",101f); Invalid(c); });
+        Case("invalid capture day fails closed", () => { CampaignTime.Now.ToDays = double.PositiveInfinity; Check(Read().Status == ClaimStateStatus.InvalidRecords, "bad time"); });
+        Case("capacity overflow is explicit without partial result", () => {
+            for(int i=0;i<=ClaimStateSnapshot.MaximumClaims;i++) behavior.FixtureClaims.Add(Row("claim"+i));
+            Check(Read().Status == ClaimStateStatus.CapacityExceeded && Read().ActiveRecordCount == 129 && Read().Claims.Count == 0, "silent truncation");
+        });
+        Case("capacity boundary is complete and ordinal sorted", () => {
+            for(int i=127;i>=0;i--) behavior.FixtureClaims.Add(Row("claim"+i.ToString("D3")));
+            Check(Read().Claims.Count == 128 && Read().Claims.First().ClaimId == "claim000", "bound/order");
+        });
+        Case("source mutation cannot alter prior copy", () => {
+            var c = Row(); behavior.FixtureClaims.Add(c); var s = Read(); c.SetActive(false); Check(s.Claims.Single().ClaimId == "claim" && Read().Claims.Count == 0, "mutable record escaped");
+        });
+        Case("read preserves every claim field and list identity", () => {
+            var c = Row(); behavior.FixtureClaims.Add(c); var list = behavior.FixtureClaims;
+            var fields = typeof(FeudalClaimRecord).GetFields(BindingFlags.Instance | BindingFlags.NonPublic); var values = fields.Select(f=>f.GetValue(c)).ToArray(); Read();
+            Check(fields.Select((f,i)=>object.Equals(values[i],f.GetValue(c))).All(v=>v) && object.ReferenceEquals(list, behavior.FixtureClaims), "source changed");
+        });
+        Case("returned collection is immutable", () => {
+            behavior.FixtureClaims.Add(Row()); bool denied=false; try { ((IList<ClaimRecordSnapshot>)Read().Claims).Clear(); } catch(NotSupportedException) { denied=true; } Check(denied, "list mutable");
+        });
+        Case("private provenance and hero IDs are absent from DTO", () => {
+            var properties=typeof(ClaimRecordSnapshot).GetProperties(); var names=string.Join("|",properties.Select(p=>p.Name));
+            Check(!names.Contains("Source") && !names.Contains("Carrier") && !names.Contains("Hero") && !names.Contains("Origin") && properties.All(p=>!p.CanWrite), "private or mutable DTO");
+        });
+        Case("actual thread guard rejects worker read", () => {
+            bool denied=Task.Run(()=>{ try { Read(); return false; } catch(InvalidOperationException) { return true; } }).GetAwaiter().GetResult(); Check(denied, "off-thread accepted");
+        });
+        Case("missing integration service is blocked by actual guard", () => {
+            Campaign.Current.Integration=null; bool denied=false; try { Read(); } catch(InvalidOperationException) { denied=true; } Check(denied, "missing integration accepted");
+        });
+        Case("missing campaign is blocked by actual guard", () => {
+            Campaign.Current=null; bool denied=false; try { Read(); } catch(InvalidOperationException) { denied=true; } Check(denied, "missing campaign accepted");
+        });
+        Console.WriteLine("RESULT " + count + " named cases PASS; actual predicates/records, Native boundary doubles; not a shipping build or game test.");
+    }
+}

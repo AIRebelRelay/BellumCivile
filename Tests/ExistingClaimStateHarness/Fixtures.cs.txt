@@ -1,0 +1,34 @@
+// Only Native campaign/objects and behavior storage boundaries are doubled.
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using TaleWorlds.CampaignSystem;
+namespace TaleWorlds.SaveSystem {
+    [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute : Attribute { public SaveableFieldAttribute(int id) { } }
+}
+namespace TaleWorlds.CampaignSystem {
+    public sealed class Campaign {
+        public static Campaign Current = new Campaign();
+        public BellumCivile.Behaviors.FeudalTitleBehavior Titles;
+        public BellumCivile.Behaviors.BellumIntegrationBehavior Integration = new BellumCivile.Behaviors.BellumIntegrationBehavior();
+        public T GetCampaignBehavior<T>() where T : class { return Titles as T; }
+    }
+    public sealed class CampaignTime { public static CampaignTime Now = new CampaignTime(); public double ToDays = 100; }
+    public sealed class Hero { public string StringId; }
+    public sealed class Clan { public static List<Clan> All = new List<Clan>(); public string StringId; public bool IsEliminated; }
+}
+namespace BellumCivile.Behaviors {
+    public sealed partial class BellumIntegrationBehavior {
+        internal static BellumIntegrationBehavior Current { get { return Campaign.Current == null ? null : Campaign.Current.Integration; } }
+        private int _threadId = Thread.CurrentThread.ManagedThreadId;
+        private HashSet<string> _illegitimateIndex = new HashSet<string>(StringComparer.Ordinal);
+        public void Bar(string id) { _illegitimateIndex.Add(id); }
+    }
+    public partial class FeudalTitleBehavior {
+        private List<BellumCivile.FeudalClaimRecord> _claims = new List<BellumCivile.FeudalClaimRecord>();
+        private Dictionary<string, BellumCivile.FeudalTitleRecord> _titlesById = new Dictionary<string, BellumCivile.FeudalTitleRecord>();
+        public List<BellumCivile.FeudalClaimRecord> FixtureClaims { get { return _claims; } set { _claims = value; } }
+        public Dictionary<string, BellumCivile.FeudalTitleRecord> FixtureTitles { get { return _titlesById; } set { _titlesById = value; } }
+        internal void RequestClaimIndexRebuild() { throw new Exception("Reader attempted claim index rebuild"); }
+    }
+}
