@@ -35,7 +35,7 @@ Check ($loyalty.Contains('if (IsPlayerHeir) return "--";') -and
     $loyalty.Contains('BC_Loyalty_PlayerReasons') -and $loyalty.Contains('IsPlayerHeir ? (double?)null')) 'Player loyalty has no numeric score or state color.'
 [xml]$panel = Read 'GUI/Prefabs/KingdomManagement/Hierarchy/BellumHierarchyPanel.xml'
 Check ($panel.SelectNodes('//*[@Command.Click="ExecuteChallenge"]').Count -eq 1 -and
-    $vm.Contains('ActionMenuHeight => IsChallengeVisible ? 322 : 288')) 'Hierarchy menu contains one challenge action with room for its additional row.'
+    $vm.Contains('ActionMenuHeight => !IsTitleNode ? 84 : 288 + (IsChallengeVisible ? 34 : 0) + (IsRenounceVisible ? 34 : 0)')) 'Hierarchy menu preserves one challenge action and allocates independent challenge and renunciation rows.'
 [xml]$strings = Read 'ModuleData/Languages/EN/strings.xml'
 $texts = $player + $pledges + $vm + $loyalty
 foreach ($id in ([regex]::Matches($texts, '\{=(BC_PlayerChallenge_[^}]+|BC_Hierarchy_ActionChallenge|BC_Loyalty_PlayerReasons)\}') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)) {
