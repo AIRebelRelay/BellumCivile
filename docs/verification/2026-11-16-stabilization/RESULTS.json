@@ -1,0 +1,39 @@
+{
+  "original_source_sweep": {
+    "total": 158,
+    "pass": 156,
+    "fail": 2
+  },
+  "powershell_test_parser": {
+    "files": 229,
+    "errors": 0
+  },
+  "deferred_parley_exact_method": {
+    "named_cases": 14,
+    "before_fail": 5,
+    "after_pass": 14
+  },
+  "rally_exact_math": {
+    "named_cases": 8,
+    "pass": 8
+  },
+  "court_redesign_pure_harness": {
+    "assertion_invocations": 200486,
+    "pass": true,
+    "independent_scenarios": null,
+    "game_lifecycle": false
+  },
+  "native_build": "BLOCKED: complete matching game installation/reference set unavailable",
+  "native_harmony_harness": "PENDING",
+  "game_startup_save_load": "PENDING",
+  "failed_source_gates": [
+    {
+      "file": "Tests/EncyclopediaConcepts.Tests.ps1",
+      "reason": "approved docs/encyclopedia-articles-draft.md absent; expected content was not fabricated"
+    },
+    {
+      "file": "Tests/Stage32H2TMod145ReleaseMetadata.Tests.ps1",
+      "reason": "historical 1.4.6 / Bannerlord 1.4.8 metadata contract; kept unchanged and failing on current target"
+    }
+  ]
+}

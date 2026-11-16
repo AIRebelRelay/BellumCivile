@@ -1,0 +1,19 @@
+DEFERRED_TICK_FAIL off_valid scans=1; queries=1; attempts=1; pending=proposal; forced=proposal
+DEFERRED_TICK_FAIL off_cancelled scans=1; queries=0; attempts=0; pending=null; forced=null
+DEFERRED_TICK_FAIL off_missing_war scans=1; queries=1; attempts=0; pending=null; forced=null
+DEFERRED_TICK_FAIL off_repeated scans=200; queries=200; attempts=200; pending=proposal; forced=proposal
+DEFERRED_TICK_FAIL off_to_on scans=2; queries=2; attempts=2; pending=null; forced=null
+DEFERRED_TICK_PASS empty_id
+DEFERRED_TICK_PASS inquiry
+DEFERRED_TICK_PASS shown
+DEFERRED_TICK_PASS on_valid
+DEFERRED_TICK_PASS on_missing_proposal
+DEFERRED_TICK_PASS on_cancelled
+DEFERRED_TICK_PASS on_missing_war
+DEFERRED_TICK_PASS on_inactive_war
+DEFERRED_TICK_PASS on_retry
+Exception: /workspace/scratch/3f3917dc1a40/bellum/Tests/DeferredParleyTickGate.Tests.ps1:114
+Line |
+ 114 |  … ($failed) { throw "DEFERRED_TICK_RED $failed/$($cases.Count) scenario …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | DEFERRED_TICK_RED 5/14 scenarios failed
