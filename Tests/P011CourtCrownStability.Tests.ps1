@@ -32,10 +32,18 @@ Check ((Count $tick 'if (!CourtRulerUnchanged(realm, house, ruler)) break;') -eq
 
 $open = Slice $agenda 'private void OpenTerm(' 'private void Advance('
 Check ($open.Contains('if (!TryGetCourtRuler(realm, out Clan house, out Hero ruler)) return;')) 'New court term refuses unstable Crown.'
-foreach ($mutator in @('UpdatePlayerAgenda(old);', 'ideology.BeginCourtTerm(realm);', 'ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);', 'OpenCrownTerm(realm, manager);')) {
+foreach ($mutator in @('UpdatePlayerAgenda(old);', 'ideology.BeginCourtTerm(realm);', 'OpenCrownTerm(realm, manager);')) {
     $pos = $open.IndexOf($mutator, [StringComparison]::Ordinal)
     Check ($pos -ge 0 -and $open.IndexOf('if (!CourtRulerUnchanged(realm, house, ruler)) return;', $pos, [StringComparison]::Ordinal) -gt $pos) "Term admission rechecked after $mutator"
 }
+$preparation = Get-Content -Raw (Join-Path $root 'Behaviors/CourtTermPreparation.cs')
+$movedMaintenance = $tick.IndexOf('ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);', [StringComparison]::Ordinal)
+$queuedPreparation = $tick.IndexOf('PrepareQueuedCourtTerms(realms, manager, ideology);', [StringComparison]::Ordinal)
+$queuedRulerCheck = $preparation.IndexOf('if (!TryGetCourtRuler(realm, out _, out _)) continue;', [StringComparison]::Ordinal)
+$queuedOpen = $preparation.IndexOf('OpenTerm(realm, manager, ideology, term);', [StringComparison]::Ordinal)
+Check ($movedMaintenance -ge 0 -and $queuedPreparation -gt $movedMaintenance -and
+       $queuedRulerCheck -ge 0 -and $queuedOpen -gt $queuedRulerCheck -and
+       $open.Contains('if (!TryGetCourtRuler(realm, out Clan house, out Hero ruler)) return;')) 'Moved elective maintenance precedes queued preparation with fresh Crown validation before opening.'
 Check ($open.Contains('foreach (FactionObject owner in factions.Concat(new FactionObject[] { null }))') -and
        $open.Contains('if (!CourtRulerUnchanged(realm, house, ruler)) return;')) 'Term owner iteration preserves sovereign consistency.'
 
