@@ -21,7 +21,7 @@ Check ($from -ge 0 -and $to -gt $from) 'single faction kingdom-change listener l
 $handler = $factionCode.Substring($from, $to - $from)
 $owned = 'OwnsRestoredHouseholdTransfer(faction, clan, oldKingdom, newKingdom) == true'
 Check ($handler.Contains($owned) -and $handler.Contains('!faction.IsIdeology') -and
-    $handler.IndexOf($owned, [StringComparison]::Ordinal) <
+    $handler.IndexOf($owned, [StringComparison]::Ordinal) -lt
     $handler.IndexOf('faction.RemoveMember(clan);', [StringComparison]::Ordinal)) 'only actively owned restoration bypasses faction removal'
 Check ($handler.Contains('OwnsCollapseHouseholdTransfer(faction, clan, oldKingdom, newKingdom) == true')) 'prior P1-01E collapse ownership guard kept'
 Check (-not $handler.Contains('IsRestoredCreationPending(faction.ParentKingdom)')) 'broad upstream parent-level suppression intentionally absent'
