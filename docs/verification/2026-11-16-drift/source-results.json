@@ -1,0 +1,44 @@
+[
+  {
+    "test": "IndependentDrift.Tests.ps1",
+    "exitCode": 0,
+    "status": "PASS",
+    "checks": 8
+  },
+  {
+    "test": "CourtTermPreparation.Tests.ps1",
+    "exitCode": 0,
+    "status": "PASS",
+    "checks": 19
+  },
+  {
+    "test": "Bellum1412ClientRelease.Tests.ps1",
+    "exitCode": 0,
+    "status": "PASS",
+    "checks": 52
+  },
+  {
+    "test": "Bellum1412MarshalBattleCap.Tests.ps1",
+    "exitCode": 0,
+    "status": "PASS",
+    "checks": 39
+  },
+  {
+    "test": "Bellum157CouncilIncidentApi.Tests.ps1",
+    "exitCode": 0,
+    "status": "PASS",
+    "checks": 18
+  },
+  {
+    "test": "Bellum157GeneratedAdjectiveApi.Tests.ps1",
+    "exitCode": 0,
+    "status": "PASS",
+    "checks": 12
+  },
+  {
+    "test": "Bellum157RealmNamesApi.Tests.ps1",
+    "exitCode": 0,
+    "status": "PASS",
+    "checks": 31
+  }
+]
