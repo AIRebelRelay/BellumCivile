@@ -35,7 +35,7 @@ CheckFreeze 'Sign' $sign 'FindPendingPlayerProposal(proposalId)'
 CheckFreeze 'Open' $open 'GetPendingProposalForPlayer(war)'
 CheckFreeze 'Edit draft' $draft '_proposals.FirstOrDefault('
 Check ($sign.Contains('SpendCouncilCommitments(proposal, winnerCouncil, loserCouncil)') -and
-       $sign.Contains('ApplyTreaty(war, proposal, winner, loser)')) 'original ON signing, councils and treaty execution retained'
+       $sign.Contains('ApplyTreaty(war, proposal, winner, loser, playerReviewedWhitePeace)')) 'original ON signing, councils and treaty execution retained'
 Check ($reject.Contains('SpendRulerOverride(playerSide, rejectionOverrideCost)') -and
        $reject.Contains('RejectParley(war, proposal, "player ruler refused the treaty", playerKingdom)')) 'original ON rejection and override retained'
 Check ($vote.Contains('proposal.SetPlayerVote(stance, influenceCommitment)') -and

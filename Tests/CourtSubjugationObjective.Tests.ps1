@@ -30,7 +30,10 @@ Check ($client.IndexOf('OnCourtClientageEstablished') -gt $client.IndexOf('Align
 Check ($behavior.Contains('client.StartedDay') -and $behavior.Contains('CourtSubjugationRules.Fulfilled')) 'Save recovery verifies the actual dated clientage record.'
 $maintenance = $behavior.Substring($behavior.IndexOf('private void MaintainSubjugationObjectives()'))
 Check ($maintenance.IndexOf('RecoverSubjugationResult(agenda)') -lt $maintenance.IndexOf('CourtSubjugationObjectiveSource.ValidPair')) 'Established clientage is recognized before client status invalidates eligibility.'
-Check ($agenda.IndexOf('MaintainSubjugationObjectives();') -lt $agenda.IndexOf('OpenTerm(realm, manager, ideology);')) 'Old objectives settle before next-term selection.'
+Check ($agenda.IndexOf('MaintainSubjugationObjectives();') -ge 0 -and
+    $agenda.IndexOf('PrepareQueuedCourtTerms(realms, manager, ideology);') -ge 0 -and
+    $agenda.IndexOf('MaintainSubjugationObjectives();') -lt $agenda.IndexOf('PrepareQueuedCourtTerms(realms, manager, ideology);') -and
+    (Read 'Behaviors/CourtTermPreparation.cs').Contains('OpenTerm(realm, manager, ideology, term);')) 'Old objectives settle before next-term selection.'
 Check (!$behavior.Contains('MakePeace.Add') -and !$behavior.Contains('WarDeclared.Add')) 'Peace without clientage and enemy aggression do not prematurely settle the objective.'
 Check ($behavior.Contains('TryClaimResult()') -and $behavior.Contains('agenda.ResultApplied = agenda.PaymentSettled = true')) 'Outcome receipts are sealed before mood changes.'
 Check ($picker.Contains('agenda.Subjugation = prepared.Subjugation') -and $picker -match 'motion.Kind == CourtSubjugationRules.Kind[^\r\n]*\) && identity.HasTermSnapshot') 'Player confirmation retains the prepared plan and early session date.'

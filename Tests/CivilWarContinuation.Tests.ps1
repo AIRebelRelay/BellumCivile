@@ -4,7 +4,14 @@ function Read($path) { Get-Content -Raw (Join-Path $root $path) }
 function Check($condition, $message) { if (!$condition) { throw $message }; "PASS: $message" }
 $manager = Read 'Behaviors/FactionManagerBehavior.cs'
 $event = $manager.Substring($manager.IndexOf('private void OnRulingClanChanged'))
-Check ($event.IndexOf('if (faction.HasTrackedRebelKingdom') -lt $event.IndexOf('if (faction.Type == FactionType.Abdication)')) 'Active wars bypass synchronous ruler-change faction removal and ultimatum logic.'
+$event = $event.Substring(0, $event.IndexOf('public void ApplyPacifiedCooldown'))
+$safety = Read 'Behaviors/FactionSuccessionSafety.cs'
+Check ($event.Contains('ReconcileWarmingCrownFactions(kingdom, rulerChanged: oldRulingClan != newRulingClan);') -and
+    $event.Contains('_pendingSuccessionOpportunities[kingdom.StringId] = newRulingClan.StringId;') -and
+    !$event.Contains('TriggerUltimatum') -and !$event.Contains('RemoveFaction(') -and
+    $safety.Contains('f.ParentKingdom == realm && IsWarmingCrownFaction(f)') -and
+    $safety.Contains('&& !faction.HasTrackedRebelKingdom && !faction.IsChallengeStartupPending') -and
+    $safety.Contains('&& !faction.IsRebellionCreationPending && !faction.HasStartedCivilWar;')) 'Active wars bypass synchronous ruler-change removal; opportunities are queued and only warming factions reconcile.' 
 Check ($manager.Contains('!f.HasTrackedRebelKingdom && !f.IsChallengeStartupPending')) 'Daily pruning cannot discard a tracked war whose claimant gains the Crown.'
 $settlement = Read 'Behaviors/CivilWarDemandContinuation.cs'
 foreach ($gate in @('IsChallengeStartupPending', 'IsPending(realm)', '_pendingSuccessionCandidates.ContainsKey', 'KingSelectionKingdomDecision', 'DeJureHolderClanId', 'DeFactoHolderClanId')) {
@@ -26,7 +33,7 @@ $save = Read 'BellumCivileSaveDefiner.cs'
 foreach ($type in @('CivilWarConflictRecord', 'CivilWarSideRecord', 'CivilWarPairRecord')) {
     Check ($save.Contains("AddClassDefinition(typeof($type)") -and $save.Contains("ConstructContainerDefinition(typeof(List<$type>))")) "Conflict save registration: $type"
 }
-Check ($faction.Contains('_civilWarOriginShellPrefix = _civilWarOriginShellPrefix ?? shell.StringId;')) 'Parent retarget retains the rebellion shell identity.'
+Check ([regex]::IsMatch($faction, 'if \(string.IsNullOrEmpty\(_civilWarOriginShellPrefix\)\)\s*_civilWarOriginShellPrefix = shell.StringId;')) 'Parent retarget retains the rebellion shell identity.'
 $score = Read 'Behaviors/WarScoreBehavior.cs'
 Check ($score.Contains('w != record && w.IsActive && w.WarKey == key')) 'Score retarget rejects collision with a distinct active conflict.'
 Check ((Read 'WarScoreRecord.cs').Contains('!_whitePeaceOfferPending && !_parleyPending && !_resolutionPending')) 'Retarget waits for outstanding settlement choices.'
@@ -58,7 +65,10 @@ Check ($resolution.Contains('SyncData("BC_CivilWarCollapses"') -and $save.Contai
 $challengeRecovery = Read 'Behaviors/CivilWarSuccessionSettlement.cs'
 Check ($challengeRecovery.IndexOf('TryResumeChallengeCollapse(record)') -lt $challengeRecovery.IndexOf('realm = CreateRestoredSuccessorKingdom')) 'Owned hereditary outcomes defer to collapse recovery before any alternate successor creation.'
 Check ($collapse.IndexOf('PrepareWarOutcome(winner, SuccessionChallengeOutcome.Victory, parent)') -lt $collapse.IndexOf('_collapses.Add(record)')) 'Hereditary winner snapshots the original loyalists before any household transfer.'
-Check ($collapse.IndexOf('record.Stage = 3') -lt $collapse.IndexOf('LegalizeChallengeVictory(record.Winner, record.Successor)')) 'Hereditary estates become lawful only after the successor mantle and rival wars commit.'
+Check ($collapse.IndexOf('record.Stage = 3') -ge 0 -and
+    $collapse.IndexOf('if (!PrepareCollapseChallengeVictory(record)) return;') -gt $collapse.IndexOf('record.Stage = 3') -and
+    $collapse.Contains('return challenges.LegalizeChallengeVictory(record.Winner, record.Successor);') -and
+    $collapse.Contains('!CollapseCrownDelivered(record)')) 'Hereditary estates become lawful only after the successor mantle and rival wars commit.'
 Check ($collapse.Contains('record.Challenge.Phase != SuccessionChallengePhase.Settled') -and $collapse.Contains('CompleteWarOutcome(record.Winner, record.Successor)')) 'Collapse completion waits for the existing hereditary outcome and cooldown path.'
 Check ($collapse.Contains('if (record.Challenge == null) record.RewardsApplied = true;') -and $collapse.Contains('if (!record.InfluenceRestored)')) 'Hereditary reward retries use per-clan receipts without resetting influence again.'
 $destruction = Read 'Patches/CivilWarParentDestructionPatch.cs'

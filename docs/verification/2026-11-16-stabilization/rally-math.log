@@ -1,0 +1,9 @@
+PASS: early exhausted front
+PASS: early resolved front
+PASS: threshold crossing
+PASS: ordinary campaign
+PASS: prolonged exhausted front
+PASS: near cap
+PASS: already capped
+PASS: Threshold crossing differs from obsolete linear utility
+8 named math scenarios PASS. Scope/eligibility wiring is checked by CourtRally.Tests.ps1; native/game validation remains pending.

@@ -1,0 +1,10 @@
+Actual batch arbitration: equal sponsor shares in both owner orders; one cached fallback per loser; unavailable/empty/single-owner cases passed.
+Activity simulation: 0 competing categories, 1 event types: 29.82% selected (expected 30.00%).
+Activity simulation: 0 competing categories, 30 event types: 29.82% selected (expected 30.00%).
+Activity simulation: 1 competing categories, 1 event types: 6.01% selected (expected 6.00%).
+Activity simulation: 1 competing categories, 30 event types: 6.02% selected (expected 6.00%).
+Activity simulation: 2 competing categories, 1 event types: 3.25% selected (expected 3.33%).
+Activity simulation: 2 competing categories, 30 event types: 3.41% selected (expected 3.33%).
+Activity batch simulation: four sponsors, policy/council/activity competition: 4.66% final activity agendas after arbitration.
+Political examples: equal domestic houses +29.5 each; equal foreign houses +57.5; royal friend at peace +80; protection-seeking realm +100 / secure partner +80; full slots +65.
+PASS: 200486 production-math and XML-parser checks. Game lifecycle and save/load are not simulated by these stubs.

@@ -8,6 +8,20 @@ $prefab = Read 'UI/EncyclopediaHeroFeudalTitlesPrefabExtension.cs'
 $xmlValue = [regex]::Match($prefab, '(?s)_document\.LoadXml\(@"(.*?)"\);').Groups[1].Value
 if (-not $xmlValue) { throw 'Missing native inheritance XML content' }
 [xml]$xml = $xmlValue
+# The real constructor adds Family after LoadXml; run that exact pure XML builder.
+$familySource = Read 'UI/EncyclopediaHeroFamilyPrefabPatch.cs'
+$insertAt = $familySource.IndexOf('internal static void InsertSection(XmlDocument document)')
+if ($insertAt -lt 0) { throw 'Missing native family XML builder' }
+Add-Type -Language CSharp -TypeDefinition ('using System.Xml; namespace BellumPureFamilyComposition { public static class Builder { public static void Apply(XmlDocument document) { InsertSection(document); } ' + $familySource.Substring($insertAt))
+[BellumPureFamilyComposition.Builder]::Apply($xml)
+$composed = $xml.OuterXml
+[BellumPureFamilyComposition.Builder]::Apply($xml)
+Check ($xml.OuterXml -ceq $composed) 'Repeated family composition is idempotent.'
+[xml]$withoutAnchor = '<Root />'
+$withoutAnchorBefore = $withoutAnchor.OuterXml
+[BellumPureFamilyComposition.Builder]::Apply($withoutAnchor)
+Check ($withoutAnchor.OuterXml -ceq $withoutAnchorBefore) 'Missing Allies anchor leaves the document unchanged.'
+Check ($xml.SelectSingleNode("//*[@Id='BellumFamilySection']").NextSibling.GetAttribute('Id') -eq 'AlliesDivider') 'Family is composed immediately before the preserved Allies anchor.'
 Check ($display.Contains('private enum AssetKind { Ordinary, CrownEstate, Sovereign }') -and
        $display.Contains('internal string Label => Kind == AssetKind.Sovereign ? SovereignTitle(Name)')) 'Structured asset kinds retain legal labels without parsing translated title names.'
 Check ($display.Contains('private static StringPairItemVM HeroEntry(Asset asset, string context)') -and

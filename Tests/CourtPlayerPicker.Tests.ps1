@@ -23,9 +23,17 @@ Check ((Read 'Behaviors/IdeologyBehavior.cs').Contains('faction.Mood > -60 || Co
 Check ($picker.Contains('SessionDate = agenda.SessionDate') -and $picker.Contains('agenda.SessionDate = prepared.SessionDate') -and $picker -match 'motion.Kind == CourtPeaceRules.Kind[^\r\n]*motion.Kind == CourtClaimRules.Kind[^\r\n]*\) && identity.HasTermSnapshot') 'Picker preserves ordinary dates and previews early foreign-objective sessions.'
 Check ($picker.Contains('motions.Count > 12')) 'Long lists use categories.'
 Check ($flow.Contains('if (agenda.Faction == null)') -and $flow.Contains('choice == 1 ? CourtAgendaState.Blocked')) 'Crown none closes ordinary business without a faction blocking charge.'
-foreach ($name in @('Behaviors/CourtCouncilAgendas.cs', 'Behaviors/CourtExecutiveAgendas.cs')) {
-    Check ((Read $name).Contains('agenda.PlayerSelectionConfirmed || agenda.IsFiled')) "Alternate nomination respects confirmed selection: $name"
-}
+Check ((Read 'Behaviors/CourtExecutiveAgendas.cs').Contains('agenda.PlayerSelectionConfirmed || agenda.IsFiled')) 'Legacy executive nomination preserves confirmed selection.'
+$crown = Read 'Behaviors/CourtPlayerCrownActions.cs'
+$mandates = Read 'Behaviors/CourtNominationMandates.cs'
+Check ((Read 'Behaviors/CourtCouncilAgendas.cs').Contains('return TryPlayerCouncilBusiness(realm, office, out reason, readOnly);') -and
+    (Read 'Behaviors/CourtCouncilAgendas.cs').Contains('return TryCouncilMandateNomination(realm, office, out reason, readOnly, refresh);') -and
+    $crown.Contains('var draft = NewPlayerCrownBusiness(realm);') -and
+    $crown.Contains('if (agenda.IsFiled || agenda.IsOngoingObjective || agenda.PlayerSelectionConfirmed)') -and
+    $crown.Contains('agenda.Manual = true;') -and
+    $mandates.Contains('if (!IsMandateOpen(realm, CourtCouncilObjectiveSource.CouncilKind)) return false;') -and
+    $mandates.Contains('GetPlayerTermAgenda(mandate.Realm) != mandate || !IsMandateOpen(mandate.Realm, motion.Kind)') -and
+    $flow.Contains('&& !agenda.CrisisInterventionPending && ValidPlayerAgenda(agenda);')) 'Council uses separate Crown drafts or validated faction mandates while migration preserves confirmed proceedings.'
 [xml]$xml = Read 'ModuleData/Languages/EN/strings.xml'
 foreach ($match in [regex]::Matches($picker, '\{=(BC_(?:CrownTermInvitation|CrownChooseBusiness|CrownNoInitiative|CrownBusinessPrompt|CourtPicker\w+|CourtTermProposal|CourtDeclineCost|CourtChoiceCost|CourtNoBusiness|CourtDebateDescription))\}([^"\r\n]*)')) {
     $id = $match.Groups[1].Value

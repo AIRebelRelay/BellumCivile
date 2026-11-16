@@ -14,7 +14,7 @@ Check ($council.Contains('TryPay(agenda, CourtCouncilObjectiveSource.Cost(agenda
 Check ($source.Contains('IsCouncilOfficeSettled') -and $source.Contains('CourtTermDays')) 'Completed-contest cooldown and ordinary term gates remain.'
 Check ($council.Contains('LegacyCouncilExpense') -and $hub.Contains('LegacyCouncilExpense(agenda)')) 'Old paid motions retain their refund classification.'
 Check ($record.Contains('[SaveableField(17)] private bool _captivityVacancy;') -and !$record.Contains('VacateForCaptivity')) 'Legacy saved vacancy state remains readable without new writers.'
-Check ($behavior.Contains('candidate == incumbent || !candidate.Leader.IsPrisoner')) 'Captive incumbent is the only prisoner eligible for a retention ballot.'
+Check ($behavior.Contains('string incumbentId = records.FirstOrDefault(r => r.Office == office)?.HolderClanId;') -and $behavior.Contains('candidate.StringId == incumbentId || !candidate.Leader.IsPrisoner')) 'Captive incumbent is the only prisoner eligible for a retention ballot.'
 Check ($behavior.Contains('HeroPrisonerTaken.AddNonSerializedListener') -and $behavior.Contains('HeroPrisonerReleased.AddNonSerializedListener')) 'Capture and release refresh cached operational effects.'
 Check ($behavior.Contains('BellumCivile_PrivyCouncil_CaptivityDismissals')) 'Old captivity dismissal history remains in save data.'
 'Source contracts passed; engine transition checks are in the --council-captivity harness suite.'

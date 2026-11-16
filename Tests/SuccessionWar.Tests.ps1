@@ -33,9 +33,13 @@ Check ($recovery.Contains('QueuePlayerTribunal(realm, realm, record.OutcomeLoser
     $recovery.Contains('record.TribunalQueued = true') -and $recovery -notmatch 'ApplyPostWarConsequences\(') 'Both AI and player challenge tribunals reuse the saved queue without replaying immediate judgments.'
 Check ($resolution.IndexOf('savedRewards.Add(clan)') -lt $resolution.IndexOf('CampaignEventDispatcher.Instance.OnClanInfluenceChanged(clan, reward)') -and
     $resolution.Contains('HasPendingWarOutcome(collapsedParent)')) 'Rewards record before event callbacks; pending collapse outcomes cannot create another successor realm.'
-Check ($resolution.Contains('challenge.OutcomeRealm = restoredKingdom') -and
-    $resolution.Contains('challenge.RestoredRealmInitialized = true') -and
-    $resolution.Contains('challenge.RestoredRealmReady = true') -and $recovery.Contains('!record.RestoredRealmReady')) 'Restored successor creation has a deterministic identity and resumable initialization receipts.'
+$restoration = Read 'Behaviors/RestoredRealmRecovery.cs'
+Check ($resolution.Contains('return PrepareRestoredRealm(collapsedParent, successorRebelKingdom, successorLeader, false,') -and
+    $restoration.Contains('parent.StringId + "_restored" + (challenge == null ? "" : "_challenge_" + challenge.Id)') -and
+    $restoration.Contains('Kingdom.All.FirstOrDefault(k => k.StringId == seed)') -and
+    $restoration.Contains('challenge.OutcomeRealm = realm') -and
+    $restoration.Contains('challenge.RestoredRealmInitialized = true') -and
+    $restoration.Contains('challenge.RestoredRealmReady = true') -and $recovery.Contains('!record.RestoredRealmReady')) 'Restored successor creation delegates to deterministic identity and resumable initialization receipts.'
 Check ($war.Contains('LegalizeChallengeVictory') -and $war.Contains('estate.EndowmentSettled = true') -and
     $war.Contains('record.WarShell.Clans.Any(c => !c.IsEliminated)')) 'Victory advances and cooldown completion require actual title/cleanup postconditions.'
 Check ($behavior.Contains('SubmissionRuler = null') -and (Read 'HereditaryLoyalty.cs').Contains('+ Submission +') -and
