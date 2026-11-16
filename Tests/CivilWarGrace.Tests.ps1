@@ -27,7 +27,7 @@ Check (([regex]::Matches($ideology, 'rebelFaction.MarkJudgmentResistance\(\)')).
     $ideology.Contains('coalitionLeader != null && factionManager.IsClanPacified(coalitionLeader)')) 'Legal expulsions and treason resistance preserve their response while pacified coalition leaders cannot bypass eligibility.'
 Check ($manager.Contains('if (IsCivilWarGraceBlocked(newFaction)) return;') -and
     ([regex]::Matches($faction, 'IsCivilWarGraceBlocked\(this\)')).Count -ge 4) 'Backend formation, support, discontent, ultimatum and direct secession paths are guarded.'
-Check ((Read 'Behaviors/SuccessionChallengeBehavior.cs').Contains('manager?.HasCivilWarGrace(realm) == true') -and
+Check ((Read 'Behaviors/SuccessionChallengeBehavior.cs').Contains('graceManager?.HasCivilWarGrace(realm) == true') -and
     (Read 'Behaviors/SuccessionChallengeInitiation.cs').Contains('manager.HasCivilWarGrace(realm)') -and
     (Read 'Behaviors/ElectiveContestBehavior.cs').Contains('Post-civil-war grace protects this accession')) 'Hereditary initiation and new election disputes use the same realm restriction.'
 Check ((Read 'Behaviors/SuccessionChallengeWar.cs').Contains('record.RealmBlockedUntil = record.OutcomeDay;') -and
