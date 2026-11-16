@@ -1,0 +1,21 @@
+PASS existing complete council is detached and sorted
+PASS missing records do not create a council or imply vacancies
+PASS null saved record list remains null
+PASS null realm returns unavailable without materialization
+PASS eliminated realm is unavailable
+PASS temporary rebellion and feud shells stay unavailable
+PASS superseded empty parent shell stays unavailable
+PASS partial recorded council never synthesizes missing offices
+PASS uninitialized record stays uninitialized and is not exposed
+PASS duplicate office records return invalid rather than choosing a holder
+PASS corrupt record identity is not repaired or exposed
+PASS unknown office enum is rejected
+PASS snapshot is unchanged when later source holder changes
+PASS returned collection cannot be mutated
+PASS private assignment and controversy fields never enter DTO
+PASS recorded empty holder is copied without asserting office eligibility
+PASS other realms and null unrelated rows do not leak
+PASS missing behavior is distinguished from missing council
+PASS public facade always uses campaign-thread guard
+PASS capture day belongs to the snapshot and invalid times are rejected
+EXISTING_COUNCIL_STATE_PASS 20 named cases; boundary fixtures, not Native game proof.
