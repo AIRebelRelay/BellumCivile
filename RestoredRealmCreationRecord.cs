@@ -23,6 +23,9 @@ namespace BellumCivile
         [SaveableField(15)] public bool ParentWasEliminated;
         [SaveableField(16)] public List<Clan> ParentHouses = new List<Clan>();
         [SaveableField(17)] public List<Kingdom> ExternalEnemies = new List<Kingdom>();
+        // Absent in older saves: old Ready records are not backdated.
+        [SaveableField(18)] public string CompletionReceiptId;
+        [SaveableField(19)] public double CompletedDay;
 
         internal bool Protects(Kingdom realm) => !Ready && realm != null
             && (realm == Parent || !MovesComplete && (realm == Source || realm == Successor || realm.StringId == SuccessorId));

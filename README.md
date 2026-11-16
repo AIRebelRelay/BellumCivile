@@ -7,7 +7,7 @@ This README provides a technical orientation and maintenance reference for contr
 | Item | Current state |
 | --- | --- |
 | Documentation revision | October 13, 2026 |
-| Source candidate | Bellum Civile 1.4.12b CR alpha 1 (module/file version 1.4.12.1; runtime parity not certified) |
+| Source candidate | Bellum Civile 1.4.12b CR alpha 2 (module/file version 1.4.12.2; runtime parity not certified) |
 | Target game version | Bannerlord 1.4.8 |
 | Core runtime | .NET Framework 4.7.2 (`net472`) |
 | Required mod dependencies | Harmony, UIExtenderEx, Mod Configuration Menu v5 |
@@ -809,6 +809,7 @@ Additive API extensions keep version 1; probe for the particular method/event wh
 | `CanBeginElectionPersuasion`, `TryBeginElectionPersuasion`, `CompleteElectionPersuasion` | Share native dialogue's relation requirement and once-per-speaker/realm court-term attempt limit. The returned attempt binds completion to the original election and term. |
 | `IsIllegitimate`, `MarkIllegitimate`, `Legitimize` | Explicit, saved, idempotent legitimacy support for companion mods. No hero is marked automatically. |
 | `PartitionCompleted`, `GetRecentPartitions()` | Committed inheritance notifications and a saved recent history, described below. |
+| `GetRecentRestoredRealmCompletions()` | Read-only 100 newest receipts after verified restoration; stable scalar IDs and exact completed day. Old ready records never acquire a fabricated date. |
 
 The influence pledge methods record an already negotiated agreement; the caller owns persuasion, payment
 and dialogue. Invoke the checked setter **before** taking payment and honor its return value. Policy

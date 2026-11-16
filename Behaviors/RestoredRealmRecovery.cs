@@ -15,6 +15,21 @@ namespace BellumCivile.Behaviors
 
         internal bool IsRestoredCreationPending(Kingdom realm) => _restoredCreations.Any(r => r.Protects(realm));
 
+        // Read only source-stamped final outcomes; do not initialize or repair state.
+        internal IReadOnlyList<RestoredRealmCompletionSnapshot> GetRecentRestoredRealmCompletions()
+        {
+            return _restoredCreations
+                .Where(r => r != null && r.Ready && !string.IsNullOrEmpty(r.CompletionReceiptId)
+                    && r.Parent != null && r.Source != null && r.Founder != null
+                    && !string.IsNullOrEmpty(r.SuccessorId) && r.CompletedDay >= 0
+                    && !double.IsNaN(r.CompletedDay) && !double.IsInfinity(r.CompletedDay))
+                .OrderByDescending(r => r.CompletedDay)
+                .ThenBy(r => r.CompletionReceiptId, StringComparer.Ordinal)
+                .Take(100)
+                .Select(r => new RestoredRealmCompletionSnapshot(r))
+                .ToList().AsReadOnly();
+        }
+
         internal bool OwnsRestoredHouseholdTransfer(FactionObject faction, Clan clan, Kingdom source, Kingdom destination) =>
             _preparingRestoredCreations.Any(r => !r.Ready && r.Owner == faction
                 && r.Source == source && r.Successor == destination
@@ -131,6 +146,9 @@ namespace BellumCivile.Behaviors
                     CampaignEventDispatcher.Instance.OnKingdomCreated(realm);
                 }
                 if (realm.IsEliminated || !NobleClanEligibilityHelper.IsValidRulingClan(realm.RulingClan, realm)) return null;
+                // A unique successor realm is the durable identity; stamp only at terminal Ready.
+                record.CompletionReceiptId = "restored_realm|" + record.SuccessorId;
+                record.CompletedDay = CampaignTime.Now.ToDays;
                 record.Ready = true;
                 record.Failure = null;
                 if (challenge != null) challenge.RestoredRealmReady = true;
