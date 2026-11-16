@@ -1,0 +1,117 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+
+public static class ExistingCouncilStateScenarios
+{
+    private static int count;
+    private static Kingdom realm;
+    private static PrivyCouncilBehavior council;
+    private static void Require(bool value, string message) { if (!value) throw new Exception(message); }
+    private static void Case(string name, Action action)
+    {
+        realm = new Kingdom { StringId = "empire" }; Kingdom.All = new List<Kingdom> { realm };
+        council = new PrivyCouncilBehavior(); Campaign.Current = new Campaign { Council = council };
+        CampaignTime.Now.ToDays = 100; BellumIntegrationBehavior.Allow = true; BellumIntegrationBehavior.GateCalls = 0;
+        action(); Require(council.EnsureCalls == 0, "read initialized council"); count++; Console.WriteLine("PASS " + name);
+    }
+    private static PrivyCouncilOfficeRecord Row(PrivyCouncilOffice office, string holder = "house", string id = "empire")
+    {
+        var row = new PrivyCouncilOfficeRecord(id, office, 90); row.Initialize(holder, 90); return row;
+    }
+    private static CouncilOfficeStateSnapshot Read() { return BellumIntegration.GetExistingCouncilState(realm); }
+    private static string Fingerprint(PrivyCouncilOfficeRecord row)
+    {
+        return string.Join("|", typeof(PrivyCouncilOfficeRecord).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+            .OrderBy(f => f.Name).Select(f => f.Name + ":" + f.GetValue(row)));
+    }
+    public static void Run()
+    {
+        Case("existing complete council is detached and sorted", () => {
+            council.FixtureInstall(Enum.GetValues(typeof(PrivyCouncilOffice)).Cast<PrivyCouncilOffice>().Reverse().Select(o => Row(o)).ToList());
+            var s = Read(); Require(s.Status == CouncilOfficeStateStatus.Recorded && s.HasAllOfficeRecords && s.Offices.Count == 6, "incomplete snapshot");
+            Require(s.Offices.First().Office == PrivyCouncilOffice.Marshal && s.RealmId == "empire" && s.CapturedDay == 100, "ordering/scope/time");
+        });
+        Case("missing records do not create a council or imply vacancies", () => {
+            var s = Read(); Require(s.Status == CouncilOfficeStateStatus.NotRecorded && s.Offices.Count == 0 && council.FixtureRows.Count == 0, "invented records");
+        });
+        Case("null saved record list remains null", () => {
+            council.FixtureInstall(null); Require(Read().Status == CouncilOfficeStateStatus.NotRecorded && council.FixtureRows == null, "list repaired during read");
+        });
+        Case("null realm returns unavailable without materialization", () => {
+            Require(BellumIntegration.GetExistingCouncilState(null).Status == CouncilOfficeStateStatus.UnavailableRealm, "null realm accepted");
+        });
+        Case("eliminated realm is unavailable", () => {
+            realm.IsEliminated = true; council.FixtureRows.Add(Row(PrivyCouncilOffice.Marshal)); Require(Read().Status == CouncilOfficeStateStatus.UnavailableRealm, "eliminated realm exposed");
+        });
+        Case("temporary rebellion and feud shells stay unavailable", () => {
+            foreach (string id in new[] { "empire_rebels_house", "bc_feud_house" }) {
+                realm.StringId = id; Require(Read().Status == CouncilOfficeStateStatus.UnavailableRealm, "temporary realm accepted");
+            }
+        });
+        Case("superseded empty parent shell stays unavailable", () => {
+            Kingdom.All.Add(new Kingdom { StringId = "empire_restored" }); Require(Read().Status == CouncilOfficeStateStatus.UnavailableRealm, "obsolete shell accepted");
+        });
+        Case("partial recorded council never synthesizes missing offices", () => {
+            council.FixtureRows.Add(Row(PrivyCouncilOffice.Chancellor)); var s = Read();
+            Require(s.Status == CouncilOfficeStateStatus.Recorded && !s.HasAllOfficeRecords && s.Offices.Count == 1, "missing offices synthesized");
+        });
+        Case("uninitialized record stays uninitialized and is not exposed", () => {
+            var row = new PrivyCouncilOfficeRecord("empire", PrivyCouncilOffice.Marshal, 90); council.FixtureRows.Add(row);
+            Require(Read().Status == CouncilOfficeStateStatus.UninitializedRecords && !row.IsInitialized && Read().Offices.Count == 0, "seeded uninitialized council");
+        });
+        Case("duplicate office records return invalid rather than choosing a holder", () => {
+            council.FixtureRows.Add(Row(PrivyCouncilOffice.Marshal)); council.FixtureRows.Add(Row(PrivyCouncilOffice.Marshal, "other"));
+            Require(Read().Status == CouncilOfficeStateStatus.InvalidRecords && Read().Offices.Count == 0, "duplicate chosen");
+        });
+        Case("corrupt record identity is not repaired or exposed", () => {
+            var row = Row(PrivyCouncilOffice.Marshal); typeof(PrivyCouncilOfficeRecord).GetField("_recordId", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(row, "wrong");
+            council.FixtureRows.Add(row); Require(Read().Status == CouncilOfficeStateStatus.InvalidRecords && row.RecordId == "wrong", "record silently repaired");
+        });
+        Case("unknown office enum is rejected", () => {
+            council.FixtureRows.Add(Row((PrivyCouncilOffice)999)); Require(Read().Status == CouncilOfficeStateStatus.InvalidRecords, "unknown office accepted");
+        });
+        Case("snapshot is unchanged when later source holder changes", () => {
+            var row = Row(PrivyCouncilOffice.Chancellor); council.FixtureRows.Add(row); var before = Read(); row.Appoint("new_house", 101);
+            Require(before.Offices.Single().RecordedHolderClanId == "house" && Read().Offices.Single().RecordedHolderClanId == "new_house", "mutable record escaped");
+        });
+        Case("returned collection cannot be mutated", () => {
+            council.FixtureRows.Add(Row(PrivyCouncilOffice.Marshal)); bool blocked = false;
+            try { ((IList<CouncilOfficeRecordSnapshot>)Read().Offices).Clear(); } catch (NotSupportedException) { blocked = true; }
+            Require(blocked && council.FixtureRows.Count == 1, "mutable collection");
+        });
+        Case("private assignment and controversy fields never enter DTO", () => {
+            var row = Row(PrivyCouncilOffice.Spymaster); row.SetAssignment("secret_spy_target", 95); row.ChangeControversy(40, "secret_reaction", 96);
+            row.ScheduleAssignmentReview(120); council.FixtureRows.Add(row); string before = Fingerprint(row); Read();
+            Require(before == Fingerprint(row), "saved record changed during read");
+            var names = typeof(CouncilOfficeRecordSnapshot).GetProperties().Select(p => p.Name).OrderBy(n => n).ToArray();
+            Require(new HashSet<string>(names, StringComparer.Ordinal).SetEquals(new[] { "Office", "RealmId", "RecordId", "RecordedHolderClanId" }), "private field exposed");
+        });
+        Case("recorded empty holder is copied without asserting office eligibility", () => {
+            council.FixtureRows.Add(Row(PrivyCouncilOffice.SecondAdvisor, "")); var s = Read();
+            Require(s.Offices.Single().RecordedHolderClanId == "" && !s.HasAllOfficeRecords, "vacancy inferred or filled");
+            Require(!typeof(CouncilOfficeRecordSnapshot).GetProperties().Any(p => p.Name.Contains("Available") || p.Name.Contains("Vacant")), "eligibility invented");
+        });
+        Case("other realms and null unrelated rows do not leak", () => {
+            council.FixtureRows.Add(null); council.FixtureRows.Add(Row(PrivyCouncilOffice.Marshal, "foreign_house", "other"));
+            Require(Read().Status == CouncilOfficeStateStatus.NotRecorded && council.FixtureRows.Count == 2, "foreign data leaked or source pruned");
+        });
+        Case("missing behavior is distinguished from missing council", () => {
+            Campaign.Current.Council = null; Require(Read().Status == CouncilOfficeStateStatus.BehaviorUnavailable, "absence conflated");
+        });
+        Case("public facade always uses campaign-thread guard", () => {
+            BellumIntegrationBehavior.Allow = false; bool denied = false; try { Read(); } catch (InvalidOperationException) { denied = true; }
+            Require(denied && BellumIntegrationBehavior.GateCalls == 1, "thread guard bypassed");
+        });
+        Case("capture day belongs to the snapshot and invalid times are rejected", () => {
+            council.FixtureRows.Add(Row(PrivyCouncilOffice.Marshal)); var before = Read(); CampaignTime.Now.ToDays = 110; var after = Read();
+            Require(before.CapturedDay == 100 && after.CapturedDay == 110, "capture time shared");
+            CampaignTime.Now.ToDays = double.NaN; Require(Read().Status == CouncilOfficeStateStatus.InvalidRecords, "NaN capture time accepted");
+        });
+        Console.WriteLine("EXISTING_COUNCIL_STATE_PASS " + count + " named cases; boundary fixtures, not Native game proof.");
+    }
+}

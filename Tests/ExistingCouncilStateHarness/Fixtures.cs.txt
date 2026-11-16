@@ -1,0 +1,38 @@
+// Native boundary doubles. Production DTO/reader/facade, saved record, enum and visibility helper compile unchanged.
+using System;
+using System.Collections.Generic;
+using TaleWorlds.CampaignSystem;
+namespace TaleWorlds.SaveSystem {
+    [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute : Attribute { public SaveableFieldAttribute(int id) { } }
+}
+namespace TaleWorlds.CampaignSystem {
+    public sealed class Campaign {
+        public static Campaign Current = new Campaign();
+        public BellumCivile.Behaviors.PrivyCouncilBehavior Council;
+        public T GetCampaignBehavior<T>() where T : class { return Council as T; }
+    }
+    public sealed class CampaignTime { public static CampaignTime Now = new CampaignTime(); public double ToDays = 100; }
+    public sealed class Holding { public bool IsTown, IsCastle; }
+    public sealed class Clan { public bool IsEliminated, IsUnderMercenaryService, IsMinorFaction; }
+    public sealed class Kingdom {
+        public static List<Kingdom> All = new List<Kingdom>();
+        public string StringId; public bool IsEliminated;
+        public List<Clan> Clans = new List<Clan>(); public List<Holding> Fiefs = new List<Holding>();
+    }
+}
+namespace BellumCivile.Behaviors {
+    public sealed class FeudalTitleBehavior { public bool IsIndependentRealmShell(Kingdom realm) { return false; } }
+    public sealed class BellumIntegrationBehavior {
+        public static bool Allow = true;
+        public static int GateCalls;
+        public static void RequireCampaignThread() { GateCalls++; if (!Allow || Campaign.Current == null) throw new InvalidOperationException("Fixture campaign thread denied"); }
+    }
+    public sealed partial class PrivyCouncilBehavior {
+        private List<BellumCivile.PrivyCouncilOfficeRecord> _officeRecords = new List<BellumCivile.PrivyCouncilOfficeRecord>();
+        public int EnsureCalls;
+        public void FixtureInstall(List<BellumCivile.PrivyCouncilOfficeRecord> rows) { _officeRecords = rows; }
+        public List<BellumCivile.PrivyCouncilOfficeRecord> FixtureRows { get { return _officeRecords; } }
+        public void EnsureCouncilForKingdom(Kingdom realm) { EnsureCalls++; throw new Exception("Reader attempted council initialization"); }
+        public IReadOnlyList<BellumCivile.PrivyCouncilOfficeRecord> GetOfficeRecords(Kingdom realm) { EnsureCouncilForKingdom(realm); return _officeRecords; }
+    }
+}
