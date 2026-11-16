@@ -1,0 +1,126 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+public static class ExistingWarStateScenarios
+{
+    private static int count;
+    private static Kingdom realm, opponent;
+    private static WarScoreBehavior behavior;
+    private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
+    private static void Case(string name, Action run) {
+        realm = new Kingdom { StringId = "a" }; opponent = new Kingdom { StringId = "b" };
+        Kingdom.All = new List<Kingdom> { realm, opponent };
+        behavior = new WarScoreBehavior(); Campaign.Current = new Campaign { Wars = behavior };
+        CampaignTime.Now.ToDays = 100; BellumIntegrationBehavior.Allow = true; BellumIntegrationBehavior.GateCalls = 0;
+        run(); count++; Console.WriteLine("PASS " + name);
+    }
+    private static WarScoreRecord Row(string key = "war", string first = "a", string second = "b", WarScoreConflictType kind = WarScoreConflictType.ForeignWar) {
+        return new WarScoreRecord(key, first, second, 90, null, kind, "private_context");
+    }
+    private static void Set(WarScoreRecord row, string field, object value) {
+        typeof(WarScoreRecord).GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(row, value);
+    }
+    private static WarStateSnapshot Read() { return BellumIntegration.GetExistingWarState(realm); }
+    private static void Invalid(WarScoreRecord row) {
+        behavior.FixtureRows.Add(row); var s = Read(); Check(s.Status == WarStateStatus.InvalidRecords && s.Wars.Count == 0, "invalid state leaked");
+    }
+    public static void Run() {
+        Case("primary side preserves score and duration", () => {
+            var w = Row(); Set(w, "_score", 37f); behavior.FixtureRows.Add(w); var s = Read(); var r = s.Wars.Single();
+            Check(s.Status == WarStateStatus.Recorded && s.RealmId == "a" && s.CapturedDay == 100 && s.MatchingRecordCount == 1, "scope/status");
+            Check(r.PrimaryScore == 37 && r.ViewingRealmScore == 37 && r.DurationDays == 10 && r.PrimaryRealmId == "a" && r.OpposingRealmId == "b", "perspective");
+        });
+        Case("defending side reverses score only in copy", () => {
+            var w = Row(first:"b", second:"a"); Set(w, "_score", 37f); behavior.FixtureRows.Add(w);
+            var r = Read().Wars.Single(); Check(r.PrimaryScore == 37 && r.ViewingRealmScore == -37 && w.Score == 37, "wrong side sign");
+        });
+        Case("negative source score reverses for defending side", () => {
+            var w = Row(first:"b", second:"a"); Set(w, "_score", -21f); behavior.FixtureRows.Add(w); Check(Read().Wars.Single().ViewingRealmScore == 21, "negative sign");
+        });
+        Case("raw foreign civil and feud kinds remain distinct", () => {
+            foreach (WarScoreConflictType kind in Enum.GetValues(typeof(WarScoreConflictType))) behavior.FixtureRows.Add(Row(kind.ToString(), kind:kind));
+            Check(Read().Wars.Select(w => w.ConflictType).Distinct().Count() == 3, "kind flattened");
+        });
+        Case("ended and unrelated wars are excluded", () => {
+            var ended = Row(); Set(ended, "_isActive", false); behavior.FixtureRows.Add(ended); behavior.FixtureRows.Add(Row("foreign", "c", "d"));
+            Check(Read().Status == WarStateStatus.Recorded && Read().Wars.Count == 0, "wrong scope");
+        });
+        Case("empty recorded list does not become unavailable", () => { Check(Read().Status == WarStateStatus.Recorded && Read().MatchingRecordCount == 0, "empty status"); });
+        Case("null collection is unavailable and remains null", () => {
+            behavior.FixtureRows = null; Check(Read().Status == WarStateStatus.UninitializedRecords && behavior.FixtureRows == null, "reader repaired state");
+        });
+        Case("missing behavior is explicit", () => { Campaign.Current.Wars = null; Check(Read().Status == WarStateStatus.BehaviorUnavailable, "missing behavior"); });
+        Case("null realm is unavailable", () => { Check(BellumIntegration.GetExistingWarState(null).Status == WarStateStatus.UnavailableRealm, "null scope"); });
+        Case("eliminated realm is unavailable", () => { realm.IsEliminated = true; Check(Read().Status == WarStateStatus.UnavailableRealm, "dead scope"); });
+        Case("same ID from detached realm object is rejected", () => {
+            Check(BellumIntegration.GetExistingWarState(new Kingdom { StringId = "a" }).Status == WarStateStatus.UnavailableRealm, "stale object accepted");
+        });
+        Case("empty realm ID is rejected", () => { realm.StringId = " "; Check(Read().Status == WarStateStatus.UnavailableRealm, "blank scope"); });
+        Case("recorded active war can have no Native hostility", () => {
+            realm.Hostile = false; behavior.FixtureRows.Add(Row()); Check(Read().Wars.Single().NativeHostility == false, "stale active row became real war");
+        });
+        Case("unresolved opponent makes hostility unknown", () => {
+            Kingdom.All.Remove(opponent); behavior.FixtureRows.Add(Row()); Check(Read().Wars.Single().NativeHostility == null, "unknown hostility became peace");
+        });
+        Case("null row fails closed without repair", () => { behavior.FixtureRows.Add(null); Check(Read().Status == WarStateStatus.InvalidRecords && behavior.FixtureRows.Single() == null, "null row repair"); });
+        Case("duplicate keys fail closed", () => { behavior.FixtureRows.Add(Row()); Invalid(Row()); });
+        Case("blank record key fails closed", () => { Invalid(Row(" ")); });
+        Case("blank opponent fails closed", () => { Invalid(Row(second:"")); });
+        Case("same two sides fail closed", () => { Invalid(Row(second:"a")); });
+        Case("unknown conflict kind fails closed", () => { Invalid(Row(kind:(WarScoreConflictType)999)); });
+        Case("nonfinite score fails closed", () => { var w = Row(); Set(w, "_score", float.NaN); Invalid(w); });
+        Case("infinite start day fails closed", () => { var w = Row(); Set(w, "_startedDay", float.PositiveInfinity); Invalid(w); });
+        Case("future start day fails closed", () => { var w = Row(); Set(w, "_startedDay", 101f); Invalid(w); });
+        Case("negative start day fails closed", () => { var w = Row(); Set(w, "_startedDay", -1f); Invalid(w); });
+        Case("invalid capture day fails closed", () => { CampaignTime.Now.ToDays = double.NaN; Check(Read().Status == WarStateStatus.InvalidRecords, "bad captured day"); });
+        Case("capacity overflow is explicit without partial results", () => {
+            for (int i = 0; i <= WarStateSnapshot.MaximumWars; i++) behavior.FixtureRows.Add(Row("war" + i));
+            Check(Read().Status == WarStateStatus.CapacityExceeded && Read().MatchingRecordCount == 65 && Read().Wars.Count == 0, "silent truncation");
+        });
+        Case("capacity boundary remains complete and ordinal sorted", () => {
+            for (int i = WarStateSnapshot.MaximumWars - 1; i >= 0; i--) behavior.FixtureRows.Add(Row("war" + i.ToString("D2")));
+            var s = Read(); Check(s.Status == WarStateStatus.Recorded && s.Wars.Count == 64 && s.Wars.First().WarKey == "war00", "bound/order");
+        });
+        Case("source mutation does not alter detached snapshot", () => {
+            var w = Row(); behavior.FixtureRows.Add(w); var s = Read(); Set(w, "_score", 99f); behavior.FixtureRows.Clear();
+            Check(s.Wars.Single().PrimaryScore == 0 && Read().Wars.Count == 0, "record escaped");
+        });
+        Case("snapshot collection is immutable", () => {
+            behavior.FixtureRows.Add(Row()); bool denied = false;
+            try { ((IList<WarRecordSnapshot>)Read().Wars).Clear(); } catch (NotSupportedException) { denied = true; }
+            Check(denied && behavior.FixtureRows.Count == 1, "list escaped");
+        });
+        Case("private negotiation and event fields are absent from DTO", () => {
+            string names = string.Join("|", typeof(WarRecordSnapshot).GetProperties().Select(p => p.Name));
+            Check(!names.Contains("Context") && !names.Contains("Reason") && !names.Contains("Event") && !names.Contains("Parley") && !names.Contains("Pressure"), "private fields exposed");
+            Check(typeof(WarRecordSnapshot).GetProperties().All(p => !p.CanWrite), "mutable DTO");
+        });
+        Case("infinite score fails closed", () => { var w = Row(); Set(w, "_score", float.NegativeInfinity); Invalid(w); });
+        Case("war starting at capture time has zero duration", () => {
+            var w = Row(); Set(w, "_startedDay", 100f); behavior.FixtureRows.Add(w); Check(Read().Wars.Single().DurationDays == 0, "zero duration");
+        });
+        Case("read preserves every saved field and collection identity", () => {
+            var w = Row(); Set(w, "_parleyPending", true); Set(w, "_resolutionPending", true);
+            Set(w, "_terminalResolutionReason", "private_reason"); Set(w, "_prisonerCustody", null);
+            Set(w, "_attackerRaidedVillages", null); Set(w, "_refusalReactions", null);
+            behavior.FixtureRows.Add(w); var list = behavior.FixtureRows;
+            var fields = typeof(WarScoreRecord).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+            var before = fields.Select(f => f.GetValue(w)).ToArray(); Read();
+            Check(fields.Select((f, i) => object.Equals(before[i], f.GetValue(w))).All(v => v)
+                && object.ReferenceEquals(list, behavior.FixtureRows) && list.Single() == w, "read changed saved state");
+        });
+        Case("campaign guard precedes all source reads", () => {
+            BellumIntegrationBehavior.Allow = false; bool denied = false;
+            try { Read(); } catch (InvalidOperationException) { denied = true; }
+            Check(denied && BellumIntegrationBehavior.GateCalls == 1, "unguarded read");
+        });
+        Case("absent campaign is blocked", () => {
+            Campaign.Current = null; bool denied = false; try { Read(); } catch (InvalidOperationException) { denied = true; } Check(denied, "no campaign read");
+        });
+        Console.WriteLine("RESULT " + count + " named cases PASS; Native boundary doubles; not a shipping build or game test.");
+    }
+}

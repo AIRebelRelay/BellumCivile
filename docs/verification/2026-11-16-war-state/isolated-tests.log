@@ -1,0 +1,36 @@
+PASS primary side preserves score and duration
+PASS defending side reverses score only in copy
+PASS negative source score reverses for defending side
+PASS raw foreign civil and feud kinds remain distinct
+PASS ended and unrelated wars are excluded
+PASS empty recorded list does not become unavailable
+PASS null collection is unavailable and remains null
+PASS missing behavior is explicit
+PASS null realm is unavailable
+PASS eliminated realm is unavailable
+PASS same ID from detached realm object is rejected
+PASS empty realm ID is rejected
+PASS recorded active war can have no Native hostility
+PASS unresolved opponent makes hostility unknown
+PASS null row fails closed without repair
+PASS duplicate keys fail closed
+PASS blank record key fails closed
+PASS blank opponent fails closed
+PASS same two sides fail closed
+PASS unknown conflict kind fails closed
+PASS nonfinite score fails closed
+PASS infinite start day fails closed
+PASS future start day fails closed
+PASS negative start day fails closed
+PASS invalid capture day fails closed
+PASS capacity overflow is explicit without partial results
+PASS capacity boundary remains complete and ordinal sorted
+PASS source mutation does not alter detached snapshot
+PASS snapshot collection is immutable
+PASS private negotiation and event fields are absent from DTO
+PASS infinite score fails closed
+PASS war starting at capture time has zero duration
+PASS read preserves every saved field and collection identity
+PASS campaign guard precedes all source reads
+PASS absent campaign is blocked
+RESULT 35 named cases PASS; Native boundary doubles; not a shipping build or game test.

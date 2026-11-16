@@ -1,0 +1,19 @@
+PASS: Refusal uses a separate protected secondary package, without fallback gifts, treasury seizure or gratitude.
+PASS: Journal precedes cadet preparation, which precedes rebel shell startup.
+PASS: Hostile transfer persists intent before callbacks and verifies delivery afterward.
+PASS: Seizure and restitution protect legal owner/parent and restore nested transfer context.
+PASS: Restitution only touches tracked possession; later third-party ownership and grants are not overwritten.
+PASS: Final dispatch rechecks current forces and holdings without rerolling allegiance.
+PASS: Frozen startup reuses its deterministic shell and hides incomplete war state.
+PASS: Normal defeat, white peace and restored-realm victory capture outcomes before cleanup.
+PASS: Both AI and player challenge tribunals reuse the saved queue without replaying immediate judgments.
+PASS: Rewards record before event callbacks; pending collapse outcomes cannot create another successor realm.
+PASS: Restored successor creation delegates to deterministic identity and resumable initialization receipts.
+PASS: Victory advances and cooldown completion require actual title/cleanup postconditions.
+PASS: Submission has a separate tooltip contribution and expires on ruler replacement.
+PASS: Settlement and pledge backends do not create extra appeals.
+PASS: Explicit test entry continues to use the shared initiation backend.
+PASS: Natural and manual challenges advance responses and retry the same saved roll.
+PASS: Player choices revalidate through the normal backend without forced loyalty or recruitment.
+PASS: Controlled test marker survives save/load.
+Source contracts only. In-game shell creation, partial transfers, tribunals and save/load still need campaign tests.

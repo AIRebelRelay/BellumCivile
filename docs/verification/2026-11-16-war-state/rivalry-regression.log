@@ -1,0 +1,15 @@
+PASS: Rival-pair registration observes existing hostility; it does not activate a new war.
+PASS: Rival scores cannot accidentally install a claimant through the ordinary Crown-victory resolver.
+PASS: Generic internal white peace cannot settle a whole claimant coalition for a rivalry pairing.
+PASS: Surviving defeated houses enter the victorious claimant realm through guarded transfers and join its existing coalition.
+PASS: Victorious claimant judges only the defeated coalition through the shared tribunal path.
+PASS: Settlement closes the losing claimant, not the victor ongoing Crown war.
+PASS: Rival absorption neither combines scores nor awards the Crown nor restarts the rebellion.
+PASS: Rival settlement records its winner, losers and destination before mutation.
+PASS: Hereditary loser recovery delegates to its saved absorption owner.
+PASS: Owned hereditary restitution uses a validated saved settlement rather than a blanket protection bypass.
+PASS: Reward and tribunal receipts survive retry.
+PASS: Rival absorption journal is registered for persistence.
+PASS: Dual claimant dispatch registers the rivalry before startup completes.
+PASS: Rival-absorption notification is localized exactly once.
+Source contracts only; native transfers, tribunals and save/load still need campaign testing.
