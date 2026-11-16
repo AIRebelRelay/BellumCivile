@@ -21,5 +21,8 @@ Check ($activity.Contains('!agenda.SessionDate.IsPast') -and $activity.Contains(
 Check (!$activity.Contains('Mood =') -and !$activity.Contains('Mood +=')) 'Activity completion adds no generic agenda mood shock.'
 Check ((Read 'Behaviors/IdeologyBehavior.cs').Contains('Legacy faction meetings have been retired.')) 'Legacy forced meetings cannot bypass activity selection.'
 [xml]$ui = Read 'GUI/Prefabs/KingdomManagement/Factions/BellumFactionsPanel.xml'
-Check ($null -ne $ui.SelectSingleNode('//*[@IsVisible="@HasActivityHint" and @Command.HoverBegin="ExecuteBeginActivityHint"]')) 'Activity hover area is conditional, not an empty generic tooltip.'
+$agendaHint = $ui.SelectSingleNode('//*[@Id="BellumFactionAgendaHint" and @Command.HoverBegin="ExecuteBeginActivityHint" and @Command.HoverEnd="ExecuteEndActivityHint"]')
+Check ($null -ne $agendaHint -and
+    $null -ne $agendaHint.SelectSingleNode('.//TextWidget[@Text="@RivalsText"]') -and
+    (Read 'UI/FactionItemVM.cs').Contains('_activityHint?.ExecuteBeginHint()')) 'Unified agenda hint wraps visible agenda text and safely does nothing without a hint.'
 'Source and XML contracts only; campaign persistence and rendered hints require live testing.'
