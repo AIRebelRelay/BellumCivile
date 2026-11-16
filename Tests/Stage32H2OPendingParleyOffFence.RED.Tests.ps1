@@ -29,7 +29,7 @@ Check ($queue.Contains('if (!WarPeaceRevampBehavior.IsRevampEnabled()') -and
 Check ($f1.Contains('ShouldPreventAutonomousForeignResolution') -and
     $war.Contains('if (IsAiInfluenceForeignLedger(war))')) 'AII ledger remains accounting-only in ordinary scoring and terminal path'
 Check ($sign.Contains('SpendCouncilCommitments(proposal, winnerCouncil, loserCouncil)') -and
-    $sign.Contains('ApplyTreaty(war, proposal, winner, loser)') -and
+    $sign.Contains('ApplyTreaty(war, proposal, winner, loser, playerReviewedWhitePeace)') -and
     $apply.Contains('ApplyTreatyCore(war, proposal, winner, loser)')) 'previous valid sign and treaty path still exists for ON'
 # The next check is EXPECTED RED until a separately approved safe runtime policy
 # prevents stale player GUI signing from spending influence / making peace after OFF.
