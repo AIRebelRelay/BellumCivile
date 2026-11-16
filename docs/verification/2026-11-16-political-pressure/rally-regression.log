@@ -1,0 +1,46 @@
+PASS: Positive Glory with two houses owns the motion.
+PASS: Need uses cached discovery and base military-weighted enthusiasm.
+PASS: Forced and protected wars cannot be selected.
+PASS: Rally never mutates global enthusiasm.
+PASS: Indexed query preserves expiry, membership and Crown alignment.
+PASS: Player agency and original identity retained.
+PASS: Outcome and approval receipts are one shot.
+PASS: Timely outcome is handled before closed-war invalidation.
+PASS: Interrupted treaty delivery waits briefly then closes neutrally.
+PASS: Settlement stages before destructive actions.
+PASS: Outcome receipt follows structural and concession delivery.
+PASS: Result uses paid gold and verified structural/territorial delivery.
+PASS: Budget credits and reciprocal/marriage clauses do not manufacture victory.
+PASS: Proposer keeps looking for another eligible front.
+PASS: War context reaches exhaustion while rally eligibility excludes internal, inactive, player and OFF cases.
+PASS: Snapshot base receives one capped rally delta through the current nonlinear peace-readiness model.
+PASS: All draft enthusiasm consumers receive original war context.
+PASS: Player choice copies rally snapshot and uses foreign affairs category.
+PASS: Appended save identity and independent journal wired.
+PASS: Unique localization: BC_RallyBegun
+PASS: Matching fallback: BC_RallyBegun
+PASS: Unique localization: BC_RallyCancelled
+PASS: Matching fallback: BC_RallyCancelled
+PASS: Unique localization: BC_RallyDefeat
+PASS: Matching fallback: BC_RallyDefeat
+PASS: Unique localization: BC_RallyDetail
+PASS: Matching fallback: BC_RallyDetail
+PASS: Unique localization: BC_RallyDisappointed
+PASS: Matching fallback: BC_RallyDisappointed
+PASS: Unique localization: BC_RallyLabel
+PASS: Matching fallback: BC_RallyLabel
+PASS: Unique localization: BC_RallyMotive
+PASS: Matching fallback: BC_RallyMotive
+PASS: Unique localization: BC_RallyMotiveDetail
+PASS: Matching fallback: BC_RallyMotiveDetail
+PASS: Unique localization: BC_RallyShortStatus
+PASS: Matching fallback: BC_RallyShortStatus
+PASS: Unique localization: BC_RallyStatus
+PASS: Matching fallback: BC_RallyStatus
+PASS: Unique localization: BC_RallyTreatyReason
+PASS: Matching fallback: BC_RallyTreatyReason
+PASS: Unique localization: BC_RallyUnfinished
+PASS: Matching fallback: BC_RallyUnfinished
+PASS: Unique localization: BC_RallyVictory
+PASS: Matching fallback: BC_RallyVictory
+Rally source/XML contracts passed; actual campaign/treaty delivery and native save/load remain to test.

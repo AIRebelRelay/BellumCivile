@@ -1,0 +1,41 @@
+// Native boundaries only; forwarding and existing getter methods are inserted from production source.
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using TaleWorlds.CampaignSystem;
+namespace TaleWorlds.SaveSystem {
+    [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute : Attribute { public SaveableFieldAttribute(int id) { } }
+}
+namespace TaleWorlds.CampaignSystem {
+    public sealed class Campaign {
+        public static Campaign Current = new Campaign();
+        public BellumCivile.Behaviors.WarPeaceRevampBehavior Pressure;
+        public BellumCivile.Behaviors.BellumIntegrationBehavior Integration = new BellumCivile.Behaviors.BellumIntegrationBehavior();
+        public T GetCampaignBehavior<T>() where T : class { return Pressure as T; }
+    }
+    public sealed class CampaignTime { public static CampaignTime Now = new CampaignTime(); public double ToDays = 100; }
+    public sealed class Clan { public static List<Clan> All = new List<Clan>(); public string StringId; public bool IsEliminated; }
+}
+namespace BellumCivile {
+    // Boundary option deliberately differs from zero to detect a hidden initial-value fallback.
+    public static class BellumCivileOptions { public static float WarWillInitial = 57; }
+}
+namespace BellumCivile.Behaviors {
+    public sealed partial class BellumIntegrationBehavior {
+        internal static BellumIntegrationBehavior Current { get { return Campaign.Current == null ? null : Campaign.Current.Integration; } }
+        private int _threadId = Thread.CurrentThread.ManagedThreadId;
+    }
+    public sealed class WarPeaceRevampBehavior {
+        private Dictionary<string,float> _warWillByClanId = new Dictionary<string,float>();
+        private List<BellumCivile.WarWillPressureRecord> _pressureRecords = new List<BellumCivile.WarWillPressureRecord>();
+        public Dictionary<string,float> FixtureWill { get { return _warWillByClanId; } set { _warWillByClanId=value; } }
+        public List<BellumCivile.WarWillPressureRecord> FixturePressures { get { return _pressureRecords; } set { _pressureRecords=value; } }
+        public int EnsureCalls;
+        private void EnsureCollectionsInitialized() {
+            EnsureCalls++;
+            if (_warWillByClanId == null) _warWillByClanId = new Dictionary<string,float>();
+            if (_pressureRecords == null) _pressureRecords = new List<BellumCivile.WarWillPressureRecord>();
+        }
+        // INSERT_ACTUAL_METHODS
+    }
+}
