@@ -25,8 +25,16 @@ Check ($treaty.IndexOf('CourtRallySettlement.Record(') -gt $treaty.IndexOf('Queu
 Check ($settlement.Contains('gold.TryGetValue(t,out int paid)') -and $settlement.Contains('!delivered.Contains(t)') -and $settlement.Contains('OwnerClan?.Kingdom?.StringId')) 'Result uses paid gold and verified structural/territorial delivery.'
 Check (!$settlement.Contains('UsedWarScore') -and $settlement.Contains('TreatyTermType.ReleasePrisoner') -and $settlement.Contains('TreatyTermType.ArrangeRoyalMarriage')) 'Budget credits and reciprocal/marriage clauses do not manufacture victory.'
 Check ($will.Contains('requireLowWill: true') -and $score.Contains('.Where(war => !requireLowWill || CourtAgendaBehavior.EffectiveWarWill')) 'Proposer keeps looking for another eligible front.'
-Check ($score.Contains('CalculatePowerWeightedWarWill(primary,war)') -and $score.Contains('float losingWill = CalculatePowerWeightedWarWill(losingSide);')) 'Foreign exhaustion is scoped while internal surrender stays base.'
-Check ($ratification.Contains('EffectiveWarWill(clan,war,enthusiasm) - enthusiasm') -and $ratification.Contains('-rallyDelta * .5f')) 'Snapshot base receives one capped live treaty delta.'
+Check ($score.Contains('CalculatePowerWeightedWarWill(primary,war)') -and $score.Contains('float losingWill = CalculatePowerWeightedWarWill(losingSide, war);') -and
+    $behavior.Contains('CourtPeaceObjectiveSource.EligibleWar(a.Realm,a.Rally.Target,war)') -and
+    (Read 'CourtPeaceObjectiveSource.cs').Contains('war.ConflictType == WarScoreConflictType.ForeignWar') -and
+    $behavior.Contains('if (clan == null || clan == Clan.PlayerClan || war?.IsActive != true || !WarPeaceRevampBehavior.IsRevampEnabled()) return baseline;')) 'War context reaches exhaustion while rally eligibility excludes internal, inactive, player and OFF cases.'
+Check ($ratification.Contains('float effectiveWill = CourtAgendaBehavior.EffectiveWarWill(clan, war, enthusiasm);') -and
+    $ratification.Contains('if (effectiveWill != enthusiasm)') -and
+    $ratification.Contains('var readiness = PeaceReadiness.Evaluate(days, war?.Score ?? warScoreBudget, enthusiasm, BellumCivileOptions.WarDurationReluctanceDays);') -and
+    $ratification.Contains('var rallied = PeaceReadiness.Evaluate(days, war?.Score ?? warScoreBudget, effectiveWill, BellumCivileOptions.WarDurationReluctanceDays);') -and
+    ([regex]::Matches($ratification, 'Add\(reasons, ref utility, rallied.Total - readiness.Total, "Court rally"\);')).Count -eq 1 -and
+    (Read 'CourtRallyRecord.cs').Contains('eligible ? Math.Min(100, baseline + 15) : baseline')) 'Snapshot base receives one capped rally delta through the current nonlinear peace-readiness model.'
 Check ($draft.Contains('CalculateRealmWarWill(drafter,war)') -and $draft.Contains('CalculateRealmWarWill(loser,war)') -and $draft.Contains('CalculateRealmWarWill(drafter ?? winner,war)')) 'All draft enthusiasm consumers receive original war context.'
 Check ($picker.Contains('agenda.Rally = prepared.Rally') -and $picker -match 'kind == CourtRallyRules.Kind[^\r\n]*BC_CourtPickerForeignAffairs') 'Player choice copies rally snapshot and uses foreign affairs category.'
 Check ((Read 'BellumCivileSaveDefiner.cs').Contains('AddClassDefinition(typeof(CourtRallyRecord), 104)') -and (Read 'Behaviors/CourtAgendaBehavior.cs').Contains('BC_CourtRallies')) 'Appended save identity and independent journal wired.'
