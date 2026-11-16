@@ -22,7 +22,7 @@ Check ($source.Contains('incumbent == null ? "fill" : "replace"')) 'Fill and rep
 Check ($source.Contains('GetOfficeTenureDays(facts.Realm, office) >= BellumCivileOptions.CourtTermDays')) 'Ordinary replacement tenure follows the court term instead of a fixed 365 days.'
 Check ($council.Contains('agenda.ObjectiveData?.Kind == CourtExecutiveRules.Decree')) 'Vacancy priority respects royal decree business.'
 Check ($queue.Contains('CourtAgendaBehavior.Current?.IsCouncilOfficeSettled(kingdom, office)')) 'Office cooldown queries use only term-owned restrictions.'
-Check ($agenda.Contains('_objectiveSelector.SelectBatch(context,')) 'Term opening uses batch arbitration.'
+Check ($agenda -match '_objectiveSelector\.SelectBatch\(\s*context,') 'Term opening uses batch arbitration.'
 Check ($queue.Contains('_pendingVoteDate[pendingKey] = scheduledVoteDate;')) 'New filing requires and preserves the frozen agenda date.'
 Check (!$queue.Contains('if (!scheduledVoteDate.HasValue')) 'NPC votes have no immediate unscheduled fallback.'
 Check ($queue.Contains('"court_agenda", out failureReason, voteDate, agendaId')) 'The agenda entry point passes its date to the existing queue.'
