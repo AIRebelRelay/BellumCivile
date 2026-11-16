@@ -14,7 +14,10 @@ Check (!$behavior.Contains('DailyTickEvent') -and !$behavior.Contains('HourlyTic
 Check (!$behavior.Contains('new KingSelectionKingdomDecision')) 'Standing election does not create a normal native succession ballot.'
 Check ($crown.Contains('ElectiveElection = sovereign == victim') -and $crown.Contains('SelectSuccessor(record)')) 'Ordinary elective death is captured by the existing Crown journal.'
 Check ($crown.Contains('!record.ElectiveElection && !PrepareAbdicationTransfer')) 'Elective abdication cannot trigger hereditary living estate distribution.'
-Check ($behavior.Contains('old.Source') -and $behavior.Contains('!old.Until.IsPast') -and $behavior.Contains('CampaignTime.Now + CampaignTime.Days(BellumCivileOptions.CourtTermDays)')) 'Personal promises have captured expiry dates and survive renewal while valid.'
+Check ($behavior.Contains('until = CourtAgendaBehavior.Current?.NextEvaluation(realm) ?? CampaignTime.Now;') -and
+    $behavior.Contains('vote.Until = until;') -and $behavior.Contains('vote.Source = old.Source; vote.Until = old.Until;') -and
+    $behavior.Contains('ElectiveSuccessionRules.RetainPromise(old, candidates, record.Frozen, CampaignTime.Now.ToDays)') -and
+    $rules.Contains('(frozen || old.Until.ToDays > day) && candidates.Contains(old.Nominee)')) 'Personal promises have captured expiry dates and survive renewal while valid.'
 Check ($behavior.Contains('record.Frozen ? previous.FirstOrDefault') -and $behavior.Contains('RetallyFrozen(record)')) 'Final prompt changes votes without repricing captured clan weights.'
 Check ($behavior.Contains('_scoring = true') -and $behavior.Contains('if (_scoring') -and $behavior.Contains('InvalidateRelations()')) 'Conditional endorsement is excluded from scoring with relation-cache invalidation.'
 Check ($behavior.Contains('vote.Nominee == candidate ? 10 : -5')) 'Endorsement effects use the approved +10 and -5 values.'
