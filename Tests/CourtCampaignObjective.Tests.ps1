@@ -25,7 +25,10 @@ Check ($behavior.Contains('plan.Members = agenda.Faction.Members') -and $behavio
 Check ($warVote.Contains('CampaignInitiativeBonus(source, target, voter)') -and $warVote.IndexOf('CampaignInitiativeBonus') -lt $warVote.IndexOf('Math.Min(raw, -100f)')) 'Shared war utility includes bonus before hard front veto.'
 Check ($warVote.Contains('support = supportWarOutcome ? raw : -raw')) 'Supporting and opposing outcomes stay symmetric.'
 Check ($behavior.Contains('WarPeaceRevampBehavior.CanSupportCourtCampaign(realm, target)')) 'Live restrictions can suspend campaign assistance.'
-Check ($agenda.IndexOf('MaintainCampaignObjectives();') -lt $agenda.IndexOf('OpenTerm(realm, manager, ideology);')) 'Campaign expiry is processed before new-term cleanup.'
+Check ($agenda.IndexOf('MaintainCampaignObjectives();') -ge 0 -and
+    $agenda.IndexOf('PrepareQueuedCourtTerms(realms, manager, ideology);') -ge 0 -and
+    $agenda.IndexOf('MaintainCampaignObjectives();') -lt $agenda.IndexOf('PrepareQueuedCourtTerms(realms, manager, ideology);') -and
+    (Read 'Behaviors/CourtTermPreparation.cs').Contains('OpenTerm(realm, manager, ideology, term);')) 'Campaign expiry is processed before new-term cleanup.'
 Check ($behavior.Contains('detail == DeclareWarAction.DeclareWarDetail.CausedByKingdomDecision') -and $behavior.Contains('bool initiated = agenda.Realm == attacker && target == defender')) 'Only an authorized offensive receives success credit.'
 Check ($behavior.Contains('bool attacked = agenda.Realm == defender && target == attacker') -and $behavior.Contains('target_attacked_first')) 'Enemy-first entry has a distinct neutral cancellation report.'
 Check ($behavior.Contains('TryClaimResult()') -and $behavior.Contains('CourtAgendaSuccessShock') -and $behavior.Contains('CourtAgendaFailureShock')) 'Outcome uses one-shot receipts and existing mood weights.'
