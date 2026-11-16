@@ -1,0 +1,143 @@
+[
+  {
+    "test": "AiInfluenceNpcCrownCompileItems.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 8
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage11.Inventory.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 17
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage16.NoticeContext.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 14
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage6.Runtime.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 14
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage6.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 12
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage7.Runtime.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 17
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage8.Runtime.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 23
+  },
+  {
+    "test": "ClaimFeudFinalOutcome.Stage20B.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 1
+  },
+  {
+    "test": "ClaimFeudPlayerControl.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 2
+  },
+  {
+    "test": "CourtFactionTraits.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 0,
+    "follow_up": "Installed actual .NET 9.0.11 runtime; CourtRedesignHarness now passes 200486 production-math/XML checks."
+  },
+  {
+    "test": "GamePath.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "pass_markers": 0,
+    "classification": "WINDOWS_ENVIRONMENT_REQUIRED_ProgramFilesX86_is_empty_on_Linux"
+  },
+  {
+    "test": "HierarchyDisplayRoot.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 1
+  },
+  {
+    "test": "IndependenceSettlement.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 1
+  },
+  {
+    "test": "NpcCouncilStage22B.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 21
+  },
+  {
+    "test": "P006ChallengeOutcomeTransferRetry.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 12
+  },
+  {
+    "test": "P014HProjectReferencePropertyPropagation.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "pass_markers": 2,
+    "classification": "STALE_TWO_DEPENDENCY_ASSERTION_current_reference_forwards_MCM_as_third_property"
+  },
+  {
+    "test": "P101ACollapseReference.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 15
+  },
+  {
+    "test": "P101CCollapseStage2Transfer.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 12
+  },
+  {
+    "test": "P101DCollapseCreatedReceipt.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 18
+  },
+  {
+    "test": "P101ECollapseClaimantCrown.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 36
+  },
+  {
+    "test": "P101FRestoredHouseholdOwnership.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 25
+  },
+  {
+    "test": "SettlementBarter.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 0
+  },
+  {
+    "test": "Stage27B.UnifiedNativeLeaveProvenance.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 1
+  }
+]

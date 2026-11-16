@@ -1,0 +1,174 @@
+[
+  {
+    "test": "GIVEN_a_walk_through_the_tale_WHEN_the_words_move_it_THEN_she_speaks_from_each_state_and_it_ends_rewarded",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_walked_to_its_ending_THEN_she_speaks_from_each_stage_and_it_ends_rewarded(wife_battania_glen)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_battania_glen/wife_battania_glen.json'."
+  },
+  {
+    "test": "GIVEN_the_seven_tales_WHEN_loaded_together_THEN_all_seven_load_without_a_problem",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_walked_to_its_ending_THEN_she_speaks_from_each_stage_and_it_ends_rewarded(wife_khuzait_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_ways_are_read_THEN_every_one_is_taken_by_words_with_her(wife_aserai_oasis)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_aserai_oasis/wife_aserai_oasis.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_read_THEN_it_asks_for_his_wife_of_that_people_on_the_map(wife_nord_fjord)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_nord_fjord/wife_nord_fjord.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_pictures_are_checked_THEN_every_stage_has_one_and_it_is_there(wife_nord_fjord)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_nord_fjord/wife_nord_fjord.json'."
+  },
+  {
+    "test": "GIVEN_a_layout_file_that_is_not_json_WHEN_read_THEN_it_is_left_out_and_reported",
+    "error": "Expected p.Problems to contain a single item matching x.Contains(\"lord.json\"), but the collection is empty."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_ways_are_read_THEN_every_one_is_taken_by_words_with_her(wife_nord_fjord)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_nord_fjord/wife_nord_fjord.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_walked_to_its_ending_THEN_she_speaks_from_each_stage_and_it_ends_rewarded(wife_aserai_oasis)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_aserai_oasis/wife_aserai_oasis.json'."
+  },
+  {
+    "test": "GIVEN_the_compiled_mod_assembly_WHEN_scanning_every_constructor_THEN_none_touches_an_unsafe_engine_registry",
+    "error": "Could not locate a compiled CalradiaRemembers.dll to scan. Build the mod project first, e.g.\n  dotnet build \"CalradiaRemembers\\CalradiaRemembers.csproj\"\nthen re-run the tests. This guardrail inspects the built assembly's IL; without it the save-load crash check cannot run."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_read_THEN_it_asks_for_his_wife_of_that_people_on_the_map(wife_aserai_oasis)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_aserai_oasis/wife_aserai_oasis.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_pictures_are_checked_THEN_every_stage_has_one_and_it_is_there(wife_sturgia_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_sturgia_falls/wife_sturgia_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_ways_are_read_THEN_every_one_is_taken_by_words_with_her(wife_khuzait_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_walked_to_its_ending_THEN_she_speaks_from_each_stage_and_it_ends_rewarded(wife_vlandia_pond)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_vlandia_pond/wife_vlandia_pond.json'."
+  },
+  {
+    "test": "GIVEN_the_shipped_tale_WHEN_read_THEN_it_asks_for_his_khuzait_wife_with_him_on_the_map",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_profile_with_a_lord_layout_WHEN_read_THEN_its_order_and_off_list_are_taken",
+    "error": "Expected p.Name to be \"Terse\", but \"terse\" differs near \"ter\" (index 0)."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_read_THEN_it_asks_for_his_wife_of_that_people_on_the_map(wife_sturgia_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_sturgia_falls/wife_sturgia_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_layout_named_after_no_kind_WHEN_read_THEN_it_is_reported",
+    "error": "Expected p.Problems to contain a single item matching x.Contains(\"lords\"), but the collection is empty."
+  },
+  {
+    "test": "GIVEN_the_custom_folder_is_the_module_data_folder_WHEN_portrait_folders_are_listed_THEN_it_is_listed_once",
+    "error": "Expected folders to contain 1 item(s), but found 2: {\"G\\CR\\ModuleData\\/ChatPortraits\", \"G\\CR\\ModuleData/ChatPortraits\"}."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_read_THEN_it_asks_for_his_wife_of_that_people_on_the_map(wife_battania_glen)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_battania_glen/wife_battania_glen.json'."
+  },
+  {
+    "test": "GIVEN_the_states_WHEN_their_ways_are_read_THEN_each_leads_to_every_other_and_to_the_invitation",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_section_file_WHEN_read_THEN_its_words_replace_the_stock_text_and_notes_are_dropped",
+    "error": "System.Collections.Generic.KeyNotFoundException : The given key 'dialogue_style' was not present in the dictionary."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_pictures_are_checked_THEN_every_stage_has_one_and_it_is_there(wife_empire_stream)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_empire_stream/wife_empire_stream.json'."
+  },
+  {
+    "test": "GIVEN_a_character_s_page_WHEN_its_regard_rows_are_stacked_THEN_the_regard_toward_the_player_reads_first",
+    "error": "Build the mod first (dotnet build CalradiaRemembers/CalradiaRemembers.csproj): this guard reads the compiled assembly."
+  },
+  {
+    "test": "GIVEN_the_shipped_tale_WHEN_its_pictures_are_checked_THEN_each_stage_after_the_invitation_has_one_and_it_is_there",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_read_THEN_it_asks_for_his_wife_of_that_people_on_the_map(wife_empire_stream)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_empire_stream/wife_empire_stream.json'."
+  },
+  {
+    "test": "GIVEN_the_ending_WHEN_read_THEN_it_leaves_her_a_memory_regard_and_a_chance_of_a_child",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_ways_are_read_THEN_every_one_is_taken_by_words_with_her(wife_empire_stream)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_empire_stream/wife_empire_stream.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_walked_to_its_ending_THEN_she_speaks_from_each_stage_and_it_ends_rewarded(wife_nord_fjord)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_nord_fjord/wife_nord_fjord.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_pictures_are_checked_THEN_every_stage_has_one_and_it_is_there(wife_vlandia_pond)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_vlandia_pond/wife_vlandia_pond.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_pictures_are_checked_THEN_every_stage_has_one_and_it_is_there(wife_aserai_oasis)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_aserai_oasis/wife_aserai_oasis.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_pictures_are_checked_THEN_every_stage_has_one_and_it_is_there(wife_khuzait_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_read_THEN_it_asks_for_his_wife_of_that_people_on_the_map(wife_khuzait_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_khuzait_falls/wife_khuzait_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_ways_are_read_THEN_every_one_is_taken_by_words_with_her(wife_vlandia_pond)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_vlandia_pond/wife_vlandia_pond.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_ways_are_read_THEN_every_one_is_taken_by_words_with_her(wife_battania_glen)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_battania_glen/wife_battania_glen.json'."
+  },
+  {
+    "test": "GIVEN_a_character_s_page_WHEN_a_section_has_a_heading_THEN_the_heading_reads_above_its_list",
+    "error": "Build the mod first (dotnet build CalradiaRemembers/CalradiaRemembers.csproj): this guard reads the compiled assembly."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_walked_to_its_ending_THEN_she_speaks_from_each_stage_and_it_ends_rewarded(wife_empire_stream)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_empire_stream/wife_empire_stream.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_pictures_are_checked_THEN_every_stage_has_one_and_it_is_there(wife_battania_glen)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_battania_glen/wife_battania_glen.json'."
+  },
+  {
+    "test": "GIVEN_append_and_remove_directives_WHEN_read_THEN_they_are_taken",
+    "error": "System.Collections.Generic.KeyNotFoundException : The given key 'prose_craft' was not present in the dictionary."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_walked_to_its_ending_THEN_she_speaks_from_each_stage_and_it_ends_rewarded(wife_sturgia_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_sturgia_falls/wife_sturgia_falls.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_read_THEN_it_asks_for_his_wife_of_that_people_on_the_map(wife_vlandia_pond)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_vlandia_pond/wife_vlandia_pond.json'."
+  },
+  {
+    "test": "GIVEN_a_wife_tale_WHEN_its_ways_are_read_THEN_every_one_is_taken_by_words_with_her(wife_sturgia_falls)",
+    "error": "System.IO.DirectoryNotFoundException : Could not find a part of the path '/workspace/scratch/3f3917dc1a40/cr_host/Calradia Remembers Adult Tales/ModuleData/cr_quests/wife_sturgia_falls/wife_sturgia_falls.json'."
+  }
+]

@@ -1,0 +1,312 @@
+[
+  {
+    "test": "CivilWarContinuation.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/CivilWarContinuation.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                                   ~~~~~~~~~~~~~~ | Active wars bypass synchronous ruler-change faction removal and | ultimatum logic."
+  },
+  {
+    "test": "CivilWarGrace.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 8,
+    "log": "verification/source-sweep/CivilWarGrace.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                              ~~~~~~~~~~~~~~ | Hereditary initiation and new election disputes use the same realm | restriction."
+  },
+  {
+    "test": "CivilWarRivalry.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 2,
+    "log": "verification/source-sweep/CivilWarRivalry.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                                   ~~~~~~~~~~~~~~ | Generic internal white peace cannot settle a whole claimant coalition | for a rivalry pairing."
+  },
+  {
+    "test": "CouncilAgendaLifecycle.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 15,
+    "log": "verification/source-sweep/CouncilAgendaLifecycle.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  \u2026 eck($condition, $message) { if (!$condition) { throw $message }; \"PAS \u2026 |                                                   ~~~~~~~~~~~~~~ | Term opening uses batch arbitration."
+  },
+  {
+    "test": "CouncilCaptivityScheduling.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 7,
+    "log": "verification/source-sweep/CouncilCaptivityScheduling.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  function Check($ok, $message) { if (!$ok) { throw $message }; \"PASS:  \u2026 |                                              ~~~~~~~~~~~~~~ | Captive incumbent is the only prisoner eligible for a retention ballot."
+  },
+  {
+    "test": "CourtActivityLifecycle.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 12,
+    "log": "verification/source-sweep/CourtActivityLifecycle.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  \u2026 eck($condition, $message) { if (!$condition) { throw $message }; \"PAS \u2026 |                                                   ~~~~~~~~~~~~~~ | Activity hover area is conditional, not an empty generic tooltip."
+  },
+  {
+    "test": "CourtCampaignObjective.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 13,
+    "log": "verification/source-sweep/CourtCampaignObjective.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  \u2026 ction Check($value, $message) { if (!$value) { throw $message }; \"PAS \u2026 |                                                   ~~~~~~~~~~~~~~ | Campaign expiry is processed before new-term cleanup."
+  },
+  {
+    "test": "CourtDynasticObjective.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 3,
+    "log": "verification/source-sweep/CourtDynasticObjective.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                                   ~~~~~~~~~~~~~~ | Court marriage pursuit runs before the ordinary annual eligibility and | chance gates."
+  },
+  {
+    "test": "CourtPeaceObjective.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 9,
+    "log": "verification/source-sweep/CourtPeaceObjective.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  \u2026 ction Check($value, $message) { if (!$value) { throw $message }; \"PAS \u2026 |                                                   ~~~~~~~~~~~~~~ | Expired objectives settle before new-term cleanup and selection."
+  },
+  {
+    "test": "CourtPlayerPicker.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 16,
+    "log": "verification/source-sweep/CourtPlayerPicker.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                                   ~~~~~~~~~~~~~~ | Alternate nomination respects confirmed selection: | Behaviors/CourtCouncilAgendas.cs"
+  },
+  {
+    "test": "CourtRally.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 14,
+    "log": "verification/source-sweep/CourtRally.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  function Check($v,$text){if(!$v){throw $text};\"PASS: $text\"} |                                   ~~~~~~~~~~~ | Foreign exhaustion is scoped while internal surrender stays base."
+  },
+  {
+    "test": "CourtSubjugationObjective.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 15,
+    "log": "verification/source-sweep/CourtSubjugationObjective.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  \u2026 ction Check($value, $message) { if (!$value) { throw $message }; \"PAS \u2026 |                                                   ~~~~~~~~~~~~~~ | Old objectives settle before next-term selection."
+  },
+  {
+    "test": "EncyclopediaConcepts.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/EncyclopediaConcepts.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | Cannot find path | '/workspace/scratch/3f3917dc1a40/bellum/docs/encyclopedia-articles-draft.md' because it does not exist."
+  },
+  {
+    "test": "ForeignAccession.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 1,
+    "log": "verification/source-sweep/ForeignAccession.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                             ~~~~~~~~~~~~~~ | Existing foreign sovereigns wait for union support instead of losing | their first realm."
+  },
+  {
+    "test": "HereditaryLoyalty.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 8,
+    "log": "verification/source-sweep/HereditaryLoyalty.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "9 |      if (-not $condition) { throw $message } |                             ~~~~~~~~~~~~~~ | Portrait tooltip explains components, lawful sovereign and disposition."
+  },
+  {
+    "test": "HereditaryRealmLine.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 2,
+    "log": "verification/source-sweep/HereditaryRealmLine.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "5 |      if (-not $condition) { throw $message } |                             ~~~~~~~~~~~~~~ | Succession panel uses the complete realm line."
+  },
+  {
+    "test": "P005CrownRebellionSafetySource.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/P005CrownRebellionSafetySource.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "14 |  \u2026 'private Dictionary<string, string> _pendingSuccessionOpportunities') |                                                                         ~ | Missing closing ')' in expression."
+  },
+  {
+    "test": "P011CourtCrownStability.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 11,
+    "log": "verification/source-sweep/P011CourtCrownStability.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                             ~~~~~~~~~~~~~~~~~~~~~~ | FAIL: Term admission rechecked after | ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);"
+  },
+  {
+    "test": "P012BFamilyUiCompatibility.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 14,
+    "log": "verification/source-sweep/P012BFamilyUiCompatibility.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                               ~~~~~~~~~~~~~~~~~~ | FAIL: Finalizer touches only Hero Family; unported clan household is | excluded."
+  },
+  {
+    "test": "P012CInheritanceHover.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 9,
+    "log": "verification/source-sweep/P012CInheritanceHover.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "4 |  \u2026 est, [string]$label) { if (-not $test) { throw \"FAIL: $label\" }; Writ \u2026 |                                             ~~~~~~~~~~~~~~~~~~~~ | FAIL: Existing titles, claims, family and Allies sections are preserved."
+  },
+  {
+    "test": "P014AHeroFamilyHarness.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 18,
+    "log": "verification/source-sweep/P014AHeroFamilyHarness.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                          ~~~~~~~~~~~~~~~~~~~~~~~~~~ | FAIL: Test-only startup probe does not import missing Lordship, retainer | or Clan Household dependencies."
+  },
+  {
+    "test": "P014CRecoveryGraceCrownHarness.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 2,
+    "log": "verification/source-sweep/P014CRecoveryGraceCrownHarness.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                      ~~~~~~~~~~~~~~~~~~~~ | FAIL: Absent ProtectedRealmLoadMigrationPatch is explicitly excluded; no | dummy compatibility patch introduced."
+  },
+  {
+    "test": "Stage31KPolicyVotePublicProvenance.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/Stage31KPolicyVotePublicProvenance.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "5 |      if (-not $okay) { throw \"STAGE31K FAIL $title\" } |                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | STAGE31K FAIL actual_source_vote_conclude_caller_unchanged"
+  },
+  {
+    "test": "Stage32CCourtPolicyVoteRecipientRoster.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/Stage32CCourtPolicyVoteRecipientRoster.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "80 |  \u2026 'TryReadVoteProof(agenda.IntegrationId, source, out proof)')) 'never_ \u2026 |                                                                ~ | Unexpected token ')' in expression or statement."
+  },
+  {
+    "test": "Stage32H2OPendingParleyOffFence.RED.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/Stage32H2OPendingParleyOffFence.RED.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "11 |      if (-not $ok) { throw \"STAGE32H2O_RED $label\" } |                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | STAGE32H2O_RED previous valid sign and treaty path still exists for ON"
+  },
+  {
+    "test": "Stage32H2PFreezePendingParley.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/Stage32H2PFreezePendingParley.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~ | STAGE32H2P_RED original ON signing, councils and treaty execution | retained"
+  },
+  {
+    "test": "Stage32H2QDeferredParleyTickOff.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/Stage32H2QDeferredParleyTickOff.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~ | STAGE32H2Q_RED Revamp OFF returns before scanning proposal and war every | tick"
+  },
+  {
+    "test": "Stage32H2TMod145ReleaseMetadata.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 0,
+    "log": "verification/source-sweep/Stage32H2TMod145ReleaseMetadata.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "11 |      if (-not $yes) { throw \"STAGE32H2T_RED $label\" } |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | STAGE32H2T_RED main_Bellum_mod_id_and_version_146"
+  },
+  {
+    "test": "StandingElections.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 5,
+    "log": "verification/source-sweep/StandingElections.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                                   ~~~~~~~~~~~~~~ | Personal promises have captured expiry dates and survive renewal while | valid."
+  },
+  {
+    "test": "SuccessionPlayer.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 19,
+    "log": "verification/source-sweep/SuccessionPlayer.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                                   ~~~~~~~~~~~~~~ | Hierarchy menu contains one challenge action with room for its | additional row."
+  },
+  {
+    "test": "SuccessionWar.Tests.ps1",
+    "exitCode": 1,
+    "status": "FAIL",
+    "checks": 10,
+    "log": "verification/source-sweep/SuccessionWar.Tests.ps1.log",
+    "baseline_exitCode": 1,
+    "baseline_status": "FAIL",
+    "tail": "|                                                   ~~~~~~~~~~~~~~ | Restored successor creation has a deterministic identity and resumable | initialization receipts."
+  }
+]

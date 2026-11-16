@@ -33,6 +33,11 @@ Do not infer absence from the facade scan alone.
 
 ## CR source distinction — do not implement against the wrong layer
 
+UPDATE: the actual host source was subsequently located via the existing repository
+architecture plan: LogRaam/calradia-remembers @ ab539bb66fac59fc6b68d2c027cdaa9e6fd58b9d,
+main, SubModule.xml v2.8.12. See CR-2812-CONTRACT.md for verified host surfaces.
+The older Drive v2.8.11 package is reference material only.
+
 The supplied GitHub repository LogRaam/LLM-Roleplay-Service currently has master
 756bc512420bf009ae49cca37c6275360cb2633e. Its README identifies it as engine-agnostic
 NpcMemoryService SDK, netstandard2.0, NOT the complete Bannerlord host mod.
@@ -42,8 +47,8 @@ the public registration pipeline is not implemented in that layer.
 Drive CalradiaRemembers/CalradiaRemembers/Docs contains EXTENSION_API.md and
 HOWTO_WorldEvents.md. Read on 2026-11-16. That package's SubModule.xml identifies
 v2.8.11, whereas the user reports a newer v2.8.12 on GitHub. Do not silently call
-these the same build. Verify the actual 2.8.12 host binary/source and its exported
-contracts before compiling a Bellum Bridge integration. No assumption that the
+these the same build. The actual 2.8.12 host source is now verified as above; installed binary ABI and live
+behavior still need validation before deployment. No assumption that the
 SDK repository alone proves host feature/version availability.
 
 ## Confirmed in the inspected CR documentation, pending installed-version verification
