@@ -50,7 +50,16 @@ internal static class Program
         };
         try
         {
-            if (args.Contains("--regency-adulthood-157"))
+            if (args.Contains("--de-jure-drift"))
+            {
+                // Repeat and reverse order in one process to exercise patch cleanup and warm callers.
+                DeJureDriftConflictTests.Run(Check);
+                IndependentDriftTests.Run(Check);
+                IndependentDriftTests.Run(Check);
+                DeJureDriftConflictTests.Run(Check);
+                Console.WriteLine($"{_checks} de jure drift isolation and ordering checks passed.");
+            }
+            else if (args.Contains("--regency-adulthood-157"))
             {
                 RegencyAdulthoodTests.Run(Check);
                 Console.WriteLine($"{_checks} regency adulthood checks passed.");

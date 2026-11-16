@@ -19,7 +19,10 @@ internal static class IndependentDriftTests
     private static bool Parent(FeudalTitleRecord __1, ref FeudalTitleRecord __result)
     { __result = __1.TitleType == FeudalTitleType.Barony ? _receivingCounty : _receivingDuchy; return false; }
     private static bool Day(ref float __result) { __result = _day; return false; }
-    private static bool Delta(float __0, ref float __result) { __result = __0 * .001f; return false; }
+    private static int _deltaCalls;
+    private static bool Delta(float __0, ref float __result)
+    { _deltaCalls++; __result = __0 * .001f; return false; }
+    private static void EvaluationPostfix() { }
     private static bool Skip() => false;
 
     internal static void Run(Action<bool, string> check)
@@ -54,11 +57,15 @@ internal static class IndependentDriftTests
             Patch(AccessTools.PropertyGetter(driftType, "CurrentDay"), nameof(Day));
             Patch(AccessTools.PropertyGetter(titleType, "CurrentDay"), nameof(Day));
             Patch(AccessTools.Method(driftType, "CalculateProgressDelta"), nameof(Delta));
+            // A previous fixture may have compiled this caller before our delta patch.
+            h.Patch(AccessTools.Method(driftType, "EvaluateAndMaintainRecord"),
+                postfix: new HarmonyMethod(typeof(IndependentDriftTests), nameof(EvaluationPostfix)));
             Patch(AccessTools.Method(titleType, "QueueServiceReviewForTitleAndChildren"), nameof(Skip));
-            _fullControl = false; _day = 0;
+            _fullControl = false; _day = 0; _deltaCalls = 0;
             Evaluate(first); Evaluate(county);
             check(records.ContainsKey(first.TitleId) && !records.ContainsKey(county.TitleId), "A single barony can drift before its whole county is controlled");
             _day = 100; Evaluate(first);
+            check(_deltaCalls == 1, "Independent drift reaches its own delta mock after the preceding fixture");
             var original = records[first.TitleId];
             check(Math.Abs(original.Progress - .1f) < .00001f, "First barony accumulates its own progress");
             _fullControl = true;
