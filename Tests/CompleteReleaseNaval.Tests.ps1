@@ -10,7 +10,7 @@ function Check([bool]$ok, [string]$case) {
 }
 Check ($script.Contains('BellumCivile.csproj') -and $script.Contains('BellumCivile.NavalDLCPatch.csproj')) 'both_projects_required'
 Check ($script.Contains('BuildProjectReferences=false') -and $script.Contains('SkipNavalMainOutputCopy=true')) 'isolated_naval_compilation_preserves_existing_core'
-Check ($project.Contains("Condition=`"'$(SkipNavalMainOutputCopy)' != 'true'`"")) 'legacy_naval_copy_preserved_unless_release_isolated'
+Check ($project.Contains('Condition="''$(SkipNavalMainOutputCopy)'' != ''true''"')) 'legacy_naval_copy_preserved_unless_release_isolated'
 Check ($script.Contains('NavalDLC.ViewModelCollection.dll')) 'naval_dependency_preflight'
 Check ($script.Contains('BellumCivile.NavalDLCPatch.dll') -and $script.Contains('wrong_naval_assembly_identity')) 'companion_identity_guard'
 Check ($script.Contains('naval_packaged_hash_mismatch')) 'companion_copy_hash_guard'
