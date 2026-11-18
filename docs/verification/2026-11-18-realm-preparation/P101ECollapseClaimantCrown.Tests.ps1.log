@@ -1,0 +1,36 @@
+P101E_PASS running Stage 2 protects only saved winner, source, successor and captured member
+P101E_PASS exact shared kingdom-change handler found
+P101E_PASS faction membership is preserved before removal on owned Stage 2 transfers
+P101E_PASS player court, settlement, and ruler side effects stay enabled
+P101E_PASS do not add unrelated broad restored-creation exception in this stage
+P101E_PASS claim legality and Crown receipt helpers present
+P101E_PASS required claim/Crown invariant: SuccessionChallengeBehavior.Instance?.GetWarRecord(record.Winner) != claim
+P101E_PASS required claim/Crown invariant: claim.OutcomeVictor != record.WinnerHouse
+P101E_PASS required claim/Crown invariant: claim.WarOutcome != SuccessionChallengeOutcome.Victory
+P101E_PASS required claim/Crown invariant: if (claim.HasWarCrownReceipt) return true;
+P101E_PASS required claim/Crown invariant: if (record.Stage >= 3 && CollapseCrownDelivered(record))
+P101E_PASS required claim/Crown invariant: claim.WarCrownTransferred = true;
+P101E_PASS required claim/Crown invariant: claim.Challenger?.IsAlive == true
+P101E_PASS required claim/Crown invariant: record.WinnerHouse.Leader == claim.Challenger
+P101E_PASS required claim/Crown invariant: crown?.IsActive == true
+P101E_PASS required claim/Crown invariant: crown.AssociatedKingdomId == realm.StringId
+P101E_PASS required claim/Crown invariant: crown.DeJureHolderClanId == record.WinnerHouse.StringId
+P101E_PASS required claim/Crown invariant: crown.DeFactoHolderClanId == record.WinnerHouse.StringId
+P101E_PASS required claim/Crown invariant: titles.TrySetKingdomTitleRuler(record.Successor, record.WinnerHouse, true,
+P101E_PASS required claim/Crown invariant: "restored hereditary challenge victory"
+P101E_PASS required claim/Crown invariant: record.Challenge.WarCrownTransferred = true;
+P101E_PASS required claim/Crown invariant: return challenges.LegalizeChallengeVictory(record.Winner, record.Successor);
+P101E_PASS stage 3 and 4 boundaries preserved
+P101E_PASS no settlement or tribunal before legal Crown transfer
+P101E_PASS claimant check at entry, with original general founder guard
+P101E_PASS historic receipt semantics unchanged
+P101E_PASS ordinary transfer without active resume is unprotected
+P101E_PASS captured winning member is protected during actual Stage 2
+P101E_PASS nonmember is not protected
+P101E_PASS unrelated source is not protected
+P101E_PASS external defection is not protected
+P101E_PASS unrelated faction is not protected
+P101E_PASS finished Stage 2 cannot hold coalition membership
+P101E_PASS completed collapse cannot hold coalition membership
+P101E_PASS inactive continuation does not shadow a later defection
+P101E_PASS isolated ownership test; real Crown legal transfer, save/reload and game QA NOT RUN

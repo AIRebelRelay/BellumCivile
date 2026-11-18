@@ -25,7 +25,14 @@ $allIds = @()
 foreach ($m in [regex]::Matches($save, 'Add(?:Class|Enum)Definition\(typeof\(.+?\),\s*(\d+)\)')) { $allIds += [int]$m.Groups[1].Value }
 Require ($allIds.Count -eq (@($allIds | Select-Object -Unique)).Count) 'no duplicate class/enum save IDs'
 $fields = @([regex]::Matches($record, '\[SaveableField\((\d+)\)\]') | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object)
-Require ($fields.Count -eq 17 -and (($fields -join ',') -eq ((1..17) -join ','))) 'record field IDs 1..17 unchanged'
+Require ($fields.Count -eq 27 -and (($fields -join ',') -eq ((1..27) -join ','))) 'record field IDs 1..27 unique; receipt appends 18..27'
+$originalFields = @('Kingdom Parent','Kingdom Source','Clan Founder','Kingdom Successor','string SuccessorId',
+    'bool Initialized','bool MovesComplete','bool Ready','bool Replacement','FactionObject Owner',
+    'SuccessionChallengeRecord Challenge','List<Clan> Houses','bool CreatedNotified','string Failure',
+    'bool ParentWasEliminated','List<Clan> ParentHouses','List<Kingdom> ExternalEnemies')
+for ($i = 1; $i -le 17; $i++) {
+    Require ($record -match ('\[SaveableField\('+$i+'\)\]\s+public\s+'+[regex]::Escape($originalFields[$i-1])+'\b')) ('original save field '+$i+' type/name preserved')
+}
 Require ($record.Contains('internal bool Protects(Kingdom realm)') -and $record.Contains('!Ready')) 'only unfinished restoration is protected'
 Require ($resolver.Contains('SyncData("BC_RestoredRealmCreations", ref _restoredCreations);')) 'stable save key'
 Require ($resolver.Contains('_restoredCreations = _restoredCreations ?? new List<RestoredRealmCreationRecord>();')) 'missing old-save collection defaults safely'
