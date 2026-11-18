@@ -55,7 +55,7 @@
     </Reference>
   </ItemGroup>
 
-  <Target Name="CopyNavalPatchToMainOutput" AfterTargets="Build">
+  <Target Name="CopyNavalPatchToMainOutput" AfterTargets="Build" Condition="'$(SkipNavalMainOutputCopy)' != 'true'">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="..\bin\$(Configuration)\$(TargetFramework)\" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="..\bin\$(Configuration)\$(TargetFramework)\" SkipUnchangedFiles="true" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
   </Target>
