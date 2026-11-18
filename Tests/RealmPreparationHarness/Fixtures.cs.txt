@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+namespace TaleWorlds.SaveSystem
+{
+    [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute : Attribute
+    { public int Id; public SaveableFieldAttribute(int id) { Id = id; } }
+}
+namespace TaleWorlds.CampaignSystem
+{
+    public class Hero { public string StringId; public bool IsAlive = true; }
+    public class Clan { public string StringId; public Hero Leader; }
+    public class Kingdom { public string StringId; public Clan RulingClan; public Hero Leader; public bool IsEliminated; }
+    public class CampaignEventDispatcher
+    {
+        public static CampaignEventDispatcher Instance = new CampaignEventDispatcher();
+        public Action<Kingdom> Callback;
+        public void OnKingdomCreated(Kingdom realm) { Callback?.Invoke(realm); }
+    }
+    public struct CampaignTime
+    {
+        public static double Day = 42; public static bool Throw;
+        public static CampaignTime Now { get { if (Throw) throw new Exception("clock unavailable"); return new CampaignTime(); } }
+        public double ToDays => Day;
+    }
+    public class Campaign
+    {
+        public static Campaign Current = new Campaign(); public object Behavior;
+        public CampaignBehaviorManager CampaignBehaviorManager = new CampaignBehaviorManager();
+        public T GetCampaignBehavior<T>() where T : class => Behavior as T;
+    }
+    public class CampaignBehaviorManager
+    {
+        public object Integration = new BellumCivile.Behaviors.BellumIntegrationBehavior();
+        public T GetBehavior<T>() where T : class => Integration as T;
+    }
+}
+namespace BellumCivile
+{
+    public static class NobleClanEligibilityHelper
+    { public static bool IsValidRulingClan(TaleWorlds.CampaignSystem.Clan clan, TaleWorlds.CampaignSystem.Kingdom realm) => clan != null && !realm.IsEliminated; }
+    public class FactionObject { }
+    public class SuccessionChallengeRecord { public string Id; public bool RestoredRealmReady; }
+}
+namespace BellumCivile.Behaviors
+{
+    public sealed partial class BellumIntegrationBehavior { }
+    public partial class CivilWarResolutionBehavior
+    {
+        private List<BellumCivile.RestoredRealmCreationRecord> _restoredCreations = new List<BellumCivile.RestoredRealmCreationRecord>();
+        public void Set(params BellumCivile.RestoredRealmCreationRecord[] records)
+        { _restoredCreations = records == null ? null : new List<BellumCivile.RestoredRealmCreationRecord>(records); }
+    }
+}

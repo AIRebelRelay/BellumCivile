@@ -51,7 +51,7 @@ try {
  $packageStart=$runner.IndexOf('$module=Join-Path')
  if($packageStart -lt 0){throw 'Package boundary not found'}
  $source=$root;$out=Join-Path $temp 'build-result';New-Item -ItemType Directory -Path $out | Out-Null
- $version=[pscustomobject]@{FileVersion='1.4.12.2'}
+ $version=[pscustomobject]@{FileVersion='1.4.12.3'}
  . ([scriptblock]::Create($runner.Substring($packageStart)))
  Check ((Test-Path "$module/SubModule.xml") -and (Test-Path "$module/bin/Win64_Shipping_Client/BellumCivile.dll") -and (Test-Path "$module/logs" -PathType Container)) 'actual packaging block creates full module layout using fixture DLL'
  $expected=@(Get-ChildItem (Join-Path $root 'GUI'),(Join-Path $root 'ModuleData') -Recurse -File)
@@ -59,7 +59,7 @@ try {
  foreach($item in $expected){$relative=[IO.Path]::GetRelativePath($root,$item.FullName);$target=Join-Path $module $relative;if(!(Test-Path -LiteralPath $target) -or (Get-FileHash $item.FullName).Hash -ne (Get-FileHash $target).Hash){$equal=$false}}
  Check ($equal -and (Test-Path "$module/LICENSE.txt")) 'all GUI XML localization and license copied unchanged'
  [xml]$manifest=Get-Content -Raw "$module/SubModule.xml"
- Check ($manifest.Module.Version.value -ceq 'v1.4.12.2') 'packaged XML uses new hotfix version'
+ Check ($manifest.Module.Version.value -ceq 'v1.4.12.3') 'packaged XML uses new hotfix version'
  Write-Output ('BELLUM_MODULE_LOG_PASS '+$count+' named checks; full game build NOT_RUN')
 } finally {
  if($logger){$logger.GetMethod('CloseLogWriter',[Reflection.BindingFlags]'NonPublic,Static').Invoke($null,@()) | Out-Null}

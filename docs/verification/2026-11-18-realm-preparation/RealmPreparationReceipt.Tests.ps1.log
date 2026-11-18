@@ -1,0 +1,39 @@
+PASS receipt schema exists
+PASS new prepared successor
+PASS actual ruler differs from founder
+PASS existing challenge flag preserved
+PASS early Ready retry keeps source identity
+PASS direct repeated stamp cannot overwrite
+PASS throwing creation listener never creates preparation receipt
+PASS retry stamps actual later completion not earlier notification
+PASS callback invalidation stays before Ready
+PASS historical strings do not follow live mutations
+PASS detached previous snapshot unchanged
+PASS save-field copy retains receipt (not native save serialization)
+PASS old Ready rows stay undated
+PASS reading pending does not prepare or stamp
+PASS previously pending record can complete now
+PASS replacement allows same parent and source
+PASS unknown historical hero is not invented
+PASS capture failure preserves mechanical success
+PASS capture exception leaves no partial stamp
+PASS separate procedures with identical entity IDs remain distinct
+PASS duplicate source ID fails closed
+PASS future receipt fails closed
+PASS nonfinite saved day has no payload
+PASS corrupt identity fails closed
+PASS partial stamp is not silently repaired
+PASS no stamp before Ready
+PASS empty existing store gives no event
+PASS missing behavior explicit
+PASS worker query rejected by facade guard
+PASS query without campaign rejected
+PASS missing integration owner rejected by actual guard
+PASS noncanonical GUID spelling rejected
+PASS valid campaign day zero retained
+PASS bounded projection reports omission without deleting history
+PASS null store is not initialized by reader
+PASS save field numbers unique and additive 18 through 27
+PASS public receipt contains only detached primitives
+REALM_PREPARATION_PASS 37 named cases; native_save_build_game=NOT_RUN
+SOURCE_BOUNDARY_PASS callback before terminal slice; native_recovery=NOT_RUN

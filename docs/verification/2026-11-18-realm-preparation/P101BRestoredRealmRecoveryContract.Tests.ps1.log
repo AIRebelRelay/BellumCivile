@@ -1,0 +1,41 @@
+P101B_PASS saved class ID 137
+P101B_PASS saved record list container
+P101B_PASS no duplicate class/enum save IDs
+P101B_PASS record field IDs 1..27 unique; receipt appends 18..27
+P101B_PASS original save field 1 type/name preserved
+P101B_PASS original save field 2 type/name preserved
+P101B_PASS original save field 3 type/name preserved
+P101B_PASS original save field 4 type/name preserved
+P101B_PASS original save field 5 type/name preserved
+P101B_PASS original save field 6 type/name preserved
+P101B_PASS original save field 7 type/name preserved
+P101B_PASS original save field 8 type/name preserved
+P101B_PASS original save field 9 type/name preserved
+P101B_PASS original save field 10 type/name preserved
+P101B_PASS original save field 11 type/name preserved
+P101B_PASS original save field 12 type/name preserved
+P101B_PASS original save field 13 type/name preserved
+P101B_PASS original save field 14 type/name preserved
+P101B_PASS original save field 15 type/name preserved
+P101B_PASS original save field 16 type/name preserved
+P101B_PASS original save field 17 type/name preserved
+P101B_PASS only unfinished restoration is protected
+P101B_PASS stable save key
+P101B_PASS missing old-save collection defaults safely
+P101B_PASS saved restoration retried
+P101B_PASS new restoration recorded before transfer
+P101B_PASS distinct membership and completed receipts
+P101B_PASS created event receipt persisted before dispatch
+P101B_PASS parent destruction authorized only by restoration coordinator
+P101B_PASS restoration blocks general kingdom transfer, with distinct internal guard
+P101B_PASS clan transfers report completion for retries
+P101B_PASS orphan sweep excludes still-referenced realms
+P101B_PASS failed founder/partial household transfer cannot report success
+P101B_PASS strongholds or failed destruction never report successful retirement
+P101B_PASS null fallback does not erase saved retry destination
+P101B_PASS no third-party transfer or live holdings bypasses destruction guard
+P101B_PASS native-created signal follows source retirement and legal crown
+P101B_PASS orphan sweeping protects live ruler, real fiefs and pending transfers
+P101B_PASS reentry retains recorded owner, houses and external war snapshot
+P101B_PASS prior partition, realm union and leader-death guards preserved
+P101B_PASS structural RED-first contract; behavior/save/game test status is NOT RUN

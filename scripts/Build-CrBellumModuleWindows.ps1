@@ -1,4 +1,6 @@
 #Requires -Version 7.2
+# Force launch from extracted ZIP root (new output folder required):
+# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14123_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
 [CmdletBinding()]
 param(
  [Parameter(Mandatory)][string]$OutputRoot,
@@ -35,7 +37,7 @@ foreach($reference in @($project.Project.ItemGroup.Reference | Where-Object {$_.
 }
 foreach($relative in @('_Module/SubModule.xml','GUI','ModuleData','LICENSE.txt')){if(!(Test-Path -LiteralPath (Join-Path $source $relative))){throw ('Missing package input: '+$relative)}}
 [xml]$template=Get-Content -Raw -LiteralPath (Join-Path $source '_Module/SubModule.xml')
-if($template.Module.Version.value -cne 'v1.4.12.2' -or $template.Module.Id.value -cne 'BellumCivile'){throw 'Expected BellumCivile v1.4.12.2 module template.'}
+if($template.Module.Version.value -cne 'v1.4.12.3' -or $template.Module.Id.value -cne 'BellumCivile'){throw 'Expected BellumCivile v1.4.12.3 module template.'}
 $dotnet=Get-Command $DotnetPath -CommandType Application -ErrorAction Stop | Select-Object -First 1
 New-Item -ItemType Directory -Path $out | Out-Null
 $artifacts=(Join-Path $out 'artifacts').Replace('\','/')+'/'
@@ -48,7 +50,7 @@ if($buildExit -ne 0){throw ('Build failed; see '+(Join-Path $out 'build.log'))}
 $dll=Join-Path $artifacts 'BellumCivile.dll'
 if([Reflection.AssemblyName]::GetAssemblyName($dll).Name -cne 'BellumCivile'){throw 'Unexpected DLL identity.'}
 $version=[Diagnostics.FileVersionInfo]::GetVersionInfo($dll)
-if($version.FileVersion -ne '1.4.12.2'){throw ('Unexpected DLL file version: '+$version.FileVersion)}
+if($version.FileVersion -ne '1.4.12.3'){throw ('Unexpected DLL file version: '+$version.FileVersion)}
 $module=Join-Path $out 'Modules/BellumCivile'
 $bin=Join-Path $module 'bin/Win64_Shipping_Client'
 New-Item -ItemType Directory -Path $bin,(Join-Path $module 'logs') | Out-Null
@@ -58,4 +60,4 @@ Copy-Item -LiteralPath (Join-Path $source 'LICENSE.txt') -Destination $module
 $packagedDll=Join-Path $bin 'BellumCivile.dll';Copy-Item -LiteralPath $dll -Destination $packagedDll
 if((Get-FileHash -LiteralPath $dll).Hash -ne (Get-FileHash -LiteralPath $packagedDll).Hash){throw 'Packaged DLL hash mismatch.'}
 [ordered]@{Version=$version.FileVersion;ModuleFolder=$module;DllSha256=(Get-FileHash -LiteralPath $packagedDll).Hash;Gameplay='NOT_RUN';Scope='Core Bellum only; optional Naval companion not built';Deployed=$false} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $out 'build-report.json')
-Write-Output ('BELLUM_MODULE_BUILD_PACKAGE_PASS version=1.4.12.2; module='+$module+'; gameplay=NOT_RUN; deployed=false')
+Write-Output ('BELLUM_MODULE_BUILD_PACKAGE_PASS version=1.4.12.3; module='+$module+'; gameplay=NOT_RUN; deployed=false')
