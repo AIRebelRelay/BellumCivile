@@ -1,0 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.Localization;
+namespace TaleWorlds.SaveSystem { [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute:Attribute { public SaveableFieldAttribute(int id){} } }
+namespace TaleWorlds.Localization {
+    public sealed class TextObject {
+        public string Value;public bool ThrowOnCopy,ThrowOnRender;public int RenderCalls;
+        public Dictionary<string,string> Variables=new Dictionary<string,string>();
+        public TextObject(string value){Value=value;}
+        public TextObject CopyTextObject(){if(ThrowOnCopy)throw new InvalidOperationException("fixture copy failed");return new TextObject(Value){ThrowOnRender=ThrowOnRender,Variables=new Dictionary<string,string>(Variables)};}
+        public override string ToString(){RenderCalls++;if(ThrowOnRender||Value=="THROW")throw new InvalidOperationException("fixture render failed");string s=Value;if(s=="{=town}Fallback")return "Rovalt";foreach(var p in Variables)s=s.Replace("{"+p.Key+"}",p.Value);return s;}
+    }
+}
+namespace TaleWorlds.CampaignSystem {
+    public sealed class Campaign { public static Campaign Current=new Campaign();public BellumCivile.Behaviors.FeudalTitleBehavior Titles;public BellumCivile.Behaviors.BellumIntegrationBehavior Integration=new BellumCivile.Behaviors.BellumIntegrationBehavior();public T GetCampaignBehavior<T>() where T:class{return Titles as T;} }
+    public sealed class CampaignTime { public static CampaignTime Now=new CampaignTime();public double ToDays=100; }
+    public sealed class Kingdom { public static List<Kingdom> All=new List<Kingdom>();public string StringId;public bool IsEliminated;public static int NameReads;public TextObject Name{get{NameReads++;throw new Exception("materializing Kingdom.Name path forbidden");}} }
+}
+namespace BellumCivile.Behaviors {
+    public sealed partial class BellumIntegrationBehavior { internal static BellumIntegrationBehavior Current{get{return Campaign.Current==null?null:Campaign.Current.Integration;}}private int _threadId=Thread.CurrentThread.ManagedThreadId; }
+    public partial class FeudalTitleBehavior {
+        private Dictionary<string,BellumCivile.FeudalTitleRecord> _titlesById=new Dictionary<string,BellumCivile.FeudalTitleRecord>();
+        public Dictionary<string,BellumCivile.FeudalTitleRecord> FixtureTitles{get{return _titlesById;}set{_titlesById=value;}}
+        public int EnsureCalls;public object GetTitle(string id){EnsureCalls++;throw new Exception("materializing title getter forbidden");}
+    }
+}
+namespace BellumCivile {
+    internal static partial class DynamicKingdomTitleNameHelper {
+        private static readonly object CacheLock=new object();
+        private sealed class NativeRealmNames{public TextObject Name;public TextObject InformalName;public TextObject FormalName;}
+        private static readonly Dictionary<Kingdom,NativeRealmNames> NativeNameRegistry=new Dictionary<Kingdom,NativeRealmNames>();
+        internal static void FixtureReset(){NativeNameRegistry.Clear();}
+        internal static void FixtureStore(Kingdom realm,TextObject text){NativeNameRegistry[realm]=new NativeRealmNames{Name=text,InformalName=text,FormalName=text};}
+        internal static int FixtureCount{get{return NativeNameRegistry.Count;}}
+        internal static TextObject FixtureLegacyCopy(TextObject text){return Copy(text);}
+    }
+}

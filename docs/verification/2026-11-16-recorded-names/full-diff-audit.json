@@ -1,0 +1,18 @@
+{
+  "repository": "AIRebelRelay/BellumCivile",
+  "base": "68f42416548861fd50130a0bfb550474e7503d6d",
+  "baseline_blobs_verified": 1573,
+  "unchanged_blobs": 1572,
+  "modified_existing": [
+    "DynamicKingdomTitleNameHelper.cs"
+  ],
+  "exact_insertion_lines": 11,
+  "production_additions": [
+    "RecordedNameSnapshot.cs",
+    "BellumIntegrationRecordedNames.cs",
+    "Behaviors/FeudalRecordedNameState.cs"
+  ],
+  "existing_helpers_getters_hooks_and_save_semantics_changed": false,
+  "Bridge_CR_SDK_edits": [],
+  "shipping_build_and_live": "PENDING"
+}

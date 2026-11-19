@@ -7,7 +7,7 @@ This README provides a technical orientation and maintenance reference for contr
 | Item | Current state |
 | --- | --- |
 | Documentation revision | October 13, 2026 |
-| Source candidate | Bellum Civile 1.4.11r (QA only; upstream parity not certified) |
+| Source candidate | Bellum Civile 1.4.12b CR alpha 1 (module/file version 1.4.12.1; runtime parity not certified) |
 | Target game version | Bannerlord 1.4.8 |
 | Core runtime | .NET Framework 4.7.2 (`net472`) |
 | Required mod dependencies | Harmony, UIExtenderEx, Mod Configuration Menu v5 |
