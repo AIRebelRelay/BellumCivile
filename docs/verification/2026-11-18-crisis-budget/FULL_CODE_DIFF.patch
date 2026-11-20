@@ -1,0 +1,336 @@
+--- S24/Properties/AssemblyInfo.cs
++++ S25A/Properties/AssemblyInfo.cs
+@@ -30,5 +30,5 @@
+ //      Revision
+ //
+ [assembly: AssemblyVersion("1.0.0.0")]
+-[assembly: AssemblyFileVersion("1.4.12.5")]
+-[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.5")]
++[assembly: AssemblyFileVersion("1.4.12.6")]
++[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.6")]
+--- S24/_Module/SubModule.xml
++++ S25A/_Module/SubModule.xml
+@@ -3,7 +3,7 @@
+     <Name value="Bellum Civile"/>
+     <Id value="BellumCivile"/>
+     <!-- 1.4.12b CR alpha identity; numeric 4th part for Bannerlord ApplicationVersion. -->
+-    <Version value="v1.4.12.5"/>
++    <Version value="v1.4.12.6"/>
+ 	<DefaultModule value="false"/>
+ 	<ModuleCategory value="Singleplayer"/>
+ 	<Official value="false"/>
+--- S24/scripts/Build-CrBellumModuleWindows.ps1
++++ S25A/scripts/Build-CrBellumModuleWindows.ps1
+@@ -1,7 +1,7 @@
+ #Requires -Version 7.2
+ # Both BellumCivile.dll and BellumCivile.NavalDLCPatch.dll are mandatory in CR releases.
+ # Force launch from extracted ZIP root (new output folder required):
+-# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14125_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14126_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
+ [CmdletBinding()]
+ param(
+  [Parameter(Mandatory)][string]$OutputRoot,
+--- S24/scripts/Test-ForeignDiplomacyCheckpoint.ps1
++++ S25A/scripts/Test-ForeignDiplomacyCheckpoint.ps1
+@@ -6,7 +6,7 @@
+ $root=Split-Path $PSScriptRoot -Parent
+ $pwsh=(Get-Process -Id $PID).Path
+ $results=@()
+-foreach($name in @('ForeignDiplomacyJournal.Tests','ForeignDiplomacyJournal.Schema.Tests','ForeignDiplomacyJournal.Mutations',
++foreach($name in @('ForeignCrisisBudget.Tests','ForeignDiplomacyJournal.Tests','ForeignDiplomacyJournal.Schema.Tests','ForeignDiplomacyJournal.Mutations',
+  'ForeignDiplomacyAdmission.Tests','ForeignDiplomacyAdmission.Mutations','ExistingPoliticalPressure.Tests','ExistingWarState.Tests',
+  'ExistingClaimState.Tests','ExistingCouncilState.Tests','ExistingRecordedName.Tests','RealmPreparationReceipt.Tests',
+  'CompleteReleaseNaval.Tests','ModuleLocalLogs.Tests')){
+--- /dev/null
++++ S25A/ForeignCrisisBudgetEstimator.cs
+@@ -0,0 +1,130 @@
++using System;
++using System.Collections.Generic;
++using System.Linq;
++
++namespace BellumCivile
++{
++    internal enum ForeignCrisisEstimateMode { Unknown = 0, MeasuredEndToEnd, TokenEstimate, ExplicitAllowance }
++    internal enum ForeignCrisisBudgetStatus
++    {
++        InvalidConfiguration = 0, Ready, InvalidPlan, MissingProfile, ProfileMismatch,
++        ProfileOutOfRange, InvalidLatency, DoesNotFit, NumericOverflow
++    }
++
++    // Trusted adapter must key by route/provider/model/reasoning configuration, not LLM text.
++    // Provider duration excludes the separate Relay queue, includes provider-side queue/TTFT/generation.
++    internal sealed class ForeignCrisisLatencyProfile
++    {
++        internal readonly string RouteKey;
++        internal readonly bool ReasoningEnabled;
++        internal readonly int MaxInputTokens, MaxOutputTokens;
++        internal readonly ForeignCrisisEstimateMode Mode;
++        internal readonly double? ProviderSeconds, TtftSeconds, ConservativeTps, ExtraReasoningSeconds;
++        internal ForeignCrisisLatencyProfile(string routeKey, bool reasoningEnabled, int maxInputTokens,
++            int maxOutputTokens, ForeignCrisisEstimateMode mode, double? providerSeconds,
++            double? ttftSeconds, double? conservativeTps, double? extraReasoningSeconds)
++        {
++            RouteKey = routeKey; ReasoningEnabled = reasoningEnabled;
++            MaxInputTokens = maxInputTokens; MaxOutputTokens = maxOutputTokens; Mode = mode;
++            ProviderSeconds = providerSeconds; TtftSeconds = ttftSeconds;
++            ConservativeTps = conservativeTps; ExtraReasoningSeconds = extraReasoningSeconds;
++        }
++    }
++
++    // One serial call position in the planned full cycle. Repeated positions are NOT deduplicated.
++    internal sealed class ForeignCrisisPlannedCall
++    {
++        internal readonly string RouteKey;
++        internal readonly int InputTokens, OutputTokens, MaxAttempts;
++        internal readonly double RelayQueueSeconds, RetryBackoffSeconds;
++        internal readonly bool ReasoningEnabled;
++        internal readonly ForeignCrisisLatencyProfile Profile;
++        internal ForeignCrisisPlannedCall(string routeKey, int inputTokens, int outputTokens,
++            int maxAttempts, double relayQueueSeconds, double retryBackoffSeconds,
++            bool reasoningEnabled, ForeignCrisisLatencyProfile profile)
++        {
++            RouteKey = routeKey; InputTokens = inputTokens; OutputTokens = outputTokens;
++            MaxAttempts = maxAttempts; RelayQueueSeconds = relayQueueSeconds;
++            RetryBackoffSeconds = retryBackoffSeconds; ReasoningEnabled = reasoningEnabled; Profile = profile;
++        }
++    }
++
++    internal sealed class ForeignCrisisBudgetResult
++    {
++        internal readonly ForeignCrisisBudgetStatus Status;
++        internal readonly double PlannedSeconds, RequiredSeconds, BudgetSeconds;
++        internal readonly int RejectedCallIndex;
++        internal ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus status, double planned = 0,
++            double required = 0, double budget = 0, int rejectedCallIndex = -1)
++        { Status = status; PlannedSeconds = planned; RequiredSeconds = required; BudgetSeconds = budget; RejectedCallIndex = rejectedCallIndex; }
++    }
++
++    // Pure estimate only. No calibration collection, route dispatch, clock/deadline, save state or game effects.
++    internal static class ForeignCrisisBudgetEstimator
++    {
++        internal const int MaxCalls = 64;
++        internal const int MaxAttemptsPerCall = 8;
++        private static bool Finite(double n) => !double.IsNaN(n) && !double.IsInfinity(n);
++        private static bool Nonnegative(double n) => Finite(n) && n >= 0;
++        private static bool Positive(double? n) => n.HasValue && Finite(n.Value) && n.Value > 0;
++        private static bool ValidRoute(string s) => !string.IsNullOrWhiteSpace(s)
++            && s.Length <= 256 && s == s.Trim() && !s.Any(char.IsControl);
++
++        internal static ForeignCrisisBudgetResult Estimate(IReadOnlyList<ForeignCrisisPlannedCall> calls,
++            double safetyFactor, double minimumSeconds, double hardCapSeconds)
++        {
++            if (!Finite(safetyFactor) || safetyFactor < 1 || !Positive(minimumSeconds)
++                || !Positive(hardCapSeconds) || hardCapSeconds < minimumSeconds)
++                return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.InvalidConfiguration);
++            if (calls == null || calls.Count == 0 || calls.Count > MaxCalls)
++                return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.InvalidPlan);
++            double total = 0;
++            for (int index = 0; index < calls.Count; index++)
++            {
++                var call = calls[index];
++                if (call == null || !ValidRoute(call.RouteKey) || call.InputTokens < 0 || call.OutputTokens <= 0
++                    || call.MaxAttempts < 1 || call.MaxAttempts > MaxAttemptsPerCall
++                    || !Nonnegative(call.RelayQueueSeconds) || !Nonnegative(call.RetryBackoffSeconds))
++                    return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.InvalidPlan, rejectedCallIndex: index);
++                var p = call.Profile;
++                if (p == null)
++                    return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.MissingProfile, rejectedCallIndex: index);
++                if (p.RouteKey != call.RouteKey || p.ReasoningEnabled != call.ReasoningEnabled)
++                    return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.ProfileMismatch, rejectedCallIndex: index);
++                if (p.MaxInputTokens <= 0 || p.MaxOutputTokens <= 0)
++                    return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.InvalidLatency, rejectedCallIndex: index);
++                if (call.InputTokens > p.MaxInputTokens || call.OutputTokens > p.MaxOutputTokens)
++                    return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.ProfileOutOfRange, rejectedCallIndex: index);
++                double provider;
++                switch (p.Mode)
++                {
++                    case ForeignCrisisEstimateMode.MeasuredEndToEnd:
++                    case ForeignCrisisEstimateMode.ExplicitAllowance:
++                        if (!Positive(p.ProviderSeconds))
++                            return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.InvalidLatency, rejectedCallIndex: index);
++                        provider = p.ProviderSeconds.Value;
++                        break;
++                    case ForeignCrisisEstimateMode.TokenEstimate:
++                        if (!p.TtftSeconds.HasValue || !Nonnegative(p.TtftSeconds.Value) || !Positive(p.ConservativeTps)
++                            || (call.ReasoningEnabled && (!p.ExtraReasoningSeconds.HasValue || !Nonnegative(p.ExtraReasoningSeconds.Value))))
++                            return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.InvalidLatency, rejectedCallIndex: index);
++                        provider = p.TtftSeconds.Value + call.OutputTokens / p.ConservativeTps.Value
++                            + (call.ReasoningEnabled ? p.ExtraReasoningSeconds.Value : 0);
++                        break;
++                    default:
++                        return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.InvalidLatency, rejectedCallIndex: index);
++                }
++                double callTotal = (call.RelayQueueSeconds + provider) * call.MaxAttempts
++                    + call.RetryBackoffSeconds * (call.MaxAttempts - 1);
++                total += callTotal;
++                if (!Finite(provider) || !Finite(callTotal) || !Finite(total))
++                    return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.NumericOverflow, rejectedCallIndex: index);
++            }
++            double required = Math.Max(minimumSeconds, total * safetyFactor);
++            if (!Finite(required)) return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.NumericOverflow);
++            if (required > hardCapSeconds)
++                return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.DoesNotFit, total, required);
++            return new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.Ready, total, required, required);
++        }
++    }
++}
+--- /dev/null
++++ S25A/README_S25A_UK.md
+@@ -0,0 +1,37 @@
++# Bellum1.4.12.6 — S25A, розрахунок часу на повний цикл LLM
++
++Актуальний опис цього накопичувального ZIP; попередні README/аудити — історія.
++Поточний інвентар — `S25A_PACKAGE_FILES_SHA256.json`.
++
++Додано `ForeignCrisisBudgetEstimator.cs`: обидва монархи, усі послідовні раунди,
++дозволені повтори, черга Relay, затримка провайдера або оцінка через TTFT/TPS,
++окремий запас для thinking, загальний запас та мінімум часу.
++Якщо весь цикл не вкладається у верхню межу, результат — відмова, без обрізання
++часу повільній моделі. Профілі й фактичні швидкості NanoGPT тут не вигадані.
++
++64 перевірки калькулятора PASS; п’ять навмисних помилок виявлені. Всі14 наборів
++накопичувального запуску PASS, включно з пакуванням двох DLL.
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForeignDiplomacyCheckpoint.ps1
++```
++
++Додаткова перевірка чутливості нових тестів:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignCrisisBudget.Mutations.ps1
++```
++
++Це лише калькулятор: жоден ігровий обробник його поки не викликає. Таймер,
++збереження його стану, вимірювання провайдера й примусове врегулювання ще
++не підключені. Нічого встановлювати або тестувати на ПК зараз не потрібно.
++
++Windows-компіляція з реальними DLL гри та гра/save-load залишаються NOT_RUN.
++Повний білдер двох DLL і структури `Modules\BellumCivile` збережений:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14126_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++```
++
++Докази, формула, межі й відкриті перевірки:
++`docs/verification/2026-11-18-crisis-budget/`.
+--- /dev/null
++++ S25A/Tests/ForeignCrisisBudget.Mutations.ps1
+@@ -0,0 +1,30 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignCrisisBudget.Mutations.ps1
++$ErrorActionPreference='Stop'
++$PSNativeCommandUseErrorActionPreference=$false
++$root=Split-Path $PSScriptRoot -Parent
++$source=Get-Content -Raw -LiteralPath (Join-Path $root 'ForeignCrisisBudgetEstimator.cs')
++$pwsh=(Get-Process -Id $PID).Path
++$cases=@(
++ @('serial_calls_not_summed','total += callTotal;','total = callTotal;'),
++ @('attempt_time_ignored','* call.MaxAttempts','* 1'),
++ @('tps_formula_wrong','call.OutputTokens / p.ConservativeTps.Value','call.OutputTokens * p.ConservativeTps.Value'),
++ @('cap_silently_truncates','new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.DoesNotFit, total, required);','new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.Ready, total, required, hardCapSeconds);'),
++ @('calibration_range_not_checked','call.InputTokens > p.MaxInputTokens || call.OutputTokens > p.MaxOutputTokens','call.InputTokens < 0 || call.OutputTokens < 0')
++)
++foreach($case in $cases){
++ $name,$before,$after=$case
++ if([regex]::Matches($source,[regex]::Escape($before)).Count -ne 1){throw "Mutation boundary changed: $name"}
++ $temp=Join-Path ([IO.Path]::GetTempPath()) ('budget-mutant-'+[guid]::NewGuid().ToString('N'))
++ New-Item -ItemType Directory -Path (Join-Path $temp 'Tests') | Out-Null
++ try{
++  [IO.File]::WriteAllText((Join-Path $temp 'ForeignCrisisBudgetEstimator.cs'),$source.Replace($before,$after))
++  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ForeignCrisisBudgetHarness') -Destination (Join-Path $temp 'Tests') -Recurse
++  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ForeignCrisisBudget.Tests.ps1') -Destination (Join-Path $temp 'Tests')
++  $output=(& $pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $temp 'Tests/ForeignCrisisBudget.Tests.ps1') 2>&1 | Out-String)
++  $code=$LASTEXITCODE
++  if($code -eq 0 -or $output -notmatch 'FAIL' -or $output -notmatch 'Exception calling' -or $output -match 'Add-Type:'){throw "Mutation not rejected by assertion: $name`n$output"}
++  Write-Output ('BUDGET_MUTATION_REJECTED '+$name)
++ }finally{Remove-Item -LiteralPath $temp -Recurse -Force}
++}
++Write-Output 'BUDGET MUTATIONS REJECTED 5'
+--- /dev/null
++++ S25A/Tests/ForeignCrisisBudget.Tests.ps1
+@@ -0,0 +1,11 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignCrisisBudget.Tests.ps1
++$ErrorActionPreference='Stop'
++$root=Split-Path $PSScriptRoot -Parent
++$temp=Join-Path ([IO.Path]::GetTempPath()) ('crisis-budget-'+[guid]::NewGuid().ToString('N'))
++New-Item -ItemType Directory -Path $temp | Out-Null
++try {
++ Copy-Item -LiteralPath (Join-Path $root 'Tests/ForeignCrisisBudgetHarness/Scenarios.cs.txt') -Destination (Join-Path $temp 'Scenarios.cs')
++ Add-Type -Path @((Join-Path $root 'ForeignCrisisBudgetEstimator.cs'),(Join-Path $temp 'Scenarios.cs')) -CompilerOptions '/langversion:7.3'
++ [ForeignCrisisBudgetScenarios]::Run()
++}finally{Remove-Item -LiteralPath $temp -Recurse -Force}
+--- /dev/null
++++ S25A/Tests/ForeignCrisisBudgetHarness/Scenarios.cs.txt
+@@ -0,0 +1,70 @@
++using System;
++using System.Collections.Generic;
++using BellumCivile;
++public static class ForeignCrisisBudgetScenarios
++{
++ static int count;
++ static void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);count++;Console.WriteLine("PASS "+name);}
++ static ForeignCrisisLatencyProfile Profile(string route="nano/modelA/reason-off",ForeignCrisisEstimateMode mode=ForeignCrisisEstimateMode.MeasuredEndToEnd,
++  double? provider=20,double? ttft=null,double? tps=null,bool reasoning=false,double? extraReason=null,int maxInput=8192,int maxOutput=2048)
++ {return new ForeignCrisisLatencyProfile(route,reasoning,maxInput,maxOutput,mode,provider,ttft,tps,extraReason);}
++ static ForeignCrisisPlannedCall Call(ForeignCrisisLatencyProfile profile=null,string route="nano/modelA/reason-off",int input=1000,int output=1000,int attempts=1,double queue=2,double backoff=3,bool reasoning=false)
++ {return new ForeignCrisisPlannedCall(route,input,output,attempts,queue,backoff,reasoning,profile);}
++ static ForeignCrisisBudgetResult Estimate(IReadOnlyList<ForeignCrisisPlannedCall> calls,double margin=1.5,double minimum=10,double cap=10000)
++ {return ForeignCrisisBudgetEstimator.Estimate(calls,margin,minimum,cap);}
++ public static void Run()
++ {
++  var a=Call(Profile());var b=Call(Profile(route:"nano/modelB/reason-on",provider:40,reasoning:true),route:"nano/modelB/reason-on",reasoning:true);
++  var both=Estimate(new[]{a,b});Check(both.Status==ForeignCrisisBudgetStatus.Ready&&both.PlannedSeconds==64&&both.BudgetSeconds==96,"both_routes_summed");
++  var rounds=Estimate(new[]{a,b,a,b,a,b});Check(rounds.PlannedSeconds==192&&rounds.BudgetSeconds==288,"three_serial_rounds_not_deduplicated");
++  var retry=Estimate(new[]{Call(Profile(),attempts:3,queue:2,backoff:5)});Check(retry.PlannedSeconds==76&&retry.BudgetSeconds==114,"attempts_relay_queue_and_backoff_included");
++  var token=Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:5,tps:10);
++  var normal=Estimate(new[]{Call(token)});Check(normal.PlannedSeconds==107,"token_budget_ttft_and_tps");
++  var slow=Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:5,tps:5))});Check(slow.PlannedSeconds==207&&slow.BudgetSeconds>normal.BudgetSeconds,"slower_tps_more_time");
++  Check(Estimate(new[]{Call(token,output:2000)}).PlannedSeconds==207,"longer_output_more_time");
++  var thinking=Profile(route:"thinking",mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:5,tps:10,reasoning:true,extraReason:60);
++  Check(Estimate(new[]{Call(thinking,route:"thinking",reasoning:true)}).PlannedSeconds==167,"reasoning_allowance_added_to_token_estimate");
++  Check(Estimate(new[]{Call(Profile(reasoning:true),reasoning:true)}).PlannedSeconds==22,"e2e_reasoning_not_counted_twice");
++  Check(Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.ExplicitAllowance,provider:90))}).PlannedSeconds==92,"explicit_conservative_provider_allowance");
++  Check(Estimate(new[]{a},minimum:100).BudgetSeconds==100,"minimum_floor");
++  Check(Estimate(new[]{a},margin:1).BudgetSeconds==22,"margin_one");
++  Check(Estimate(new[]{a},margin:1,cap:22).Status==ForeignCrisisBudgetStatus.Ready,"exact_cap_fits");
++  var tooSmall=Estimate(new[]{a},margin:1,cap:21);Check(tooSmall.Status==ForeignCrisisBudgetStatus.DoesNotFit&&tooSmall.BudgetSeconds==0&&tooSmall.RequiredSeconds==22,"over_cap_never_clamped");
++  Check(Estimate(new[]{a,b,a,b,a,b},cap:100).Status==ForeignCrisisBudgetStatus.DoesNotFit,"full_rounds_must_fit_cap");
++  Check(Estimate(null).Status==ForeignCrisisBudgetStatus.InvalidPlan,"null_plan");
++  Check(Estimate(new ForeignCrisisPlannedCall[0]).Status==ForeignCrisisBudgetStatus.InvalidPlan,"empty_plan");
++  Check(Estimate(new ForeignCrisisPlannedCall[]{null}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"null_call");
++  Check(Estimate(new[]{Call()}).Status==ForeignCrisisBudgetStatus.MissingProfile,"missing_profile_no_fast_default");
++  Check(Estimate(new[]{Call(Profile(route:"other"))}).Status==ForeignCrisisBudgetStatus.ProfileMismatch,"profile_route_mismatch");
++  Check(Estimate(new[]{Call(Profile(reasoning:true))}).Status==ForeignCrisisBudgetStatus.ProfileMismatch,"reasoning_profile_mismatch");
++  Check(Estimate(new[]{Call(Profile(maxInput:900))}).Status==ForeignCrisisBudgetStatus.ProfileOutOfRange,"input_exceeds_calibration");
++  Check(Estimate(new[]{Call(Profile(maxOutput:900))}).Status==ForeignCrisisBudgetStatus.ProfileOutOfRange,"output_exceeds_calibration");
++  Check(Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:50,ttft:5,tps:10,reasoning:true),reasoning:true)}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"hidden_reasoning_not_guessed_from_visible_tps");
++  Check(Estimate(new[]{Call(Profile(provider:null,ttft:5,tps:10))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"measured_mode_no_silent_token_fallback");
++  Check(Estimate(new[]{Call(Profile(mode:(ForeignCrisisEstimateMode)999))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"unknown_estimate_mode");
++  foreach(double value in new[]{double.NaN,double.PositiveInfinity,double.NegativeInfinity,0,-1})
++  {
++   Check(Estimate(new[]{Call(Profile(provider:value))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"invalid_provider_seconds_"+value);
++   Check(Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:1,tps:value))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"invalid_tps_"+value);
++  }
++  foreach(double value in new[]{double.NaN,double.PositiveInfinity,-1})
++  {
++   Check(Estimate(new[]{Call(Profile(),queue:value)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"invalid_queue_"+value);
++   Check(Estimate(new[]{Call(Profile(),backoff:value)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"invalid_backoff_"+value);
++  }
++  foreach(int attempts in new[]{0,-1,ForeignCrisisBudgetEstimator.MaxAttemptsPerCall+1})Check(Estimate(new[]{Call(Profile(),attempts:attempts)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"invalid_attempt_count_"+attempts);
++  foreach(double margin in new[]{0,0.99,double.NaN,double.PositiveInfinity})Check(Estimate(new[]{a},margin:margin).Status==ForeignCrisisBudgetStatus.InvalidConfiguration,"invalid_margin_"+margin);
++  foreach(double floor in new[]{0,-1,double.NaN,double.PositiveInfinity})Check(Estimate(new[]{a},minimum:floor).Status==ForeignCrisisBudgetStatus.InvalidConfiguration,"invalid_floor_"+floor);
++  foreach(double cap in new[]{0,9,double.NaN,double.PositiveInfinity})Check(Estimate(new[]{a},cap:cap).Status==ForeignCrisisBudgetStatus.InvalidConfiguration,"invalid_cap_"+cap);
++  Check(Estimate(new[]{Call(Profile(),input:-1)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"negative_input");
++  Check(Estimate(new[]{Call(Profile(),output:0)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"zero_output");
++  Check(Estimate(new[]{Call(Profile(),route:" ")}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"blank_route");
++  Check(Estimate(new[]{Call(Profile(maxInput:0))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"invalid_profile_calibration_bounds");
++  var huge=Estimate(new[]{Call(Profile(provider:double.MaxValue),attempts:2)});Check(huge.Status==ForeignCrisisBudgetStatus.NumericOverflow&&huge.BudgetSeconds==0,"overflow_fails_closed");
++  var excessive=new ForeignCrisisPlannedCall[ForeignCrisisBudgetEstimator.MaxCalls+1];for(int i=0;i<excessive.Length;i++)excessive[i]=a;
++  Check(Estimate(excessive).Status==ForeignCrisisBudgetStatus.InvalidPlan,"oversize_plan_refused_not_truncated");
++  var copied=Estimate(new[]{a,b});Check(copied.BudgetSeconds==both.BudgetSeconds,"deterministic_no_clock_or_provider_side_effects");
++  Check(default(ForeignCrisisBudgetStatus)!=ForeignCrisisBudgetStatus.Ready,"default_status_not_ready");
++  Console.WriteLine("CRISIS BUDGET PASS "+count+"; synthetic profiles; no provider calibration or active timer");
++ }
++}

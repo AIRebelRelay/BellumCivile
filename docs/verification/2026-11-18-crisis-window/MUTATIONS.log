@@ -1,0 +1,6 @@
+WINDOW_MUTATION_REJECTED campaign_floor_ignored
+WINDOW_MUTATION_REJECTED opportunity_wait_ignored
+WINDOW_MUTATION_REJECTED technical_failure_as_final
+WINDOW_MUTATION_REJECTED pause_ignored
+WINDOW_MUTATION_REJECTED absolute_counter_double_counted
+WINDOW MUTATIONS REJECTED 5

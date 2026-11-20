@@ -10,6 +10,14 @@
     <!-- Build-only reference overrides; defaults preserve standard Modules installs. -->
     <HarmonyDllPath Condition="'$(HarmonyDllPath)' == ''">$(GameFolder)\Modules\Bannerlord.Harmony\bin\Win64_Shipping_Client\0Harmony.dll</HarmonyDllPath>
     <UIExtenderExDllPath Condition="'$(UIExtenderExDllPath)' == ''">$(GameFolder)\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</UIExtenderExDllPath>
+    <McmDllPath Condition="'$(McmDllPath)' == '' and Exists('$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll')">$(GameFolder)/../../workshop/content/261550/2859238197/bin/Win64_Shipping_Client/MCMv5.dll</McmDllPath>
+    <McmDllPath Condition="'$(McmDllPath)' == ''">$(GameFolder)\Modules\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client\MCMv5.dll</McmDllPath>
+  </PropertyGroup>
+
+
+  <!-- Test-only console commands; production Release defaults to OFF. -->
+  <PropertyGroup Condition="'$(BellumTreatyQa)' == 'true'">
+    <DefineConstants>$(DefineConstants);BELLUM_TREATY_QA</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bannerlord.MCM" Version="5.11.4" IncludeAssets="compile" />
+    <Reference Include="MCMv5">
+      <HintPath>$(McmDllPath)</HintPath>
+      <Private>False</Private>
+    </Reference>
 
     <Reference Include="0Harmony">
       <HintPath>$(HarmonyDllPath)</HintPath>
@@ -113,6 +124,10 @@
       <HintPath>$(GameFolder)\bin\Win64_Shipping_Client\TaleWorlds.MountAndBlade.ViewModelCollection.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="TaleWorlds.MountAndBlade.GauntletUI.Widgets">
+      <HintPath>$(GameFolder)\bin\Win64_Shipping_Client\TaleWorlds.MountAndBlade.GauntletUI.Widgets.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="TaleWorlds.ModuleManager">
       <HintPath>$(GameFolder)\bin\Win64_Shipping_Client\TaleWorlds.ModuleManager.dll</HintPath>
       <Private>False</Private>
@@ -144,6 +159,7 @@
     <Content Include="GUI\Prefabs\KingdomManagement\Diplomacy\*.xml" />
     <Content Include="GUI\Prefabs\Parley\BellumPeaceParley.xml" />
     <Content Include="GUI\Brushes\BellumMap.xml" />
+    <Content Include="GUI\Brushes\BellumParley.xml" />
     <Content Include="ModuleData\bellum_policy_agendas.xml" />
     <Content Include="ModuleData\bellum_policy_agendas_patch.xml" />
     <Content Include="ModuleData\bellum_title_styles_anglicized.xml" />

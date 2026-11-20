@@ -1,0 +1,97 @@
+--- S23B/README_S23B_UK.md
++++ S23C/README_S23B_UK.md
+@@ -1,7 +1,9 @@
+ # Bellum 1.4.12.5 — S23B, збережений журнал дипломатичних намірів
+ 
+ Актуальний опис цього ZIP. Попередні S23A документи й хеші залишені як історія;
+-інвентар цього пакета — `S23B_PACKAGE_FILES_SHA256.json`.
++інвентар початкового S23B — `S23B_PACKAGE_FILES_SHA256.json`.
++Поточне тестове оновлення S23C описане в `README_TEST_REFRESH_UK.md`;
++актуальний інвентар ZIP — `S23C_PACKAGE_FILES_SHA256.json`.
+ 
+ Додано журнал із власником та стабільним ID операції, прив’язкою до держав,
+ правителів, походження запиту й умов. Після load старі сесії відхиляються,
+@@ -20,9 +22,9 @@
+ 
+ 104 перевірки нового журналу, 8 перевірок схеми, 5 навмисних спотворень,
+ попередні 65 перевірок політики та сусідні фікстури пройшли тут окремо.
+-Накопичувальний запуск також включає відомий старий тест пакування
+-`ModuleLocalLogs`, що падає через відсутню Naval-фікстуру; повністю зеленим
+-цей checkpoint не оголошуємо.
++Тест пакування `ModuleLocalLogs` актуалізовано в S23C під дві DLL.
++Історична помилка з відсутньою Naval-фікстурою усунена в тесті;
++актуальні результати накопичувального запуску — у документації S23C.
+ 
+ Windows-білдер формує обидві DLL та повну структуру `Modules\BellumCivile`:
+ 
+--- S23B/Tests/ModuleLocalLogs.Tests.ps1
++++ S23C/Tests/ModuleLocalLogs.Tests.ps1
+@@ -1,4 +1,5 @@
+ #Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ModuleLocalLogs.Tests.ps1
+ $ErrorActionPreference='Stop'
+ $root=Split-Path $PSScriptRoot -Parent
+ $temp=Join-Path ([IO.Path]::GetTempPath()) ('bellum-logs-'+[guid]::NewGuid().ToString('N'))
+@@ -51,15 +52,42 @@
+  $packageStart=$runner.IndexOf('$module=Join-Path')
+  if($packageStart -lt 0){throw 'Package boundary not found'}
+  $source=$root;$out=Join-Path $temp 'build-result';New-Item -ItemType Directory -Path $out | Out-Null
+- $version=[pscustomobject]@{FileVersion='1.4.12.5'}
++ # The real build defines these before the packaging slice. Supply independent fixtures here.
++ [xml]$template=Get-Content -Raw -LiteralPath (Join-Path $root '_Module/SubModule.xml')
++ $expectedVersion=([string]$template.Module.Version.value).Substring(1)
++ $version=[pscustomobject]@{FileVersion=$expectedVersion}
++ $navalDll=Join-Path $temp 'BellumCivile.NavalDLCPatch.dll'
++ $navalTree=[Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText('internal static class NavalPackageFixture {}')
++ $navalCompilation=[Microsoft.CodeAnalysis.CSharp.CSharpCompilation]::Create('BellumCivile.NavalDLCPatch',[Microsoft.CodeAnalysis.SyntaxTree[]]@($navalTree),$references,$options)
++ $navalStream=[IO.File]::Create($navalDll)
++ try{$navalEmitted=$navalCompilation.Emit($navalStream,$null,$null,$null,$null,$null,[Threading.CancellationToken]::None)}finally{$navalStream.Dispose()}
++ if(!$navalEmitted.Success){throw ($navalEmitted.Diagnostics -join ' ')}
++ Check ((Get-FileHash -LiteralPath $dll).Hash -cne (Get-FileHash -LiteralPath $navalDll).Hash) 'core and Naval fixtures have distinct bytes' 
+  . ([scriptblock]::Create($runner.Substring($packageStart)))
+- Check ((Test-Path "$module/SubModule.xml") -and (Test-Path "$module/bin/Win64_Shipping_Client/BellumCivile.dll") -and (Test-Path "$module/logs" -PathType Container)) 'actual packaging block creates full module layout using fixture DLL'
++ Check ((Test-Path "$module/SubModule.xml") -and (Test-Path "$module/bin/Win64_Shipping_Client/BellumCivile.dll") -and (Test-Path "$module/bin/Win64_Shipping_Client/BellumCivile.NavalDLCPatch.dll") -and (Test-Path "$module/logs" -PathType Container)) 'actual packaging block creates full module layout with both fixture DLLs'
++ Check ((Get-FileHash -LiteralPath "$module/bin/Win64_Shipping_Client/BellumCivile.dll").Hash -ceq (Get-FileHash -LiteralPath $dll).Hash) 'packaged core bytes match core input'
++ Check ((Get-FileHash -LiteralPath "$module/bin/Win64_Shipping_Client/BellumCivile.NavalDLCPatch.dll").Hash -ceq (Get-FileHash -LiteralPath $navalDll).Hash) 'packaged Naval bytes match Naval input'
++ Check ((Split-Path -Leaf $zipPath) -ceq ('BellumCivile_'+$expectedVersion+'_complete.zip')) 'ZIP uses source module version'
++ $archive=[IO.Compression.ZipFile]::OpenRead($zipPath)
++ try {
++  foreach($item in @(@('BellumCivile.dll',$dll),@('BellumCivile.NavalDLCPatch.dll',$navalDll))) {
++   $entryName='BellumCivile/bin/Win64_Shipping_Client/'+$item[0]
++   Check (@($archive.Entries | Where-Object {$_.FullName -ceq $entryName}).Count -eq 1) ('exactly one ZIP entry '+$item[0])
++   $entry=$archive.GetEntry($entryName);$entryStream=$entry.Open()
++   try{$entryHash=(Get-FileHash -InputStream $entryStream).Hash}finally{$entryStream.Dispose()}
++   Check ($entryHash -ceq (Get-FileHash -LiteralPath $item[1]).Hash) ('ZIP input bytes preserved '+$item[0])
++  }
++ } finally {$archive.Dispose()}
++ $buildReport=Get-Content -Raw -LiteralPath (Join-Path $out 'build-report.json') | ConvertFrom-Json
++ Check ($buildReport.Version -ceq $expectedVersion -and $buildReport.ZipPath -ceq $zipPath -and $buildReport.ModuleFolder -ceq $module) 'report matches packaged identity and paths'
++ Check ($buildReport.CoreDllSha256 -ceq (Get-FileHash -LiteralPath $dll).Hash -and $buildReport.NavalDllSha256 -ceq (Get-FileHash -LiteralPath $navalDll).Hash) 'report records both input hashes'
++ Check ($buildReport.Deployed -eq $false -and $buildReport.Gameplay -ceq 'NOT_RUN') 'fixture report never claims deployment or gameplay' 
+  $expected=@(Get-ChildItem (Join-Path $root 'GUI'),(Join-Path $root 'ModuleData') -Recurse -File)
+  $equal=$true
+  foreach($item in $expected){$relative=[IO.Path]::GetRelativePath($root,$item.FullName);$target=Join-Path $module $relative;if(!(Test-Path -LiteralPath $target) -or (Get-FileHash $item.FullName).Hash -ne (Get-FileHash $target).Hash){$equal=$false}}
+  Check ($equal -and (Test-Path "$module/LICENSE.txt")) 'all GUI XML localization and license copied unchanged'
+  [xml]$manifest=Get-Content -Raw "$module/SubModule.xml"
+- Check ($manifest.Module.Version.value -ceq 'v1.4.12.5') 'packaged XML uses new hotfix version'
++ Check ($manifest.Module.Version.value -ceq ('v'+$expectedVersion)) 'packaged XML uses new hotfix version'
+  Write-Output ('BELLUM_MODULE_LOG_PASS '+$count+' named checks; full game build NOT_RUN')
+ } finally {
+  if($logger){$logger.GetMethod('CloseLogWriter',[Reflection.BindingFlags]'NonPublic,Static').Invoke($null,@()) | Out-Null}
+--- S23B/scripts/Test-ForeignDiplomacyCheckpoint.ps1
++++ S23C/scripts/Test-ForeignDiplomacyCheckpoint.ps1
+@@ -1,6 +1,6 @@
+ #Requires -Version 7.2
+ # Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForeignDiplomacyCheckpoint.ps1
+-# Does not build/deploy. Known ModuleLocalLogs fixture failure is reported as FAILURE.
++# Does not build/deploy. Every suite failure is reported; packaging uses fixture DLLs.
+ $ErrorActionPreference='Stop'
+ $PSNativeCommandUseErrorActionPreference=$false
+ $root=Split-Path $PSScriptRoot -Parent
+@@ -14,5 +14,5 @@
+  $results+=[pscustomobject]@{Test=$name;ExitCode=$LASTEXITCODE}
+ }
+ $results | ConvertTo-Json
+-if(@($results | Where-Object {$_.ExitCode -ne 0}).Count -ne 0){throw 'CHECKPOINT_NOT_GREEN: inspect failing suites; known Naval fixture remains open.'}
++if(@($results | Where-Object {$_.ExitCode -ne 0}).Count -ne 0){throw 'CHECKPOINT_NOT_GREEN: inspect failing suites.'}
+ Write-Output 'CHECKPOINT_FIXTURES_PASS; actual Windows build and game/save-load NOT_RUN'

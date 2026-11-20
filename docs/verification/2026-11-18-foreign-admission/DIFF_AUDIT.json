@@ -1,0 +1,27 @@
+{
+  "repository": "AIRebelRelay/BellumCivile",
+  "branch": "feature/cr-realm-preparation-receipts-2026-11-18",
+  "base_head": "903f6772a8bebab68b1296121d770b741ae1a232",
+  "candidate_version": "1.4.12.4",
+  "baseline_files": 1607,
+  "byte_identical_baseline_files": 1603,
+  "changed_existing_files": [
+    "Properties/AssemblyInfo.cs",
+    "Tests/ModuleLocalLogs.Tests.ps1",
+    "_Module/SubModule.xml",
+    "scripts/Build-CrBellumModuleWindows.ps1"
+  ],
+  "new_production_files": [
+    "ForeignDiplomacyAdmissionPolicy.cs"
+  ],
+  "existing_gameplay_methods_changed": 0,
+  "production_callers_of_new_policy": 0,
+  "save_schema_changed": false,
+  "runtime_mode_implemented": false,
+  "targeted_policy_cases_passed": 65,
+  "mutations_rejected": 5,
+  "neighbor_fixture_cases_passed": 222,
+  "packaging_fixture": "BASELINE_FAILURE_navaldll_null",
+  "shipping_build": "NOT_RUN_linux_preflight_rejected",
+  "game_save_load": "NOT_RUN"
+}

@@ -1,0 +1,5 @@
+Exception: /workspace/scratch/90be1d34e164/stage24/BellumCivile/scripts/Build-CrBellumModuleWindows.ps1:14
+Line |
+  14 |  … ]::Win32NT){throw 'Windows and actual installed game references requi …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Windows and actual installed game references required.

@@ -22,6 +22,51 @@ namespace BellumCivile.Behaviors
     /// </summary>
     public sealed class ForeignTreatyBehavior : CampaignBehaviorBase
     {
+        internal const string BudgetExceededReason = "the draft exceeds the available war score";
+        private const string StaleTreatyReason = "stale or unbound treaty conflict instance";
+
+        // This is intentionally local to the treaty owner. WarKey is not an incarnation ID.
+        // The existing reader verifies global uniqueness, ordered sides and live hostility;
+        // native ambiguity is never upgraded to authorization by a timestamp match.
+        private static bool IsCurrentTreatyWar(WarScoreRecord war)
+        {
+            if (war == null || !war.IsActive || war.ConflictType != WarScoreConflictType.ForeignWar
+                || war.NativeForeignDeclarationAmbiguous || war.ConflictInstanceId == null)
+                return false;
+            WarScoreBehavior scores = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>();
+            ForeignConflictIdentitySnapshot observed = scores?.GetExistingForeignConflictByInstance(
+                war.ConflictInstanceId, war.AttackerKingdomId, war.DefenderKingdomId,
+                CampaignTime.Now.ToDays);
+            return observed?.Status == ForeignConflictIdentityStatus.RecordedActive
+                && observed.Record?.InstanceId == war.ConflictInstanceId
+                && observed.Record?.WarKey == war.WarKey;
+        }
+
+        private static bool IsBoundToCurrentTreatyWar(WarScoreRecord war, TreatyProposalRecord proposal)
+        {
+            return proposal != null && TreatyWarInstanceBinding.Matches(
+                proposal.BoundConflictInstanceId, war?.ConflictInstanceId,
+                proposal.WarKey, war?.WarKey, war?.IsActive == true,
+                war?.ConflictType == WarScoreConflictType.ForeignWar,
+                war?.NativeForeignDeclarationAmbiguous == true)
+                && IsCurrentTreatyWar(war);
+        }
+
+        // NEVER end the later war's parley when an old proposal is invalidated by WarKey reuse.
+        private void CancelStaleTreatyProposal(TreatyProposalRecord proposal, string reason = StaleTreatyReason)
+        {
+            if (proposal == null || proposal.State != TreatyProposalState.ParleyPending)
+                return;
+            CancelInvalidProposal(null, proposal, reason);
+            if (_pendingPlayerParleyOpenProposalId == proposal.ProposalId)
+                _pendingPlayerParleyOpenProposalId = null;
+            if (_forcedPlayerParleyInquiryProposalId == proposal.ProposalId)
+                _forcedPlayerParleyInquiryProposalId = null;
+            BellumCivileLogger.Log($"BELLUM_TREATY_STALE_REJECTED proposal={proposal.ProposalId}; war={proposal.WarKey}; bound_id={proposal.BoundConflictInstanceId ?? "missing"}; current_war_untouched=true; reason={reason}.");
+        }
+        internal const string CapitulationDraftLockedReason = "your realm has capitulated; the victor dictates the terms";
+        internal const string CapitulationDraftRevisedReason = "the victor's terms have changed; review the updated settlement";
+        private const string NpcDraftRebuiltReason = "NPC treaty draft rebuilt within available war score";
         private List<TreatyProposalRecord> _proposals = new List<TreatyProposalRecord>();
         private List<ActiveTreatyTributeRecord> _activeTributes = new List<ActiveTreatyTributeRecord>();
         private List<PendingTreatyRebelResolutionRecord> _pendingRebelResolutions = new List<PendingTreatyRebelResolutionRecord>();
@@ -97,6 +142,7 @@ namespace BellumCivile.Behaviors
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, OnHourlyTick);
             CampaignEvents.TickEvent.AddNonSerializedListener(this, OnTick);
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -172,6 +218,13 @@ namespace BellumCivile.Behaviors
             Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
             if (proposal == null || proposal.State != TreatyProposalState.ParleyPending || playerKingdom == null)
                 return false;
+            WarScoreRecord currentVoteWar = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(proposal.WarKey);
+            if (!IsBoundToCurrentTreatyWar(currentVoteWar, proposal))
+            {
+                CancelStaleTreatyProposal(proposal);
+                report = StaleTreatyReason;
+                return false;
+            }
             if (playerKingdom.RulingClan == Clan.PlayerClan)
             {
                 report = "the ruling clan drafts the treaty rather than casting a vassal vote";
@@ -222,7 +275,15 @@ namespace BellumCivile.Behaviors
             }
 
             WarScoreRecord war = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(proposal.WarKey);
+            if (!IsBoundToCurrentTreatyWar(war, proposal))
+            {
+                CancelStaleTreatyProposal(proposal);
+                report = StaleTreatyReason;
+                return false;
+            }
             if (TryCancelStorylineProtectedProposal(war, proposal, out report))
+                return true;
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out report))
                 return true;
 
             if (proposal.IsForced)
@@ -269,8 +330,11 @@ namespace BellumCivile.Behaviors
             if (proposal == null)
                 return false;
 
-            if (!TryPreparePendingProposalDraft(war, proposal, out report))
+            bool submittedOverBudget = proposal.IsOverBudget;
+            bool playerReviewedWhitePeace = proposal.IsExplicitWhitePeace;
+            if (!TryPreparePendingProposalDraft(war, proposal, out report, rebuildNpcDraft: false))
                 return proposal.State == TreatyProposalState.Cancelled;
+            bool capitulationTermsRevised = report == NpcDraftRebuiltReason;
 
             Kingdom winner = ResolveKingdom(proposal.WinnerKingdomId);
             Kingdom loser = ResolveKingdom(proposal.LoserKingdomId);
@@ -296,17 +360,29 @@ namespace BellumCivile.Behaviors
             // The parley may remain open while campaign state continues to change. Normalize once
             // more at the final ratification boundary so councils assess only terms that can still
             // be performed, rather than spending influence on a stale spouse, prisoner, or title.
-            if (!TryPreparePendingProposalDraft(war, proposal, out report))
+            if (!TryPreparePendingProposalDraft(war, proposal, out report, rebuildNpcDraft: false))
                 return proposal.State == TreatyProposalState.Cancelled;
+            capitulationTermsRevised |= report == NpcDraftRebuiltReason;
 
             winner = ResolveKingdom(proposal.WinnerKingdomId);
             loser = ResolveKingdom(proposal.LoserKingdomId);
+            // A read-only ruler must see revised NPC demands before any settlement or charges.
+            if (proposal.IsForced && playerIsRuler && playerKingdom == loser
+                && (submittedOverBudget || capitulationTermsRevised))
+            {
+                report = CapitulationDraftRevisedReason;
+                return false;
+            }
 
-            if (!TryValidateCouncilControlledWhitePeace(war, proposal, out report))
+            if (!TryValidateCouncilControlledWhitePeace(war, proposal, out report, playerReviewedWhitePeace))
                 return proposal.State == TreatyProposalState.Cancelled;
 
-            if (!HasSettlementBudget(proposal, out report))
-                return false;
+            if (!HasSettlementBudget(proposal, out report) || (submittedOverBudget && !playerIsRuler))
+            {
+                if (playerIsRuler) return false;
+                CancelInvalidProposal(war, proposal, report);
+                return true;
+            }
 
             TreatyCouncilEvaluation winnerCouncil = EvaluateCouncil(war, proposal, winner, winnerSide: true);
             TreatyCouncilEvaluation loserCouncil = EvaluateCouncil(war, proposal, loser, winnerSide: false);
@@ -337,7 +413,7 @@ namespace BellumCivile.Behaviors
                 return true;
             }
 
-            if (!ApplyTreaty(war, proposal, winner, loser))
+            if (!ApplyTreaty(war, proposal, winner, loser, playerReviewedWhitePeace))
             {
                 report = proposal.ResolutionNote;
                 return proposal.State == TreatyProposalState.Cancelled;
@@ -368,9 +444,11 @@ namespace BellumCivile.Behaviors
             if (playerKingdom == null)
                 return null;
 
+            WarScoreBehavior scores = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>();
             return _proposals.FirstOrDefault(proposal => proposal != null
                 && proposal.State == TreatyProposalState.ParleyPending
-                && (proposal.WinnerKingdomId == playerKingdom.StringId || proposal.LoserKingdomId == playerKingdom.StringId));
+                && (proposal.WinnerKingdomId == playerKingdom.StringId || proposal.LoserKingdomId == playerKingdom.StringId)
+                && IsBoundToCurrentTreatyWar(scores?.GetActiveWar(proposal.WarKey), proposal));
         }
 
         public TreatyProposalRecord GetPendingProposalForPlayer(WarScoreRecord war)
@@ -383,6 +461,7 @@ namespace BellumCivile.Behaviors
             return _proposals.FirstOrDefault(proposal => proposal != null
                 && proposal.State == TreatyProposalState.ParleyPending
                 && proposal.WarKey == war.WarKey
+                && IsBoundToCurrentTreatyWar(war, proposal)
                 && (proposal.WinnerKingdomId == playerKingdom.StringId || proposal.LoserKingdomId == playerKingdom.StringId));
         }
 
@@ -428,6 +507,8 @@ namespace BellumCivile.Behaviors
                 return false;
             }
 
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out report))
+                return false;
             EnsureProposalHasDraft(war, proposal);
             if (!TryPreparePendingProposalDraft(war, proposal, out report))
                 return false;
@@ -465,17 +546,31 @@ namespace BellumCivile.Behaviors
         private bool TryPreparePendingProposalDraft(
             WarScoreRecord war,
             TreatyProposalRecord proposal,
-            out string report)
+            out string report,
+            bool rebuildNpcDraft = true)
         {
             report = "the pending treaty proposal is no longer valid";
-            if (proposal != null)
-                Campaign.Current?.GetCampaignBehavior<HostagePactBehavior>()?.RecoverTreatyDelivery(proposal.ProposalId);
             if (proposal == null || proposal.State != TreatyProposalState.ParleyPending)
                 return false;
+            if (!IsBoundToCurrentTreatyWar(war, proposal))
+            {
+                CancelStaleTreatyProposal(proposal);
+                report = StaleTreatyReason;
+                return false;
+            }
+            if (proposal.WasCrRoyalAccord && !IsCurrentCrRoyalAccord(war, proposal))
+            {
+                report = "CR royal accord signatories or terms are no longer valid";
+                CancelInvalidProposal(war, proposal, report);
+                return false;
+            }
+            Campaign.Current?.GetCampaignBehavior<HostagePactBehavior>()?.RecoverTreatyDelivery(proposal.ProposalId);
 
             Kingdom winner = ResolveKingdom(proposal.WinnerKingdomId);
             Kingdom loser = ResolveKingdom(proposal.LoserKingdomId);
             if (TryCancelStorylineProtectedProposal(war, proposal, out report))
+                return false;
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out report))
                 return false;
 
             if (war == null || !war.IsActive || !IsTreatyRealmAvailable(winner) || !IsTreatyRealmAvailable(loser))
@@ -484,7 +579,8 @@ namespace BellumCivile.Behaviors
                 return false;
             }
 
-            if (!proposal.IsForced && Math.Abs(war.Score) >= C.TreatyParleyAdvantageFlipTolerance)
+            // White peace has no victor's claims to reassign if the score flips.
+            if (!proposal.IsForced && !proposal.IsCrRoyalAccord && Math.Abs(war.Score) >= C.TreatyParleyAdvantageFlipTolerance)
             {
                 string currentWinnerId = war.Score >= 0f
                     ? war.AttackerKingdomId
@@ -525,17 +621,74 @@ namespace BellumCivile.Behaviors
 
             proposal.ReplaceTerms(repairedDraft);
             _councilSnapshots.Remove(proposal.ProposalId);
+            Clan playerClan = Clan.PlayerClan;
+            CanPlayerEditDraft(proposal, WarPeaceRevampBehavior.GetPlayerPoliticalKingdom(), playerClan, out string editingReason);
+            if (proposal.IsOverBudget
+                && (editingReason == CapitulationDraftLockedReason
+                    || (rebuildNpcDraft && (playerClan == null || (winner.RulingClan != playerClan && loser.RulingClan != playerClan)))))
+                return TryRebuildNpcDraftWithinBudget(war, proposal, winner, loser, out report);
             report = validationReport;
             return true;
+        }
+
+        private bool TryRebuildNpcDraftWithinBudget(WarScoreRecord war, TreatyProposalRecord proposal,
+            Kingdom winner, Kingdom loser, out string report)
+        {
+            int previousCost = proposal.UsedWarScore;
+            try
+            {
+                Kingdom drafter = proposal.IsForced ? winner : ResolveKingdom(proposal.DrafterKingdomId) ?? winner;
+                DraftAiTerms(war, proposal, winner, loser, drafter);
+                if (TreatyDraftService.TryValidateAndNormalize(war, proposal, winner, loser, proposal.Terms,
+                    out List<TreatyTermRecord> normalized, out string validationReport))
+                {
+                    proposal.ReplaceTerms(normalized);
+                    // A rewritten package must not spend a vote submitted for the previous terms.
+                    proposal.ResetPlayerResponse();
+                    _councilSnapshots.Remove(proposal.ProposalId);
+                    if (!TryValidateCouncilControlledWhitePeace(war, proposal, out report))
+                        return false;
+                    BellumCivileLogger.Log($"NPC treaty draft rebuilt within budget; proposal={proposal.ProposalId}; "
+                        + $"war={proposal.WarKey}; used={previousCost}->{proposal.UsedWarScore}/{proposal.WarScoreBudget}.");
+                    report = NpcDraftRebuiltReason;
+                    return true;
+                }
+                BellumCivileLogger.Log($"NPC treaty budget repair failed validation; proposal={proposal.ProposalId}; reason={validationReport}.");
+            }
+            catch (Exception ex)
+            {
+                BellumCivileLogger.Log($"NPC treaty budget repair failed; proposal={proposal.ProposalId}; error={ex}");
+            }
+            report = BudgetExceededReason;
+            CancelInvalidProposal(war, proposal, report);
+            return false;
+        }
+
+        private static bool IsCurrentCrRoyalAccord(WarScoreRecord war, TreatyProposalRecord proposal)
+        {
+            if (war == null || proposal == null || !proposal.IsCrRoyalAccord
+                || !IsBoundToCurrentTreatyWar(war, proposal)) return false;
+            Kingdom drafter = ResolveKingdom(proposal.DrafterKingdomId);
+            Kingdom opposite = ResolveKingdom(proposal.WinnerKingdomId == proposal.DrafterKingdomId
+                ? proposal.LoserKingdomId : proposal.WinnerKingdomId);
+            return drafter != null && opposite != null && drafter != opposite
+                && IsAiOnlyWar(drafter, opposite)
+                && drafter.RulingClan?.Leader?.StringId == proposal.CrRoyalFirstRulerId
+                && opposite.RulingClan?.Leader?.StringId == proposal.CrRoyalSecondRulerId;
         }
 
         private bool TryValidateCouncilControlledWhitePeace(
             WarScoreRecord war,
             TreatyProposalRecord proposal,
-            out string report)
+            out string report,
+            bool playerReviewedWhitePeace = false)
         {
             report = string.Empty;
             if (!proposal.IsWhitePeaceOrEmpty)
+                return true;
+            // Explicit, provenance-bound bilateral sovereign consent is NOT automatic
+            // war-will/white-peace eligibility. Historic ordinary proposals are unchanged.
+            if (proposal.IsCrRoyalAccord)
                 return true;
 
             // Forced terminal settlements may have no executable terms. Do not strand a total
@@ -546,10 +699,16 @@ namespace BellumCivile.Behaviors
             // Native peace offers can enter through TryQueuePlayerParley even with an NPC
             // proposer. Use final ruling authority, not entry-point or drafter provenance.
             // Player rulers intentionally bypass this automatic gate; normal councils still decide.
+            // A submitted vassal response also reaches the councils, but only for the explicit white
+            // draft reviewed before normalization, never an empty or repaired automatic fallback.
             Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
-            if (Clan.PlayerClan != null && playerKingdom?.RulingClan == Clan.PlayerClan
+            if (Clan.PlayerClan != null && playerKingdom != null
                 && (playerKingdom.StringId == proposal.WinnerKingdomId
-                    || playerKingdom.StringId == proposal.LoserKingdomId))
+                    || playerKingdom.StringId == proposal.LoserKingdomId)
+                && (playerKingdom.RulingClan == Clan.PlayerClan
+                    || (playerReviewedWhitePeace && proposal.IsExplicitWhitePeace && proposal.PlayerVoteSubmitted
+                        && (proposal.PlayerVoteStance == TreatyCouncilVoteStance.Abstain
+                            || proposal.PlayerInfluenceCommitment > 0))))
                 return true;
 
             WarScoreBehavior scores = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>();
@@ -594,6 +753,37 @@ namespace BellumCivile.Behaviors
             if (proposal != null && _forcedPlayerParleyInquiryProposalId == proposal.ProposalId)
                 _forcedPlayerParleyInquiryProposalId = null;
             return true;
+        }
+
+        private bool TryCancelAllianceRestrictedProposal(WarScoreRecord war, TreatyProposalRecord proposal, out string report)
+        {
+            report = null;
+            if (Campaign.Current == null || war?.ConflictType != WarScoreConflictType.ForeignWar
+                || !AlliancePeaceRestriction.IsPeaceBlocked(ResolveKingdom(war.AttackerKingdomId), ResolveKingdom(war.DefenderKingdomId)))
+                return false;
+
+            report = AlliancePeaceRestriction.CancellationReason;
+            CancelInvalidProposal(war, proposal, report);
+            if (proposal != null && _pendingPlayerParleyOpenProposalId == proposal.ProposalId)
+                _pendingPlayerParleyOpenProposalId = null;
+            if (proposal != null && _forcedPlayerParleyInquiryProposalId == proposal.ProposalId)
+                _forcedPlayerParleyInquiryProposalId = null;
+            return true;
+        }
+
+        private void OnSessionLaunched(CampaignGameStarter starter)
+        {
+            if (!WarPeaceRevampBehavior.IsRevampEnabled()) return;
+            EnsureCollectionsInitialized();
+            var scores = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>();
+            foreach (var proposal in _proposals.Where(p => p?.State == TreatyProposalState.ParleyPending).ToList())
+            {
+                WarScoreRecord war = scores?.GetActiveWar(proposal.WarKey);
+                if (!IsBoundToCurrentTreatyWar(war, proposal))
+                    CancelStaleTreatyProposal(proposal);
+                else
+                    TryCancelAllianceRestrictedProposal(war, proposal, out _);
+            }
         }
 
         private static bool IsTreatyRealmAvailable(Kingdom kingdom)
@@ -654,6 +844,29 @@ namespace BellumCivile.Behaviors
             return string.Join(Environment.NewLine, lines);
         }
 
+        // CR sovereign-to-sovereign accord. Both NPC monarchs already consented to the
+        // exact active foreign war. Bellum remains the sole treaty executor; its automatic
+        // war-will/council-veto heuristics must not overrule this explicit sovereign decision.
+        public bool TryQueueCrRoyalAccordParley(WarScoreRecord war, Kingdom drafter,
+            string firstRulerId, string secondRulerId, out string report)
+        {
+            report = "royal accord signatories are no longer valid";
+            if (war == null || war.ConflictType != WarScoreConflictType.ForeignWar
+                || !IsCurrentTreatyWar(war) || drafter == null
+                || drafter.RulingClan?.Leader?.StringId != firstRulerId)
+                return false;
+            Kingdom attacker = ResolveKingdom(war.AttackerKingdomId);
+            Kingdom defender = ResolveKingdom(war.DefenderKingdomId);
+            if (!IsAiOnlyWar(attacker, defender)) return false;
+            Kingdom respondent = drafter == attacker ? defender : drafter == defender ? attacker : null;
+            if (respondent?.RulingClan?.Leader?.StringId != secondRulerId)
+                return false;
+            return TryQueueParley(war, forced: false, preferWhitePeace: true,
+                reason: "CR royal accord: bilateral NPC consent", requireAiOnly: true,
+                automaticRequest: false, drafter: drafter, report: out report,
+                crRoyalFirstRulerId: firstRulerId, crRoyalSecondRulerId: secondRulerId);
+        }
+
         public bool TryQueueAiParley(WarScoreRecord war, bool forced, bool preferWhitePeace, string reason, Kingdom drafter, out string report)
         {
             if (!forced && war != null && !war.CanReconsiderPeace((float)CampaignTime.Now.ToDays))
@@ -667,6 +880,32 @@ namespace BellumCivile.Behaviors
             return TryQueueParley(war, forced, preferWhitePeace, reason, requireAiOnly: !playerInvolved, automaticRequest: true, drafter, out report);
         }
 
+        internal static bool CanPlayerEditDraft(TreatyProposalRecord proposal, Kingdom playerKingdom, Clan playerClan, out string report)
+        {
+            if (proposal == null || proposal.State != TreatyProposalState.ParleyPending)
+            {
+                report = "no pending treaty proposal";
+                return false;
+            }
+
+            if (playerKingdom == null || playerClan == null
+                || (proposal.WinnerKingdomId != playerKingdom.StringId && proposal.LoserKingdomId != playerKingdom.StringId)
+                || playerKingdom.RulingClan != playerClan)
+            {
+                report = "only a ruler participating in the parley may draft these terms";
+                return false;
+            }
+
+            if (proposal.IsForced && proposal.LoserKingdomId == playerKingdom.StringId)
+            {
+                report = CapitulationDraftLockedReason;
+                return false;
+            }
+
+            report = string.Empty;
+            return true;
+        }
+
         public bool TryReplacePlayerDraft(string proposalId, IEnumerable<TreatyTermRecord> terms, out string report)
         {
             report = "treaty draft could not be changed";
@@ -676,22 +915,16 @@ namespace BellumCivile.Behaviors
                 return false;
             }
             TreatyProposalRecord proposal = _proposals.FirstOrDefault(candidate => candidate != null && candidate.ProposalId == proposalId);
-            if (proposal == null || proposal.State != TreatyProposalState.ParleyPending)
-            {
-                report = "no pending treaty proposal";
+            if (!CanPlayerEditDraft(proposal, WarPeaceRevampBehavior.GetPlayerPoliticalKingdom(), Clan.PlayerClan, out report))
                 return false;
-            }
-
-            Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
-            if (playerKingdom == null
-                || (proposal.WinnerKingdomId != playerKingdom.StringId && proposal.LoserKingdomId != playerKingdom.StringId)
-                || playerKingdom.RulingClan != Clan.PlayerClan)
-            {
-                report = "only a ruler participating in the parley may draft these terms";
-                return false;
-            }
 
             WarScoreRecord war = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(proposal.WarKey);
+            if (!IsBoundToCurrentTreatyWar(war, proposal))
+            {
+                CancelStaleTreatyProposal(proposal);
+                report = StaleTreatyReason;
+                return false;
+            }
             Kingdom winner = ResolveKingdom(proposal.WinnerKingdomId);
             Kingdom loser = ResolveKingdom(proposal.LoserKingdomId);
             if (!TreatyDraftService.TryValidateAndNormalize(
@@ -717,17 +950,36 @@ namespace BellumCivile.Behaviors
             return true;
         }
 
-        private bool TryQueueParley(WarScoreRecord war, bool forced, bool preferWhitePeace, string reason, bool requireAiOnly, bool automaticRequest, Kingdom drafter, out string report)
+        private bool TryQueueParley(WarScoreRecord war, bool forced, bool preferWhitePeace, string reason, bool requireAiOnly, bool automaticRequest, Kingdom drafter, out string report,
+            string crRoyalFirstRulerId = null, string crRoyalSecondRulerId = null)
         {
             report = "foreign parley could not be queued";
             if (!WarPeaceRevampBehavior.IsRevampEnabled() || war == null || !war.IsActive || war.ConflictType != WarScoreConflictType.ForeignWar)
                 return false;
+            bool crRoyalAccord = crRoyalFirstRulerId != null || crRoyalSecondRulerId != null;
+            if (crRoyalAccord && (forced || !preferWhitePeace || automaticRequest || !requireAiOnly
+                || string.IsNullOrWhiteSpace(crRoyalFirstRulerId) || string.IsNullOrWhiteSpace(crRoyalSecondRulerId)))
+            {
+                report = "invalid CR royal accord admission";
+                return false;
+            }
+            if (!IsCurrentTreatyWar(war))
+            {
+                report = "the recorded foreign war identity is unavailable or ambiguous";
+                return false;
+            }
 
             Kingdom attacker = ResolveKingdom(war.AttackerKingdomId);
             Kingdom defender = ResolveKingdom(war.DefenderKingdomId);
             if (StorylineWarProtectionHelper.IsPeaceBlocked(attacker, defender))
             {
                 report = "the active campaign quest prevents peace in this war";
+                return false;
+            }
+
+            if (AlliancePeaceRestriction.TryGetPeaceBlock(attacker, defender, out TextObject allianceReason))
+            {
+                report = allianceReason.ToString();
                 return false;
             }
 
@@ -748,13 +1000,16 @@ namespace BellumCivile.Behaviors
                 return false;
             }
 
-            TreatyProposalRecord existing = _proposals.FirstOrDefault(candidate => candidate != null
+            foreach (TreatyProposalRecord candidate in _proposals.Where(candidate => candidate != null
                 && candidate.WarKey == war.WarKey
-                && candidate.State == TreatyProposalState.ParleyPending);
-            if (existing != null)
+                && candidate.State == TreatyProposalState.ParleyPending).ToList())
             {
-                report = "parley already pending";
-                return true;
+                if (IsBoundToCurrentTreatyWar(war, candidate))
+                {
+                    report = "parley already pending";
+                    return true;
+                }
+                CancelStaleTreatyProposal(candidate);
             }
 
             Kingdom winner = war.Score >= 0f ? attacker : defender;
@@ -768,11 +1023,18 @@ namespace BellumCivile.Behaviors
                 drafter.StringId,
                 (float)CampaignTime.Now.ToDays,
                 (int)Math.Floor(Math.Abs(war.Score)),
-                forced);
+                forced,
+                war.ConflictInstanceId);
             if (preferWhitePeace)
                 proposal.AddTerm(new TreatyTermRecord(TreatyTermType.WhitePeace, 0));
             else
                 DraftAiTerms(war, proposal, winner, loser, drafter);
+            if (crRoyalAccord && !proposal.TryMarkCrRoyalAccord(war.ConflictInstanceId,
+                crRoyalFirstRulerId, crRoyalSecondRulerId))
+            {
+                report = "CR royal accord provenance invalid";
+                return false;
+            }
 
             // Reject automatic empty/white fallbacks before registration can expose a vassal
             // parley. This call-local distinction does not change a reopened proposal's origin.
@@ -833,11 +1095,19 @@ namespace BellumCivile.Behaviors
 
         private bool TryShowForcedPlayerParleyInquiry(WarScoreRecord war, TreatyProposalRecord proposal)
         {
+            if (!IsBoundToCurrentTreatyWar(war, proposal))
+            {
+                CancelStaleTreatyProposal(proposal);
+                return false;
+            }
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
+                return false;
             Kingdom playerKingdom = WarPeaceRevampBehavior.GetPlayerPoliticalKingdom();
             Kingdom winner = ResolveKingdom(proposal?.WinnerKingdomId);
             Kingdom loser = ResolveKingdom(proposal?.LoserKingdomId);
             if (war == null
                 || proposal == null
+                || !IsBoundToCurrentTreatyWar(war, proposal)
                 || proposal.State != TreatyProposalState.ParleyPending
                 || !proposal.IsForced
                 || playerKingdom == null
@@ -965,9 +1235,21 @@ namespace BellumCivile.Behaviors
                 .ToList())
             {
                 WarScoreRecord war = warScore.GetActiveWars().FirstOrDefault(candidate => candidate.WarKey == proposal.WarKey);
+                if (!IsBoundToCurrentTreatyWar(war, proposal))
+                {
+                    CancelStaleTreatyProposal(proposal);
+                    continue;
+                }
                 Kingdom winner = ResolveKingdom(proposal.WinnerKingdomId);
                 Kingdom loser = ResolveKingdom(proposal.LoserKingdomId);
+                if (proposal.WasCrRoyalAccord && !IsCurrentCrRoyalAccord(war, proposal))
+                {
+                    CancelInvalidProposal(war, proposal, "CR royal accord signatories or terms changed");
+                    continue;
+                }
                 if (TryCancelStorylineProtectedProposal(war, proposal, out _))
+                    continue;
+                if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
                     continue;
 
                 if (IsAiOnlyWar(winner, loser))
@@ -1051,6 +1333,17 @@ namespace BellumCivile.Behaviors
                 out bool loserAccepts,
                 out bool winnerUsesOverride,
                 out bool loserUsesOverride);
+            if (proposal.IsCrRoyalAccord)
+            {
+                // Record council disagreement as an override/relation consequence, not
+                // as a second algorithmic vote over the monarchs' already signed intent.
+                winnerUsesOverride = !winnerAccepts;
+                loserUsesOverride = !loserAccepts;
+                winnerAccepts = true;
+                loserAccepts = true;
+                BellumCivileLogger.Log($"CR royal accord sovereign decision prevails over council willingness; proposal={proposal.ProposalId}; "
+                    + $"war={proposal.WarKey}; first_override={winnerUsesOverride}; second_override={loserUsesOverride}.");
+            }
             Clan winnerRuler = winner?.RulingClan;
             Clan loserRuler = loser?.RulingClan;
             SpendCouncilCommitments(proposal, winnerCouncil, loserCouncil);
@@ -1381,7 +1674,7 @@ namespace BellumCivile.Behaviors
                 return;
             }
 
-            foreach (TreatyVassalReleaseCandidate release in TreatyRealmTransitionService.GetReleaseCandidates(loser))
+            foreach (TreatyVassalReleaseCandidate release in TreatyRealmTransitionService.GetReleaseCandidates(loser, war, draft))
             {
                 if (spent >= targetSpend || spent + release.WarScoreCost > budget)
                     break;
@@ -1830,15 +2123,28 @@ namespace BellumCivile.Behaviors
             }
         }
 
-        private bool ApplyTreaty(WarScoreRecord war, TreatyProposalRecord proposal, Kingdom winner, Kingdom loser)
+        private bool ApplyTreaty(WarScoreRecord war, TreatyProposalRecord proposal, Kingdom winner, Kingdom loser,
+            bool playerReviewedWhitePeace = false)
         {
+            if (!IsBoundToCurrentTreatyWar(war, proposal))
+            {
+                CancelStaleTreatyProposal(proposal);
+                return false;
+            }
             if (!HasSettlementBudget(proposal, out _))
                 return false;
+            if (proposal.WasCrRoyalAccord && !IsCurrentCrRoyalAccord(war, proposal))
+            {
+                CancelInvalidProposal(war, proposal, "CR royal accord no longer has valid sovereign consent");
+                return false;
+            }
 
             if (TryCancelStorylineProtectedProposal(war, proposal, out _))
                 return false;
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
+                return false;
 
-            if (!TryValidateCouncilControlledWhitePeace(war, proposal, out _))
+            if (!TryValidateCouncilControlledWhitePeace(war, proposal, out _, playerReviewedWhitePeace))
                 return false;
 
             if (!proposal.Terms.Any(t => t?.Type == TreatyTermType.HostagePeace))
@@ -1863,7 +2169,19 @@ namespace BellumCivile.Behaviors
 
         private bool ApplyTreatyCore(WarScoreRecord war, TreatyProposalRecord proposal, Kingdom winner, Kingdom loser)
         {
+            if (!IsBoundToCurrentTreatyWar(war, proposal))
+            {
+                CancelStaleTreatyProposal(proposal);
+                return false;
+            }
             if (!HasSettlementBudget(proposal, out _))
+                return false;
+            if (proposal.WasCrRoyalAccord && !IsCurrentCrRoyalAccord(war, proposal))
+            {
+                CancelInvalidProposal(war, proposal, "CR royal accord no longer has valid sovereign consent");
+                return false;
+            }
+            if (TryCancelAllianceRestrictedProposal(war, proposal, out _))
                 return false;
 
             bool whitePeace = proposal.Terms.Any(term => term?.Type == TreatyTermType.WhitePeace);
@@ -1913,7 +2231,8 @@ namespace BellumCivile.Behaviors
                 }
             }
 
-            proposal.SetState(TreatyProposalState.Accepted, whitePeace ? "mutual exhaustion" : "terms ratified");
+            proposal.SetState(TreatyProposalState.Accepted,
+                proposal.IsCrRoyalAccord ? "bilateral CR royal accord" : whitePeace ? "mutual exhaustion" : "terms ratified");
             _councilSnapshots.Remove(proposal.ProposalId);
             war.EndParley();
             Campaign.Current?.GetCampaignBehavior<RetainedTreatyPrisonerBehavior>()?.RetainForeignPrisoners(winner, loser);
@@ -1926,7 +2245,9 @@ namespace BellumCivile.Behaviors
             });
             ShowTreatyAcceptedMessage(proposal, winner, loser, whitePeace, prisonerReleases);
             ApplyStructuralPoliticalTerms(proposal,rallyDelivered);
-            proposal.SetState(TreatyProposalState.Applied, whitePeace ? "white peace signed" : "terms applied", (float)CampaignTime.Now.ToDays);
+            proposal.SetState(TreatyProposalState.Applied,
+                proposal.IsCrRoyalAccord ? "CR royal accord applied" : whitePeace ? "white peace signed" : "terms applied",
+                (float)CampaignTime.Now.ToDays);
             ApplyConcedeDefeatTerm(proposal);
             QueueRebelDemandResolutions(proposal);
             try { CourtRallySettlement.Record(war,proposal,rallyGold,rallyDelivered); }
@@ -1937,7 +2258,7 @@ namespace BellumCivile.Behaviors
 
         internal static bool HasSettlementBudget(TreatyProposalRecord proposal, out string report)
         {
-            report = "the draft exceeds the available war score";
+            report = BudgetExceededReason;
             return proposal != null && !proposal.IsOverBudget;
         }
 

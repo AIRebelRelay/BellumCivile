@@ -1,0 +1,110 @@
+[
+  {
+    "path": "Tests/Stage32H2OPendingParleyOffFence.RED.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/SuccessionWar.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CouncilCaptivityScheduling.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/SuccessionPlayer.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/ForeignAccession.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CourtPeaceObjective.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CourtRally.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CivilWarGrace.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CourtPlayerPicker.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/Stage32H2PFreezePendingParley.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/Stage31KPolicyVotePublicProvenance.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/P012BFamilyUiCompatibility.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/P014CRecoveryGraceCrownHarness.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CourtActivityLifecycle.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CourtDynasticObjective.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/HereditaryRealmLine.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/HereditaryLoyalty.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CivilWarRivalry.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CourtCampaignObjective.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/P011CourtCrownStability.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CouncilAgendaLifecycle.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/P014AHeroFamilyHarness.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/StandingElections.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CivilWarContinuation.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/P012CInheritanceHover.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Tests/CourtSubjugationObjective.Tests.ps1",
+    "kind": "modified"
+  },
+  {
+    "path": "Behaviors/ForeignTreatyBehavior.cs",
+    "kind": "modified"
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "ForeignDiplomacyAdmission",
+    "exit_code": 0,
+    "tail": [
+      "PASS default_activation_not_ready",
+      "TOTAL PASS 65"
+    ]
+  },
+  {
+    "name": "ExistingPoliticalPressure",
+    "exit_code": 0,
+    "tail": [
+      "PASS actual guard rejects missing campaign",
+      "RESULT 49 named cases PASS; actual records and extracted methods; Native boundary doubles, not a shipping build or game test."
+    ]
+  },
+  {
+    "name": "ExistingWarState",
+    "exit_code": 0,
+    "tail": [
+      "PASS absent campaign is blocked",
+      "RESULT 35 named cases PASS; Native boundary doubles; not a shipping build or game test."
+    ]
+  },
+  {
+    "name": "ExistingClaimState",
+    "exit_code": 0,
+    "tail": [
+      "PASS missing campaign is blocked by actual guard",
+      "RESULT 45 named cases PASS; actual predicates/records, Native boundary doubles; not a shipping build or game test."
+    ]
+  },
+  {
+    "name": "ExistingCouncilState",
+    "exit_code": 0,
+    "tail": [
+      "PASS capture day belongs to the snapshot and invalid times are rejected",
+      "EXISTING_COUNCIL_STATE_PASS 20 named cases; boundary fixtures, not Native game proof."
+    ]
+  },
+  {
+    "name": "ExistingRecordedName",
+    "exit_code": 0,
+    "tail": [
+      "PASS actual guard denies absent campaign",
+      "EXISTING_RECORDED_NAMES_PASS 36 named cases; actual new code/saved title/extracted helpers and guard, Native boundary doubles; not shipping/game proof."
+    ]
+  },
+  {
+    "name": "RealmPreparationReceipt",
+    "exit_code": 0,
+    "tail": [
+      "REALM_PREPARATION_PASS 37 named cases; native_save_build_game=NOT_RUN",
+      "SOURCE_BOUNDARY_PASS callback before terminal slice; native_recovery=NOT_RUN"
+    ]
+  },
+  {
+    "name": "ModuleLocalLogs",
+    "exit_code": 1,
+    "tail": [
+      "     |                         ~~~~~~~~~",
+      "     | Cannot bind argument to parameter 'LiteralPath' because it is null."
+    ]
+  },
+  {
+    "name": "CompleteReleaseNaval",
+    "exit_code": 0,
+    "tail": [
+      "BELLUM_NAVAL_RELEASE_PASS no_core_only_success",
+      "BELLUM_NAVAL_RELEASE_SOURCE_PASS; Windows build and game validation still required."
+    ]
+  }
+]

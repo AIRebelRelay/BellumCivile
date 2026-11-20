@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+using BellumCivile;
+public static class ForeignCrisisBudgetScenarios
+{
+ static int count;
+ static void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);count++;Console.WriteLine("PASS "+name);}
+ static ForeignCrisisLatencyProfile Profile(string route="nano/modelA/reason-off",ForeignCrisisEstimateMode mode=ForeignCrisisEstimateMode.MeasuredEndToEnd,
+  double? provider=20,double? ttft=null,double? tps=null,bool reasoning=false,double? extraReason=null,int maxInput=8192,int maxOutput=2048)
+ {return new ForeignCrisisLatencyProfile(route,reasoning,maxInput,maxOutput,mode,provider,ttft,tps,extraReason);}
+ static ForeignCrisisPlannedCall Call(ForeignCrisisLatencyProfile profile=null,string route="nano/modelA/reason-off",int input=1000,int output=1000,int attempts=1,double queue=2,double backoff=3,bool reasoning=false)
+ {return new ForeignCrisisPlannedCall(route,input,output,attempts,queue,backoff,reasoning,profile);}
+ static ForeignCrisisBudgetResult Estimate(IReadOnlyList<ForeignCrisisPlannedCall> calls,double margin=1.5,double minimum=10,double cap=10000)
+ {return ForeignCrisisBudgetEstimator.Estimate(calls,margin,minimum,cap);}
+ public static void Run()
+ {
+  var a=Call(Profile());var b=Call(Profile(route:"nano/modelB/reason-on",provider:40,reasoning:true),route:"nano/modelB/reason-on",reasoning:true);
+  var both=Estimate(new[]{a,b});Check(both.Status==ForeignCrisisBudgetStatus.Ready&&both.PlannedSeconds==64&&both.BudgetSeconds==96,"both_routes_summed");
+  var rounds=Estimate(new[]{a,b,a,b,a,b});Check(rounds.PlannedSeconds==192&&rounds.BudgetSeconds==288,"three_serial_rounds_not_deduplicated");
+  var retry=Estimate(new[]{Call(Profile(),attempts:3,queue:2,backoff:5)});Check(retry.PlannedSeconds==76&&retry.BudgetSeconds==114,"attempts_relay_queue_and_backoff_included");
+  var token=Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:5,tps:10);
+  var normal=Estimate(new[]{Call(token)});Check(normal.PlannedSeconds==107,"token_budget_ttft_and_tps");
+  var slow=Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:5,tps:5))});Check(slow.PlannedSeconds==207&&slow.BudgetSeconds>normal.BudgetSeconds,"slower_tps_more_time");
+  Check(Estimate(new[]{Call(token,output:2000)}).PlannedSeconds==207,"longer_output_more_time");
+  var thinking=Profile(route:"thinking",mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:5,tps:10,reasoning:true,extraReason:60);
+  Check(Estimate(new[]{Call(thinking,route:"thinking",reasoning:true)}).PlannedSeconds==167,"reasoning_allowance_added_to_token_estimate");
+  Check(Estimate(new[]{Call(Profile(reasoning:true),reasoning:true)}).PlannedSeconds==22,"e2e_reasoning_not_counted_twice");
+  Check(Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.ExplicitAllowance,provider:90))}).PlannedSeconds==92,"explicit_conservative_provider_allowance");
+  Check(Estimate(new[]{a},minimum:100).BudgetSeconds==100,"minimum_floor");
+  Check(Estimate(new[]{a},margin:1).BudgetSeconds==22,"margin_one");
+  Check(Estimate(new[]{a},margin:1,cap:22).Status==ForeignCrisisBudgetStatus.Ready,"exact_cap_fits");
+  var tooSmall=Estimate(new[]{a},margin:1,cap:21);Check(tooSmall.Status==ForeignCrisisBudgetStatus.DoesNotFit&&tooSmall.BudgetSeconds==0&&tooSmall.RequiredSeconds==22,"over_cap_never_clamped");
+  Check(Estimate(new[]{a,b,a,b,a,b},cap:100).Status==ForeignCrisisBudgetStatus.DoesNotFit,"full_rounds_must_fit_cap");
+  Check(Estimate(null).Status==ForeignCrisisBudgetStatus.InvalidPlan,"null_plan");
+  Check(Estimate(new ForeignCrisisPlannedCall[0]).Status==ForeignCrisisBudgetStatus.InvalidPlan,"empty_plan");
+  Check(Estimate(new ForeignCrisisPlannedCall[]{null}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"null_call");
+  Check(Estimate(new[]{Call()}).Status==ForeignCrisisBudgetStatus.MissingProfile,"missing_profile_no_fast_default");
+  Check(Estimate(new[]{Call(Profile(route:"other"))}).Status==ForeignCrisisBudgetStatus.ProfileMismatch,"profile_route_mismatch");
+  Check(Estimate(new[]{Call(Profile(reasoning:true))}).Status==ForeignCrisisBudgetStatus.ProfileMismatch,"reasoning_profile_mismatch");
+  Check(Estimate(new[]{Call(Profile(maxInput:900))}).Status==ForeignCrisisBudgetStatus.ProfileOutOfRange,"input_exceeds_calibration");
+  Check(Estimate(new[]{Call(Profile(maxOutput:900))}).Status==ForeignCrisisBudgetStatus.ProfileOutOfRange,"output_exceeds_calibration");
+  Check(Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:50,ttft:5,tps:10,reasoning:true),reasoning:true)}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"hidden_reasoning_not_guessed_from_visible_tps");
+  Check(Estimate(new[]{Call(Profile(provider:null,ttft:5,tps:10))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"measured_mode_no_silent_token_fallback");
+  Check(Estimate(new[]{Call(Profile(mode:(ForeignCrisisEstimateMode)999))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"unknown_estimate_mode");
+  foreach(double value in new[]{double.NaN,double.PositiveInfinity,double.NegativeInfinity,0,-1})
+  {
+   Check(Estimate(new[]{Call(Profile(provider:value))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"invalid_provider_seconds_"+value);
+   Check(Estimate(new[]{Call(Profile(mode:ForeignCrisisEstimateMode.TokenEstimate,provider:null,ttft:1,tps:value))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"invalid_tps_"+value);
+  }
+  foreach(double value in new[]{double.NaN,double.PositiveInfinity,-1})
+  {
+   Check(Estimate(new[]{Call(Profile(),queue:value)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"invalid_queue_"+value);
+   Check(Estimate(new[]{Call(Profile(),backoff:value)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"invalid_backoff_"+value);
+  }
+  foreach(int attempts in new[]{0,-1,ForeignCrisisBudgetEstimator.MaxAttemptsPerCall+1})Check(Estimate(new[]{Call(Profile(),attempts:attempts)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"invalid_attempt_count_"+attempts);
+  foreach(double margin in new[]{0,0.99,double.NaN,double.PositiveInfinity})Check(Estimate(new[]{a},margin:margin).Status==ForeignCrisisBudgetStatus.InvalidConfiguration,"invalid_margin_"+margin);
+  foreach(double floor in new[]{0,-1,double.NaN,double.PositiveInfinity})Check(Estimate(new[]{a},minimum:floor).Status==ForeignCrisisBudgetStatus.InvalidConfiguration,"invalid_floor_"+floor);
+  foreach(double cap in new[]{0,9,double.NaN,double.PositiveInfinity})Check(Estimate(new[]{a},cap:cap).Status==ForeignCrisisBudgetStatus.InvalidConfiguration,"invalid_cap_"+cap);
+  Check(Estimate(new[]{Call(Profile(),input:-1)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"negative_input");
+  Check(Estimate(new[]{Call(Profile(),output:0)}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"zero_output");
+  Check(Estimate(new[]{Call(Profile(),route:" ")}).Status==ForeignCrisisBudgetStatus.InvalidPlan,"blank_route");
+  Check(Estimate(new[]{Call(Profile(maxInput:0))}).Status==ForeignCrisisBudgetStatus.InvalidLatency,"invalid_profile_calibration_bounds");
+  var huge=Estimate(new[]{Call(Profile(provider:double.MaxValue),attempts:2)});Check(huge.Status==ForeignCrisisBudgetStatus.NumericOverflow&&huge.BudgetSeconds==0,"overflow_fails_closed");
+  var excessive=new ForeignCrisisPlannedCall[ForeignCrisisBudgetEstimator.MaxCalls+1];for(int i=0;i<excessive.Length;i++)excessive[i]=a;
+  Check(Estimate(excessive).Status==ForeignCrisisBudgetStatus.InvalidPlan,"oversize_plan_refused_not_truncated");
+  var copied=Estimate(new[]{a,b});Check(copied.BudgetSeconds==both.BudgetSeconds,"deterministic_no_clock_or_provider_side_effects");
+  Check(default(ForeignCrisisBudgetStatus)!=ForeignCrisisBudgetStatus.Ready,"default_status_not_ready");
+  Console.WriteLine("CRISIS BUDGET PASS "+count+"; synthetic profiles; no provider calibration or active timer");
+ }
+}

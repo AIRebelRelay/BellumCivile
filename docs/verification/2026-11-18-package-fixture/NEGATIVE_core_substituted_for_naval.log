@@ -1,0 +1,19 @@
+PASS resolve actual module location with spaces
+PASS invalid installation layout rejected
+PASS normal log format and five-megabyte rotation
+PASS old dated logs pruned while unrelated file retained
+PASS blank normal message ignored
+PASS yearly report in same module logs folder
+PASS empty yearly category retains general fallback
+PASS blank yearly report ignored
+PASS write failure contained with existing debugger fallback
+PASS no external log directory fallback
+PASS core and Naval fixtures have distinct bytes
+BELLUM_MODULE_BUILD_PACKAGE_PASS version=1.4.12.5; core=present; naval=present; zip=/tmp/bellum-logs-875e8baf78fd4c1686175071bfd75bdf/build-result/BellumCivile_1.4.12.5_complete.zip; module=/tmp/bellum-logs-875e8baf78fd4c1686175071bfd75bdf/build-result/Modules/BellumCivile; gameplay=NOT_RUN; deployed=false
+PASS actual packaging block creates full module layout with both fixture DLLs
+PASS packaged core bytes match core input
+Exception: /tmp/bellum-package-negative-_2m4yzh1/Tests/ModuleLocalLogs.Tests.ps1:7
+Line |
+   7 |  function Check([bool]$ok,[string]$name){if(!$ok){throw $name};$script …
+     |                                                   ~~~~~~~~~~~
+     | packaged Naval bytes match Naval input

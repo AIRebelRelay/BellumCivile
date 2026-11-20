@@ -1,0 +1,85 @@
+{
+  "base": "S25A candidate1.4.12.6",
+  "version": "1.4.12.7",
+  "remote_head_rechecked": "903f6772a8bebab68b1296121d770b741ae1a232",
+  "prior_files_byte_identical": 1692,
+  "changed_existing_files": [
+    "Properties/AssemblyInfo.cs",
+    "_Module/SubModule.xml",
+    "scripts/Build-CrBellumModuleWindows.ps1",
+    "scripts/Test-ForeignDiplomacyCheckpoint.ps1"
+  ],
+  "new_production_files": [
+    "ForeignCrisisWindowPolicy.cs"
+  ],
+  "production_callers": [],
+  "existing_production_methods_changed": 0,
+  "save_schema_changes": 0,
+  "new_policy_cases_passed": 59,
+  "policy_mutations_rejected": 5,
+  "checkpoint_suites": [
+    {
+      "Test": "ForeignCrisisWindow.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignCrisisBudget.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Schema.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingPoliticalPressure.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingWarState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingClaimState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingCouncilState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingRecordedName.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "RealmPreparationReceipt.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "CompleteReleaseNaval.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ModuleLocalLogs.Tests",
+      "ExitCode": 0
+    }
+  ],
+  "live_clock_collector": "NOT_IMPLEMENTED",
+  "crisis_clock_save_registration": "NOT_IMPLEMENTED",
+  "shipping_build_live_game_save": "NOT_RUN"
+}

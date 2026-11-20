@@ -134,6 +134,9 @@ namespace BellumCivile.Behaviors
                 record.Ready = true;
                 record.Failure = null;
                 if (challenge != null) challenge.RestoredRealmReady = true;
+                // No external callbacks between Ready and the detached source receipt.
+                // Metadata failure must never undo successful mechanical preparation.
+                RealmPreparationReceiptCapture.TryStamp(record);
                 return realm;
             }
             catch (Exception ex) { RecordRestorationFailure(record, ex.Message); return null; }

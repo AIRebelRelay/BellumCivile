@@ -1,0 +1,23 @@
+{
+  "changed": [
+    "Properties/AssemblyInfo.cs",
+    "_Module/SubModule.xml",
+    "scripts/Build-CrBellumModuleWindows.ps1",
+    "scripts/Test-ForeignDiplomacyCheckpoint.ps1"
+  ],
+  "added": [
+    "Behaviors/WarScoreConflictIdentityReader.cs",
+    "BellumIntegrationConflictIdentity.cs",
+    "ForeignConflictIdentitySnapshot.cs",
+    "Tests/ForeignConflictIdentity.Mutations.ps1",
+    "Tests/ForeignConflictIdentity.Tests.ps1",
+    "Tests/ForeignConflictIdentityHarness/Fixtures.cs.txt",
+    "Tests/ForeignConflictIdentityHarness/Scenarios.cs.txt",
+    "docs/verification/2026-11-18-identity-reader/BOUNDARY.md",
+    "docs/verification/2026-11-18-identity-reader/CHECKPOINT.log",
+    "docs/verification/2026-11-18-identity-reader/MUTATIONS.log"
+  ],
+  "removed": [],
+  "base": "1.4.12.8 S26A",
+  "candidate": "1.4.12.9 S26B"
+}

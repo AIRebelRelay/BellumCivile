@@ -1,0 +1,68 @@
+{
+  "base": "S23B candidate1.4.12.5",
+  "changed_existing_files": [
+    "README_S23B_UK.md",
+    "Tests/ModuleLocalLogs.Tests.ps1",
+    "scripts/Test-ForeignDiplomacyCheckpoint.ps1"
+  ],
+  "unchanged_existing_files": 1659,
+  "production_files_changed": 0,
+  "version_unchanged": "1.4.12.5",
+  "packaging_test_passed": 24,
+  "checkpoint_suites": [
+    {
+      "Test": "ForeignDiplomacyJournal.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Schema.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingPoliticalPressure.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingWarState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingClaimState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingCouncilState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingRecordedName.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "RealmPreparationReceipt.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "CompleteReleaseNaval.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ModuleLocalLogs.Tests",
+      "ExitCode": 0
+    }
+  ],
+  "negative_package_cases_detected": 2,
+  "shipping_windows_build_game": "NOT_RUN"
+}

@@ -1,0 +1,57 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.Localization;
+public static class RecordedNameScenarios {
+    private static int count;private static FeudalTitleBehavior titles;private static Kingdom realm;
+    private static void Check(bool ok,string why){if(!ok)throw new Exception(why);}
+    private static void Case(string name,Action run){titles=new FeudalTitleBehavior();Campaign.Current=new Campaign{Titles=titles};CampaignTime.Now.ToDays=100;realm=new Kingdom{StringId="realm"};Kingdom.All=new List<Kingdom>{realm};Kingdom.NameReads=0;DynamicKingdomTitleNameHelper.FixtureReset();run();Check(titles.EnsureCalls==0&&Kingdom.NameReads==0,"materializing getter used");count++;Console.WriteLine("PASS "+name);}
+    private static FeudalTitleRecord Title(string id="title",string name="Rovalt"){return new FeudalTitleRecord(id,name,FeudalTitleType.Kingdom,"lawful","actual","parent","capital","realm",90,90);}
+    private static RecordedNameSnapshot ReadTitle(string id="title"){return BellumIntegration.GetExistingName(RecordedNameKind.Title,id);}
+    private static RecordedNameSnapshot ReadRealm(string id="realm"){return BellumIntegration.GetExistingName(RecordedNameKind.Realm,id);}
+    private static void Set(object row,string field,object value){row.GetType().GetField(field,BindingFlags.Instance|BindingFlags.NonPublic).SetValue(row,value);}
+    public static void Run(){
+        Case("exact title identity copies recorded label and time",()=>{titles.FixtureTitles.Add("title",Title());var s=ReadTitle();Check(s.Status==RecordedNameStatus.Recorded&&s.Name=="Rovalt"&&s.EntityId=="title"&&s.Kind==RecordedNameKind.Title&&s.CapturedDay==100,"wrong label");});
+        Case("missing title leaves registry empty",()=>{Check(ReadTitle().Status==RecordedNameStatus.NotRecorded&&titles.FixtureTitles.Count==0,"title created");});
+        Case("null title storage remains unavailable and null",()=>{titles.FixtureTitles=null;Check(ReadTitle().Status==RecordedNameStatus.RecordsUnavailable&&titles.FixtureTitles==null,"storage created");});
+        Case("missing title behavior is explicit",()=>{Campaign.Current.Titles=null;Check(ReadTitle().Status==RecordedNameStatus.BehaviorUnavailable,"missing behavior masked");});
+        Case("wrong title case is not fuzzy matched",()=>{titles.FixtureTitles.Add("title",Title());Check(ReadTitle("TITLE").Status!=RecordedNameStatus.Recorded,"case alias accepted");});
+        Case("case insensitive dictionary cannot change identity semantics",()=>{titles.FixtureTitles=new Dictionary<string,FeudalTitleRecord>(StringComparer.OrdinalIgnoreCase){{"title",Title()}};Check(ReadTitle("TITLE").Status==RecordedNameStatus.InvalidRecord,"case alias accepted");});
+        Case("corrupt dictionary record identity is rejected",()=>{titles.FixtureTitles.Add("title",Title("other"));Check(ReadTitle().Status==RecordedNameStatus.InvalidRecord,"wrong title returned");});
+        Case("null stored title is invalid without repair",()=>{titles.FixtureTitles.Add("title",null);Check(ReadTitle().Status==RecordedNameStatus.InvalidRecord&&titles.FixtureTitles["title"]==null,"null repaired");});
+        Case("inactive title has no label payload",()=>{var t=Title();t.SetActive(false);titles.FixtureTitles.Add("title",t);Check(ReadTitle().Status==RecordedNameStatus.Inactive&&ReadTitle().Name==null,"inactive leaked");});
+        Case("dissolved title has explicit priority",()=>{var t=Title();t.SetDeliberatelyDissolved(true);titles.FixtureTitles.Add("title",t);Check(ReadTitle().Status==RecordedNameStatus.Dissolved&&ReadTitle().Name==null,"dissolved leaked");});
+        Case("blank title name is not replaced by its ID",()=>{titles.FixtureTitles.Add("title",Title(name:" "));Check(ReadTitle().Status==RecordedNameStatus.EmptyName&&ReadTitle().Name==null,"ID substituted");});
+        Case("title localization uses a fresh text object",()=>{titles.FixtureTitles.Add("title",Title(name:"{=town}Fallback"));Check(ReadTitle().Name=="Rovalt","raw localization token returned");});
+        Case("title render failure is explicit",()=>{titles.FixtureTitles.Add("title",Title(name:"THROW"));Check(ReadTitle().Status==RecordedNameStatus.RenderingFailed&&ReadTitle().Name==null,"render failure hidden");});
+        Case("title rename affects next read not earlier snapshot",()=>{var t=Title();titles.FixtureTitles.Add("title",t);var a=ReadTitle();t.SetName("New Rovalt");Check(a.Name=="Rovalt"&&ReadTitle().Name=="New Rovalt","snapshot mutable/stale");});
+        Case("same display name on different titles never coalesces IDs",()=>{titles.FixtureTitles.Add("a",Title("a","Same"));titles.FixtureTitles.Add("b",Title("b","Same"));Check(ReadTitle("a").EntityId=="a"&&ReadTitle("b").EntityId=="b"&&ReadTitle("a").Name==ReadTitle("b").Name,"name used as identity");});
+        Case("existing Native realm label is copied without Kingdom.Name",()=>{var text=new TextObject("Vlandia");DynamicKingdomTitleNameHelper.FixtureStore(realm,text);var s=ReadRealm();Check(s.Status==RecordedNameStatus.Recorded&&s.Name=="Vlandia"&&s.Kind==RecordedNameKind.Realm&&text.RenderCalls==0,"realm getter or mutable text used");});
+        Case("missing Native label does not seed cache or read fallback",()=>{Check(ReadRealm().Status==RecordedNameStatus.NotRecorded&&DynamicKingdomTitleNameHelper.FixtureCount==0,"cache initialized");});
+        Case("unknown realm is not matched by label or prefix",()=>{DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("Vlandia"));Check(ReadRealm("Vlandia").Status==RecordedNameStatus.NotRecorded&&ReadRealm("rea").Status==RecordedNameStatus.NotRecorded,"fuzzy realm matched");});
+        Case("realm case comparison is exact",()=>{DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("Vlandia"));Check(ReadRealm("REALM").Status==RecordedNameStatus.NotRecorded,"realm alias accepted");});
+        Case("duplicate realm IDs are ambiguous",()=>{Kingdom.All.Add(new Kingdom{StringId="realm"});DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("Vlandia"));Check(ReadRealm().Status==RecordedNameStatus.AmbiguousIdentity&&ReadRealm().Name==null,"duplicate selected");});
+        Case("eliminated realm label is not exposed",()=>{realm.IsEliminated=true;DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("Vlandia"));Check(ReadRealm().Status==RecordedNameStatus.Inactive&&ReadRealm().Name==null,"eliminated realm exposed");});
+        Case("null realm collection is unavailable",()=>{Kingdom.All=null;Check(ReadRealm().Status==RecordedNameStatus.RecordsUnavailable,"missing list became none");});
+        Case("unrelated null realm entry does not become an identity",()=>{Kingdom.All.Add(null);Check(ReadRealm("missing").Status==RecordedNameStatus.NotRecorded,"null entry matched");});
+        Case("new realm object cannot read prior object cache by same name",()=>{DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("Old Realm"));realm=new Kingdom{StringId="realm"};Kingdom.All=new List<Kingdom>{realm};Check(ReadRealm().Status==RecordedNameStatus.NotRecorded,"old object cache leaked");});
+        Case("cached label replacement affects next read only",()=>{DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("Old"));var a=ReadRealm();DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("New"));Check(a.Name=="Old"&&ReadRealm().Name=="New","realm snapshot mutable/stale");});
+        Case("TextObject variables render from a copy without source changes",()=>{var text=new TextObject("{ROOT}");text.Variables["ROOT"]="Vlandia";DynamicKingdomTitleNameHelper.FixtureStore(realm,text);Check(ReadRealm().Name=="Vlandia"&&text.Value=="{ROOT}"&&text.Variables["ROOT"]=="Vlandia"&&text.RenderCalls==0,"source text mutated");});
+        Case("copy failure denies instead of losing source variables",()=>{var text=new TextObject("{ROOT}"){ThrowOnCopy=true};text.Variables["ROOT"]="Vlandia";DynamicKingdomTitleNameHelper.FixtureStore(realm,text);Check(ReadRealm().Status==RecordedNameStatus.RenderingFailed&&ReadRealm().Name==null,"lossy copy fallback used");});
+        Case("legacy Copy helper fallback remains unchanged",()=>{var text=new TextObject("Literal"){ThrowOnCopy=true};Check(DynamicKingdomTitleNameHelper.FixtureLegacyCopy(text).ToString()=="Literal","shared Copy semantics changed");});
+        Case("realm render failure is explicit without source rendering",()=>{var text=new TextObject("Vlandia"){ThrowOnRender=true};DynamicKingdomTitleNameHelper.FixtureStore(realm,text);Check(ReadRealm().Status==RecordedNameStatus.RenderingFailed&&text.RenderCalls==0,"source renderer used");});
+        Case("empty cached realm label is not replaced by ID",()=>{DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject(""));Check(ReadRealm().Status==RecordedNameStatus.EmptyName&&ReadRealm().Name==null,"realm ID fallback");});
+        Case("same recorded label on different realms preserves identity",()=>{var b=new Kingdom{StringId="b"};Kingdom.All.Add(b);DynamicKingdomTitleNameHelper.FixtureStore(realm,new TextObject("Empire"));DynamicKingdomTitleNameHelper.FixtureStore(b,new TextObject("Empire"));Check(ReadRealm().EntityId=="realm"&&ReadRealm("b").EntityId=="b"&&ReadRealm().Name==ReadRealm("b").Name,"realms merged by name");});
+        Case("title read leaves every saved field unchanged",()=>{var t=Title();titles.FixtureTitles.Add("title",t);var fields=typeof(FeudalTitleRecord).GetFields(BindingFlags.Instance|BindingFlags.NonPublic);var before=fields.Select(f=>f.GetValue(t)).ToArray();var dict=titles.FixtureTitles;ReadTitle();Check(fields.Select((f,i)=>object.Equals(before[i],f.GetValue(t))).All(v=>v)&&object.ReferenceEquals(dict,titles.FixtureTitles),"title state mutated");});
+        Case("invalid request kind ID and clock return no label",()=>{foreach(var id in new[]{null,""," ","bad\nid",new string('x',257)}){var s=ReadTitle(id);Check(s.Status==RecordedNameStatus.InvalidRequest&&s.Name==null,"bad ID accepted");}Check(BellumIntegration.GetExistingName((RecordedNameKind)99,"title").Status==RecordedNameStatus.InvalidRequest,"bad kind");CampaignTime.Now.ToDays=double.NaN;Check(ReadTitle().Status==RecordedNameStatus.InvalidRequest,"bad day");});
+        Case("snapshot contains scalars only and no ownership metadata",()=>{var props=typeof(RecordedNameSnapshot).GetProperties();Check(props.All(p=>!p.CanWrite&&(p.PropertyType.IsEnum||p.PropertyType==typeof(string)||p.PropertyType==typeof(double)))&&!props.Any(p=>p.Name.Contains("Holder")||p.Name.Contains("Clan")),"mutable/native state escaped");});
+        Case("actual guard denies worker",()=>{bool denied=Task.Run(()=>{try{ReadTitle();return false;}catch(InvalidOperationException){return true;}}).GetAwaiter().GetResult();Check(denied,"worker accepted");});
+        Case("actual guard denies absent campaign",()=>{Campaign.Current=null;bool denied=false;try{ReadTitle();}catch(InvalidOperationException){denied=true;}Check(denied,"no campaign accepted");});
+        Console.WriteLine("EXISTING_RECORDED_NAMES_PASS "+count+" named cases; actual new code/saved title/extracted helpers and guard, Native boundary doubles; not shipping/game proof.");
+    }
+}

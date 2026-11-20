@@ -1,0 +1,16 @@
+{
+  "base": "f6d973bdac60bfe06a0a5b7f9acc179cc63e59d0",
+  "baseline_blobs_verified": 1557,
+  "unchanged_blobs": 1556,
+  "modified_existing": [
+    "Behaviors/WarPeaceRevampBehavior.cs"
+  ],
+  "exact_behavior_change": "one six-line insertion only; removing the exact inserted bytes restores base Git blob",
+  "production_additions": [
+    "PoliticalPressureStateSnapshot.cs",
+    "PoliticalPressureStateReader.cs",
+    "BellumIntegrationPoliticalPressure.cs"
+  ],
+  "missing_existing": [],
+  "build_outputs_included": false
+}

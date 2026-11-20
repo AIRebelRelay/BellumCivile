@@ -1,0 +1,20 @@
+{
+  "modified": [
+    "Tests/SuccessionEngineHarness/DeJureDriftConflictTests.cs",
+    "Tests/SuccessionEngineHarness/IndependentDriftTests.cs",
+    "Tests/SuccessionEngineHarness/Program.cs"
+  ],
+  "added": [
+    "docs/verification/2026-11-16-drift/API-INVENTORY.md",
+    "docs/verification/2026-11-16-drift/STAGE.md",
+    "docs/verification/2026-11-16-drift/bellum-facade-inventory.csv",
+    "docs/verification/2026-11-16-drift/fixture-risk-inventory.csv",
+    "docs/verification/2026-11-16-drift/harness-routes.csv",
+    "docs/verification/2026-11-16-drift/inventory-summary.json",
+    "docs/verification/2026-11-16-drift/source-results.json",
+    "scripts/Verify-Bellum1412Regression.ps1"
+  ],
+  "shipping_bytes_unchanged": true,
+  "default_Run_unchanged": true,
+  "original_test_literals_preserved": true
+}

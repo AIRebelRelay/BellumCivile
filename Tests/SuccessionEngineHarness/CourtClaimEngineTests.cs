@@ -97,7 +97,7 @@ internal static class CourtClaimEngineTests
 
             var b = new CourtAgendaBehavior(); var a = Add(b);
             check(Bonus(b) == 15 && Bonus(b, ruler) == 0 && Bonus(b, holding: Blank<Settlement>()) == 0,
-                $"Allocation bonus matches exact house and holding ({Bonus(b)}/{Bonus(b, ruler)}, time={CampaignTime.Now.ToDays}, ongoing={a.IsOngoingObjective})");
+                "Allocation bonus matches exact house and holding");
             _support = false;
             check(Bonus(b) == 0, "Nonparticipating voter receives no claim allocation bonus");
             _support = true; _owner = _foreignClan;

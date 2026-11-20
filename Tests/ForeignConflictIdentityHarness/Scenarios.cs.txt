@@ -1,0 +1,65 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+public static class ForeignConflictIdentityScenarios{
+ static int count;static Kingdom a,b;static void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);count++;Console.WriteLine("PASS "+name);}
+ static WarScoreBehavior Setup(){a=new Kingdom{StringId="a"};b=new Kingdom{StringId="b"};Kingdom.All.Clear();Kingdom.All.Add(a);Kingdom.All.Add(b);var behavior=new WarScoreBehavior();Campaign.Current=new Campaign{Wars=behavior};Campaign.Current.CampaignBehaviorManager.Integration=new BellumIntegrationBehavior();CampaignTime.Now.ToDays=100;return behavior;}
+ static WarScoreRecord War(string first="a",string second="b",WarScoreConflictType kind=WarScoreConflictType.ForeignWar){return new WarScoreRecord(WarScoreRecord.PairKey(first,second),first,second,10,null,kind);}
+ static void Put(WarScoreRecord w,string field,object value){typeof(WarScoreRecord).GetField(field,BindingFlags.NonPublic|BindingFlags.Instance).SetValue(w,value);}
+ static ForeignConflictIdentitySnapshot Get(string id,string first="a",string second="b"){return BellumIntegration.GetExistingForeignConflictByInstance(id,first,second);}
+ static void Reject(ForeignConflictIdentitySnapshot result,ForeignConflictIdentityStatus status,string name){Check(result.Status==status&&result.Record==null,name);}
+ static bool Throws(Action action){try{action();return false;}catch(InvalidOperationException){return true;}}
+ public static void Run(){
+  var behavior=Setup();var w=War();w.AddBattleScore(12,100);behavior.Rows.Add(w);var id=w.ConflictInstanceId;var digest=IdentityReaderDigest.Dump(behavior.Rows);var ok=Get(id);
+  Check(ok.Status==ForeignConflictIdentityStatus.RecordedActive&&ok.Record.InstanceId==id&&ok.Record.PrimaryRealmId=="a"&&ok.Record.OpposingRealmId=="b"&&ok.Record.PrimaryScore==12&&ok.Record.StartedDay==10&&ok.CapturedDay==100,"exact_unique_current_foreign_snapshot");
+  // Live regression: Native start 396062.74737220025 rounds UP to float 396062.75.
+  // A just-created record must not be called corrupt solely because of float precision.
+  double nativeDay=396062.74737220025d;
+  var rounded=new WarScoreRecord("a|b","a","b",(float)nativeDay,null,WarScoreConflictType.ForeignWar);
+  Check(rounded.StartedDay>nativeDay,"large_campaign_day_fixture_rounds_up");
+  behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{rounded};
+  CampaignTime.Now.ToDays=nativeDay;
+  Check(Get(rounded.ConflictInstanceId).Status==ForeignConflictIdentityStatus.RecordedActive,
+      "same_instant_rounded_float_start_is_not_future");
+  CampaignTime.Now.ToDays=nativeDay-1d;
+  Reject(Get(rounded.ConflictInstanceId),ForeignConflictIdentityStatus.InvalidRecords,
+      "actual_future_start_still_rejected");
+  CampaignTime.Now.ToDays=100;behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{w};
+  Check(IdentityReaderDigest.Dump(behavior.Rows)==digest,"read_preserves_all_saved_record_fields_and_history");
+  w.AddBattleScore(5,100);Check(ok.Record.PrimaryScore==12,"snapshot_detached_from_later_score");
+  Reject(Get(id,"b","a"),ForeignConflictIdentityStatus.ParticipantMismatch,"ordered_side_swap_not_silently_reinterpreted");
+  Reject(Get(Guid.NewGuid().ToString("N")),ForeignConflictIdentityStatus.NotFound,"unknown_instance_never_falls_back_to_pair");
+  foreach(string invalid in new[]{null,"","bad",new string('0',32),"ABCDEF0123456789ABCDEF0123456789"})Reject(Get(invalid),ForeignConflictIdentityStatus.InvalidRequest,"invalid_request_id_"+invalid);
+  Reject(Get(id,"a","a"),ForeignConflictIdentityStatus.InvalidRequest,"self_pair_refused");
+  Reject(Get(id," ","b"),ForeignConflictIdentityStatus.InvalidRequest,"blank_participant_refused");
+  Reject(Get(id,new string('x',129),"b"),ForeignConflictIdentityStatus.InvalidRequest,"oversize_participant_refused");
+  behavior.Rows=null;Reject(Get(id),ForeignConflictIdentityStatus.UninitializedRecords,"uninitialized_list_not_materialized");Check(behavior.Rows==null,"uninitialized_list_remains_null");
+  behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{w,null};Reject(Get(id),ForeignConflictIdentityStatus.InvalidRecords,"null_row_not_silently_ignored");
+  foreach(bool ended in new[]{false,true}){var other=War("c","d");Put(other,"_conflictInstanceId",id);if(ended)other.MarkEnded(20);behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{w,other};Reject(Get(id),ForeignConflictIdentityStatus.Ambiguous,"duplicate_id_across_pairs_including_ended_"+ended);}
+  var internalDuplicate=War("c","d",WarScoreConflictType.CivilWar);Put(internalDuplicate,"_conflictInstanceId",id);behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{w,internalDuplicate};Reject(Get(id),ForeignConflictIdentityStatus.Ambiguous,"duplicate_internal_record_not_filtered_before_uniqueness");
+  var malformedShadow=War("c","d");Put(w,"_conflictInstanceId","abcdef0123456789abcdef0123456789");Put(malformedShadow,"_conflictInstanceId","ABCDEF0123456789ABCDEF0123456789");behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{w,malformedShadow};Reject(Get("abcdef0123456789abcdef0123456789"),ForeignConflictIdentityStatus.InvalidRecords,"malformed_shadow_cannot_prove_uniqueness");Put(w,"_conflictInstanceId",id);
+  behavior.Rows.Clear();Reject(Get(id),ForeignConflictIdentityStatus.NotFound,"empty_history_no_pair_fallback");
+  behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{w,w};Reject(Get(id),ForeignConflictIdentityStatus.Ambiguous,"duplicate_same_reference_refused");
+  behavior.Rows=new System.Collections.Generic.List<WarScoreRecord>{w};var savedId=id;Put(w,"_conflictInstanceId",null);Reject(Get(savedId),ForeignConflictIdentityStatus.InvalidRecords,"legacy_id_not_allocated_by_lookup");Check(w.ConflictInstanceId==null,"legacy_identity_stays_missing");
+  Put(w,"_conflictInstanceId","bad");Reject(Get(savedId),ForeignConflictIdentityStatus.InvalidRecords,"corrupt_record_id_not_repaired");Check((string)typeof(WarScoreRecord).GetField("_conflictInstanceId",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(w)=="bad","corrupt_raw_id_retained");Put(w,"_conflictInstanceId",id);
+  foreach(float value in new[]{float.NaN,float.PositiveInfinity,101f}){Put(w,"_score",value);Reject(Get(id),ForeignConflictIdentityStatus.InvalidRecords,"invalid_saved_score_"+value);}Put(w,"_score",12f);
+  foreach(float value in new[]{-1f,101f,float.NaN}){Put(w,"_startedDay",value);Reject(Get(id),ForeignConflictIdentityStatus.InvalidRecords,"invalid_saved_start_day_"+value);}Put(w,"_startedDay",10f);
+  Put(w,"_warKey","wrong");Reject(Get(id),ForeignConflictIdentityStatus.InvalidRecords,"inconsistent_pair_key_refused");Put(w,"_warKey","a|b");
+  Put(w,"_conflictType",(WarScoreConflictType)999);Reject(Get(id),ForeignConflictIdentityStatus.InvalidRecords,"unknown_conflict_kind_refused");Put(w,"_conflictType",WarScoreConflictType.CivilWar);Reject(Get(id),ForeignConflictIdentityStatus.WrongConflictType,"internal_conflict_not_foreign_scope");Put(w,"_conflictType",WarScoreConflictType.ForeignWar);
+  Kingdom.All.Remove(b);Reject(Get(id),ForeignConflictIdentityStatus.RealmUnavailable,"missing_live_realm");Kingdom.All.Add(b);b.IsEliminated=true;Reject(Get(id),ForeignConflictIdentityStatus.RealmUnavailable,"eliminated_live_realm");b.IsEliminated=false;
+  Kingdom.All.Add(new Kingdom{StringId="a"});Reject(Get(id),ForeignConflictIdentityStatus.RealmUnavailable,"ambiguous_world_realm_id");Kingdom.All.RemoveAt(Kingdom.All.Count-1);
+  a.Hostile=false;Reject(Get(id),ForeignConflictIdentityStatus.NotAtWar,"world_no_longer_hostile");a.Hostile=true;b.Hostile=false;Reject(Get(id),ForeignConflictIdentityStatus.NotAtWar,"reverse_hostility_required");b.Hostile=true;
+  w.MarkEnded(20);var later=War();behavior.Rows.Add(later);Reject(Get(id),ForeignConflictIdentityStatus.Ended,"ended_id_does_not_select_later_same_pair_war");Check(Get(later.ConflictInstanceId).Status==ForeignConflictIdentityStatus.RecordedActive,"later_instance_found_only_by_own_id");
+  CampaignTime.Now.ToDays=double.NaN;Reject(Get(later.ConflictInstanceId),ForeignConflictIdentityStatus.InvalidRequest,"invalid_capture_day_refused");Check(Get(later.ConflictInstanceId).CapturedDay==null,"invalid_capture_day_not_exported_as_nan");CampaignTime.Now.ToDays=100;
+  Campaign.Current.Wars=null;Reject(Get(later.ConflictInstanceId),ForeignConflictIdentityStatus.BehaviorUnavailable,"absent_wars_behavior");Campaign.Current.Wars=behavior;
+  bool denied=false;var thread=new Thread(()=>{denied=Throws(()=>Get(later.ConflictInstanceId));});thread.Start();thread.Join();Check(denied,"actual_campaign_guard_rejects_worker");
+  Campaign.Current=null;Check(Throws(()=>Get(id)),"actual_campaign_guard_rejects_missing_campaign");
+  Check(typeof(ForeignConflictIdentitySnapshot).GetProperties().All(p=>!p.CanWrite)&&typeof(ForeignConflictIdentityRecord).GetProperties().All(p=>!p.CanWrite),"public_projection_has_no_setters");
+  Check(!typeof(ForeignConflictIdentityRecord).GetProperties().Any(p=>p.PropertyType.Namespace!=null&&p.PropertyType.Namespace.StartsWith("TaleWorlds")),"no_mutable_engine_objects_escape");
+  Console.WriteLine("FOREIGN IDENTITY READER PASS "+count+"; actual reader/facade/guard; Native world doubles, game NOT_RUN");
+ }
+}

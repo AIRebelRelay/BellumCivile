@@ -1,0 +1,6 @@
+MUTATION_REJECTED owner_fault_falls_through
+MUTATION_REJECTED terminal_becomes_ordinary_intent
+MUTATION_REJECTED ratification_accepts_without_consent
+MUTATION_REJECTED pending_activation_allowed
+MUTATION_REJECTED default_unknown_permitted
+TOTAL MUTATIONS REJECTED 5

@@ -1,0 +1,71 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+namespace TaleWorlds.SaveSystem {
+ [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute:Attribute {
+  public int Id; public SaveableFieldAttribute(int id){Id=id;}
+ }
+}
+namespace TaleWorlds.CampaignSystem {
+ public interface IDataStore {bool IsLoading{get;} bool SyncData<T>(string key,ref T value);}
+ public abstract class CampaignBehaviorBase {public abstract void RegisterEvents(); public abstract void SyncData(IDataStore store);}
+ public sealed class CampaignGameStarter {}
+ public sealed class Campaign {
+  public static Campaign Current; public Manager CampaignBehaviorManager=new Manager();
+ }
+ public sealed class Manager {
+  public object Behavior; public T GetBehavior<T>() where T:class {return Behavior as T;}
+ }
+ public sealed class Event<T>{ public void AddNonSerializedListener(object target,Action<T> action){} }
+ public sealed class Event<T,U>{ public void AddNonSerializedListener(object target,Action<T,U> action){} }
+ public static class CampaignEvents {
+  public static Event<CampaignGameStarter> OnSessionLaunchedEvent=new Event<CampaignGameStarter>();
+  public static Event<float> TickEvent=new Event<float>();
+  public static Event<object,bool> KingdomDecisionAdded=new Event<object,bool>();
+ }
+}
+namespace BellumCivile.Behaviors {
+ public sealed partial class BellumIntegrationBehavior {
+  public bool FailLegacySync;
+  public readonly List<string> LegacyCalls=new List<string>();
+  private void SyncLegitimacy(TaleWorlds.CampaignSystem.IDataStore s){LegacyCalls.Add("legitimacy");if(FailLegacySync)throw new InvalidOperationException("legacy store failed");}
+  private void SyncPartitions(TaleWorlds.CampaignSystem.IDataStore s){LegacyCalls.Add("partitions");}
+  private void SyncVotes(TaleWorlds.CampaignSystem.IDataStore s){LegacyCalls.Add("votes");}
+  private void DispatchPartitions(float dt){}
+  private void InitializeVotes(TaleWorlds.CampaignSystem.CampaignGameStarter s){}
+  private void TrackVote(object decision,bool involved){}
+  private void DispatchCouncilAppointments(float dt){}
+ }
+}
+// Copies annotated fields only. This deliberately excludes service/session runtime state.
+// NOT the TaleWorlds serializer; validates the IDataStore lifecycle and declared payload.
+public sealed class JournalStore:TaleWorlds.CampaignSystem.IDataStore {
+ public bool IsLoading{get;set;}
+ public Dictionary<string,object> Saved=new Dictionary<string,object>();
+ public List<string> Keys=new List<string>();
+ public bool ThrowOnSync;
+ public bool SyncData<T>(string key,ref T value){
+  Keys.Add(key); if(ThrowOnSync)throw new InvalidOperationException("store failed");
+  if(IsLoading){object item;if(!Saved.TryGetValue(key,out item))return false;value=(T)Clone(item);return true;}
+  Saved[key]=Clone(value);return true;
+ }
+ public static bool SameSaved(object a,object b){
+  if(a==null||b==null)return a==b;if(a.GetType()!=b.GetType())return false;
+  Type t=a.GetType();if(t.IsPrimitive||t==typeof(string)||t.IsEnum)return a.Equals(b);
+  var left=a as IList;var right=b as IList;
+  if(left!=null){if(left.Count!=right.Count)return false;for(int i=0;i<left.Count;i++)if(!SameSaved(left[i],right[i]))return false;return true;}
+  foreach(var f in t.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic))
+   if(f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null&&!SameSaved(f.GetValue(a),f.GetValue(b)))return false;
+  return true;
+ }
+ public static object Clone(object value){
+  if(value==null)return null;
+  Type t=value.GetType();if(t.IsPrimitive||t==typeof(string)||t.IsEnum)return value;
+  var list=value as IList;if(list!=null){var copy=(IList)Activator.CreateInstance(t);foreach(var item in list)copy.Add(Clone(item));return copy;}
+  var result=Activator.CreateInstance(t);
+  foreach(var field in t.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic))
+   if(field.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null)field.SetValue(result,Clone(field.GetValue(value)));
+  return result;
+ }
+}

@@ -86,6 +86,8 @@ namespace BellumCivile.Behaviors
             CampaignEvents.OnPlayerCharacterChangedEvent.AddNonSerializedListener(this, OnPlayerCharacterChanged);
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, _ => RecoverCoalitionBallots());
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, _ => RetireOrphanedRestoredRealms());
+            CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, _ => _landlessRecoveryPending = true);
+            CampaignEvents.TickEvent.AddNonSerializedListener(this, _ => ProcessLandlessRealmRecovery());
         }
         public override void SyncData(IDataStore dataStore)
         {
@@ -696,6 +698,7 @@ namespace BellumCivile.Behaviors
             ProcessPendingSuccessionTribunals();
             ProcessPendingTribunals();
             ProcessPendingRebelCleanups();
+            _landlessRecoveryPending = true;
         }
 
         private void OnHourlyTick()
@@ -3179,18 +3182,24 @@ namespace BellumCivile.Behaviors
 
         private static List<IndependencePartitionGroup> BuildIndependencePartitionGroups(FactionObject faction, Kingdom rebelKingdom, Clan victoriousLeader)
         {
-            List<Clan> rebelClans = rebelKingdom?.Clans
+            return BuildIndependencePartitionGroupsForClans(faction?.ParentKingdom, rebelKingdom?.Clans, victoriousLeader);
+        }
+
+        private static List<IndependencePartitionGroup> BuildIndependencePartitionGroupsForClans(
+            Kingdom parentKingdom, IEnumerable<Clan> candidates, Clan victoriousLeader)
+        {
+            List<Clan> rebelClans = candidates?
                 .Where(clan => clan != null && !clan.IsEliminated && !clan.IsUnderMercenaryService)
                 .Distinct()
                 .ToList() ?? new List<Clan>();
             if (victoriousLeader == null || !rebelClans.Contains(victoriousLeader))
                 return new List<IndependencePartitionGroup>();
 
-            FeudalTitleRecord leaderTitle = GetHighestDeFactoTitle(victoriousLeader, faction?.ParentKingdom);
+            FeudalTitleRecord leaderTitle = GetHighestDeFactoTitle(victoriousLeader, parentKingdom);
             int leaderRank = GetTitleRank(leaderTitle);
             Dictionary<Clan, FeudalTitleRecord> highestTitles = rebelClans.ToDictionary(
                 clan => clan,
-                clan => GetHighestDeFactoTitle(clan, faction?.ParentKingdom));
+                clan => GetHighestDeFactoTitle(clan, parentKingdom));
 
             HashSet<Clan> rootClans = new HashSet<Clan> { victoriousLeader };
             foreach (Clan clan in rebelClans)
@@ -3420,7 +3429,17 @@ namespace BellumCivile.Behaviors
             }
 
             ActivateCompatibilityRepairWindow();
+            if (collapsedParent.Clans.Any(c => c != null && !c.IsEliminated) || CountStrongholds(collapsedParent) > 0)
+            {
+                QueuePendingRebelCleanup(collapsedParent, null);
+                return;
+            }
             DestroyKingdomAction.Apply(collapsedParent);
+            if (!collapsedParent.IsEliminated)
+            {
+                QueuePendingRebelCleanup(collapsedParent, null);
+                return;
+            }
             RepairCompatibilityStateNow($"collapsed landless parent kingdom {collapsedParent.StringId} without successor");
         }
 

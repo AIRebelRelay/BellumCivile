@@ -17,8 +17,8 @@ $exit = $factions.IndexOf('private void RepairReferencedKingdomRulerState(', $en
 Check ($entry -ge 0 -and $exit -gt $entry) 'exact shared kingdom-change handler found'
 $handler = $factions.Substring($entry, $exit - $entry)
 $gate = 'OwnsCollapseHouseholdTransfer(faction, clan, oldKingdom, newKingdom) == true'
-Check ($handler.Contains($gate) -and $handler.Contains('!faction.IsIdeology')
-    -and $handler.IndexOf($gate, [StringComparison]::Ordinal) -lt
+Check ($handler.Contains($gate) -and $handler.Contains('!faction.IsIdeology') -and
+    $handler.IndexOf($gate, [StringComparison]::Ordinal) -lt
          $handler.IndexOf('faction.RemoveMember(clan);', [StringComparison]::Ordinal)) 'faction membership is preserved before removal on owned Stage 2 transfers'
 Check ($handler.Contains('TrackPlayerCourtTransfer(clan, oldKingdom, newKingdom);') -and
     $handler.Contains('QueueSettlementRefresh(clan);') -and

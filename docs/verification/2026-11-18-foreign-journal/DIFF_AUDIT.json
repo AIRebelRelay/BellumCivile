@@ -1,0 +1,43 @@
+{
+  "repository": "AIRebelRelay/BellumCivile",
+  "remote_branch": "feature/cr-realm-preparation-receipts-2026-11-18",
+  "remote_head_rechecked": "903f6772a8bebab68b1296121d770b741ae1a232",
+  "local_base": "S23A candidate 1.4.12.4",
+  "candidate_version": "1.4.12.5",
+  "baseline_files": 1631,
+  "baseline_files_byte_identical": 1625,
+  "changed_existing_files": [
+    "Behaviors/BellumIntegrationBehavior.cs",
+    "BellumCivileSaveDefiner.cs",
+    "Properties/AssemblyInfo.cs",
+    "Tests/ModuleLocalLogs.Tests.ps1",
+    "_Module/SubModule.xml",
+    "scripts/Build-CrBellumModuleWindows.ps1"
+  ],
+  "new_production_files": [
+    "Behaviors/IntegrationForeignDiplomacy.cs",
+    "ForeignDiplomacyJournal.cs",
+    "ForeignDiplomacyJournalRecords.cs"
+  ],
+  "existing_save_types_renumbered": false,
+  "new_class_ids": [
+    150,
+    151
+  ],
+  "new_containers": [
+    "List<ForeignDiplomacyIntentRecord>"
+  ],
+  "new_save_key": "BC_Integration_ForeignDiplomacyJournal_v1",
+  "gameplay_producers_of_journal": [],
+  "gameplay_diplomacy_mode_active": false,
+  "behavioral_journal_assertions": 104,
+  "schema_source_assertions": 8,
+  "journal_mutations_rejected": 5,
+  "previous_policy_assertions": 65,
+  "neighbor_fixture_assertions": 222,
+  "shipping_build": "NOT_RUN_linux_preflight_rejected",
+  "native_serializer_game_save_load": "NOT_RUN",
+  "inherited_packaging_fixture": "KNOWN_BASELINE_FAILURE_navaldll_null_NOT_RERUN",
+  "new_gameplay_log_lines": 0,
+  "compaction": "NOT_IMPLEMENTED_capacity128_total"
+}

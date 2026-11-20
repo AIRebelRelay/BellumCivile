@@ -1,0 +1,71 @@
+using System;
+using BellumCivile;
+public static class ForeignDiplomacyAdmissionScenarios
+{
+    private static int passed;
+    private static void Check(bool ok, string name)
+    {
+        if (!ok) throw new Exception("FAIL " + name);
+        passed++; Console.WriteLine("PASS " + name);
+    }
+    private static ForeignDiplomacyReadiness Ready()
+    {
+        return new ForeignDiplomacyReadiness(true, true, true, true, true, true, true, true, 0);
+    }
+    private static ForeignDiplomacyAdmission Evaluate(ForeignDiplomacySource source,
+        bool enabled = true, bool inScope = true, bool ownerReady = true, bool boundConsent = false)
+    {
+        return ForeignDiplomacyAdmissionPolicy.Evaluate(enabled, inScope, ownerReady, source, boundConsent);
+    }
+    public static void Run()
+    {
+        Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(Ready()) == ForeignDiplomacyActivation.Ready, "complete_handshake");
+        Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(null) == ForeignDiplomacyActivation.MissingReadiness, "null_readiness_refused");
+        Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(new ForeignDiplomacyReadiness()) != ForeignDiplomacyActivation.Ready, "default_readiness_refused");
+        ForeignDiplomacyActivation[] reasons = {
+            ForeignDiplomacyActivation.RevampDisabled, ForeignDiplomacyActivation.MissingCampaignScope,
+            ForeignDiplomacyActivation.MissingDurableOwner, ForeignDiplomacyActivation.MissingDurableQueue,
+            ForeignDiplomacyActivation.MissingSaveRecovery, ForeignDiplomacyActivation.MissingNativeGateway,
+            ForeignDiplomacyActivation.MissingDraftConsentVerifier, ForeignDiplomacyActivation.MissingBoundedCrisisHandler };
+        for (int missing = 0; missing < 8; missing++)
+        {
+            bool[] a = { true, true, true, true, true, true, true, true };
+            a[missing] = false;
+            var readiness = new ForeignDiplomacyReadiness(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],0);
+            Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(readiness) == reasons[missing], "missing_capability_" + missing);
+        }
+        foreach (int count in new[] { -1, 1, 17 })
+            Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(new ForeignDiplomacyReadiness(true,true,true,true,true,true,true,true,count)) == ForeignDiplomacyActivation.PendingOrUnknownLegacyWork, "pending_or_unknown_"+count);
+        foreach (ForeignDiplomacySource source in Enum.GetValues(typeof(ForeignDiplomacySource)))
+        {
+            Check(Evaluate(source, enabled:false) == ForeignDiplomacyAdmission.Legacy, "disabled_"+source);
+            Check(Evaluate(source, inScope:false, ownerReady:false) == ForeignDiplomacyAdmission.Legacy, "outside_scope_"+source);
+        }
+        foreach (var source in new[] { ForeignDiplomacySource.PlayerAction, ForeignDiplomacySource.InternalConflict,
+            ForeignDiplomacySource.ClientObligation, ForeignDiplomacySource.ExistingTreatyObligation,
+            ForeignDiplomacySource.VoluntaryPact, ForeignDiplomacySource.HostageChoice })
+        {
+            Check(Evaluate(source, ownerReady:false) == ForeignDiplomacyAdmission.Legacy, "excluded_"+source);
+        }
+        foreach (var source in new[] { ForeignDiplomacySource.AutomaticForeignWar,
+            ForeignDiplomacySource.AutomaticForeignPeace, ForeignDiplomacySource.AutomaticForeignParley })
+        {
+            Check(Evaluate(source) == ForeignDiplomacyAdmission.RequestLlmIntent, "intent_"+source);
+            Check(Evaluate(source, ownerReady:false) == ForeignDiplomacyAdmission.Hold, "owner_lost_"+source);
+            Check(Evaluate(source, boundConsent:true) == ForeignDiplomacyAdmission.RequestLlmIntent, "consent_cannot_bypass_initiative_"+source);
+        }
+        Check(Evaluate(ForeignDiplomacySource.PendingForeignRatification) == ForeignDiplomacyAdmission.Hold, "unbound_ratification_waits");
+        Check(Evaluate(ForeignDiplomacySource.PendingForeignRatification, boundConsent:true) == ForeignDiplomacyAdmission.ContinueNativeValidation, "bound_consent_only_allows_native_validation");
+        Check(Evaluate(ForeignDiplomacySource.PendingForeignRatification, ownerReady:false, boundConsent:true) == ForeignDiplomacyAdmission.Hold, "owner_fault_cannot_ratify");
+        Check(Evaluate(ForeignDiplomacySource.TerminalForeignWar) == ForeignDiplomacyAdmission.RequestCrisisResolution, "terminal_uses_crisis_not_ordinary_parley");
+        Check(Evaluate(ForeignDiplomacySource.TerminalForeignWar, ownerReady:false) == ForeignDiplomacyAdmission.Hold, "terminal_owner_fault_no_legacy_fallback");
+        Check(Evaluate(ForeignDiplomacySource.TerminalForeignWar, boundConsent:true) == ForeignDiplomacyAdmission.RequestCrisisResolution, "consent_cannot_bypass_crisis");
+        Check(Evaluate((ForeignDiplomacySource)999) == ForeignDiplomacyAdmission.Hold, "unknown_source_in_scope_held");
+        Check(Evaluate((ForeignDiplomacySource)999, enabled:false) == ForeignDiplomacyAdmission.Legacy, "unknown_source_legacy_preserved");
+        Check(Evaluate((ForeignDiplomacySource)999, inScope:false) == ForeignDiplomacyAdmission.Legacy, "unknown_source_outside_scope_preserved");
+        Check(Evaluate(default(ForeignDiplomacySource)) == ForeignDiplomacyAdmission.Hold, "default_source_is_unknown");
+        Check(default(ForeignDiplomacyAdmission) == ForeignDiplomacyAdmission.Hold, "default_verdict_is_hold");
+        Check(default(ForeignDiplomacyActivation) != ForeignDiplomacyActivation.Ready, "default_activation_not_ready");
+        Console.WriteLine("TOTAL PASS " + passed);
+    }
+}

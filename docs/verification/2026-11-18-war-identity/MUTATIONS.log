@@ -1,0 +1,6 @@
+WAR_ID_MUTATION_REJECTED sync_reassigns_valid_id
+WAR_ID_MUTATION_REJECTED all_instances_share_id
+WAR_ID_MUTATION_REJECTED getter_mutates_legacy
+WAR_ID_MUTATION_REJECTED missing_sync_migration
+WAR_ID_MUTATION_REJECTED end_reassigns_identity
+WAR IDENTITY MUTATIONS REJECTED 5

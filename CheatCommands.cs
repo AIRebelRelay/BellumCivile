@@ -22,6 +22,7 @@
 * civilwars.set_ruler_relation_player [Value]
 * civilwars.set_ruler_relation [Clan Name] [Value]
 * civilwars.force_treason [vote/decree] [Kingdom Name] | [Clan or Leader Name]
+* civilwars.test_asylum [optional Clan ID]
 * civilwars.pending_votes [optional Kingdom Name]
 * civilwars.repair_pending_votes [optional Kingdom Name]
 * civilwars.fief_vote_eval [Settlement Name/Id]
@@ -53,6 +54,7 @@
 * civilwars.realm_war_will [Kingdom Name]
  * civilwars.war_score [Kingdom Name] | [Target Kingdom Name]
  * civilwars.foreign_treaties
+ * QA build only: civilwars.qa_force_white_peace Vlandia | Nords | CONFIRM_TEST_SAVE
  * civilwars.client_realms
  * civilwars.client_info [Client Kingdom Name]
  * civilwars.make_client [Client Kingdom Name] | [Suzerain Kingdom Name] [voluntary]
@@ -88,6 +90,17 @@ namespace BellumCivile
     /// </summary>
     public static class CheatCommands
     {
+        [CommandLineFunctionality.CommandLineArgumentFunction("test_asylum", "civilwars")]
+        public static string TestAsylum(List<string> args)
+        {
+            if (args?.Count > 1 || string.Equals(args?.FirstOrDefault(), "help", StringComparison.OrdinalIgnoreCase))
+                return "Usage: civilwars.test_asylum [optional Clan ID]. No ID selects a random eligible foreign landless clan. Use a separate test save: this causes a real exile.";
+            if (Campaign.Current == null) return "Error: Load a campaign first.";
+            var behavior = Campaign.Current.GetCampaignBehavior<ExiledClanRecoveryBehavior>();
+            return behavior == null ? "Error: Exile recovery behavior is unavailable."
+                : behavior.CreateAsylumTest(args?.FirstOrDefault());
+        }
+
         [CommandLineFunctionality.CommandLineArgumentFunction("repair_regency_caretaker", "civilwars")]
         public static string RepairRegencyCaretaker(List<string> args)
         {
@@ -444,6 +457,29 @@ namespace BellumCivile
             if (args != null && (args.Count > 1 || (args.Count == 1 && !string.Equals(args[0], "reset", StringComparison.OrdinalIgnoreCase))))
                 return "Usage: civilwars.title_name_stats [reset]";
             return Patches.FeudalTitleHeroNamePatch.BuildPerformanceDiagnostics(args?.Count == 1);
+        }
+
+        [CommandLineFunctionality.CommandLineArgumentFunction("notification_stats", "civilwars")]
+        public static string NotificationStats(List<string> args)
+        {
+            if (args == null || args.Count != 1)
+                return "Usage: civilwars.notification_stats start|show|stop";
+
+            if (string.Equals(args[0], "start", StringComparison.OrdinalIgnoreCase))
+            {
+                NotificationPerformanceDiagnostics.Start();
+                return "Notification diagnostics started; previous counters cleared.";
+            }
+            if (string.Equals(args[0], "show", StringComparison.OrdinalIgnoreCase))
+                return NotificationPerformanceDiagnostics.Snapshot();
+            if (string.Equals(args[0], "stop", StringComparison.OrdinalIgnoreCase))
+            {
+                string report = NotificationPerformanceDiagnostics.Stop();
+                BellumCivileLogger.Log(report);
+                BellumCivileLogger.Flush();
+                return report;
+            }
+            return "Usage: civilwars.notification_stats start|show|stop";
         }
 
         [CommandLineFunctionality.CommandLineArgumentFunction("fief_vote_eval", "civilwars")]
@@ -1056,6 +1092,36 @@ namespace BellumCivile
             return behavior?.BuildKingdomDebugReport(kingdom) ?? "Error: WarPeaceRevampBehavior not found.";
         }
 
+        [CommandLineFunctionality.CommandLineArgumentFunction("dump_war_ids", "civilwars")]
+        public static string DumpWarIds(List<string> args)
+        {
+            if (args != null && args.Count != 0)
+                return "Usage: civilwars.dump_war_ids (no arguments; read-only).";
+            try { BellumIntegrationBehavior.RequireCampaignThread(); }
+            catch (InvalidOperationException) { return "Error: Active campaign thread required."; }
+            WarScoreBehavior behavior = Campaign.Current.GetCampaignBehavior<WarScoreBehavior>();
+            if (behavior == null) return "Error: WarScoreBehavior unavailable; nothing read or changed.";
+            IReadOnlyList<string> snapshot = behavior.BuildWarIdentityDump();
+            foreach (string line in snapshot) BellumCivileLogger.Log(line);
+            BellumCivileLogger.Flush();
+            return snapshot[0] + " | See BellumCivile logs for rows and END marker (logging best-effort).";
+        }
+
+        [CommandLineFunctionality.CommandLineArgumentFunction("dump_war_native_witness", "civilwars")]
+        public static string DumpWarNativeWitness(List<string> args)
+        {
+            if (args != null && args.Count != 0)
+                return "Usage: civilwars.dump_war_native_witness (no arguments; read-only).";
+            try { BellumIntegrationBehavior.RequireCampaignThread(); }
+            catch (InvalidOperationException) { return "Error: Active campaign thread required."; }
+            WarScoreBehavior behavior = Campaign.Current.GetCampaignBehavior<WarScoreBehavior>();
+            if (behavior == null) return "Error: WarScoreBehavior unavailable; nothing read or changed.";
+            IReadOnlyList<string> snapshot = behavior.BuildForeignWarNativeWitnessDump();
+            foreach (string line in snapshot) BellumCivileLogger.Log(line);
+            BellumCivileLogger.Flush();
+            return snapshot[0] + " | See BellumCivile logs for rows and END marker (logging best-effort).";
+        }
+
         [CommandLineFunctionality.CommandLineArgumentFunction("war_score", "civilwars")]
         public static string WarScore(List<string> args)
         {
@@ -1073,6 +1139,68 @@ namespace BellumCivile
             WarScoreBehavior behavior = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>();
             return behavior?.BuildDebugReport(first, second) ?? "Error: WarScoreBehavior not found.";
         }
+
+
+#if BELLUM_TREATY_QA
+        // Test-only: this command is absent from ordinary Release builds. Never use on a real save.
+        // It queues a forced WHITE PEACE for an AI-only war through the existing Bellum treaty pipeline.
+        // It does NOT apply native peace, ratify, or manipulate WarScore/records directly.
+        [CommandLineFunctionality.CommandLineArgumentFunction("qa_force_white_peace", "civilwars")]
+        public static string QaForceWhitePeace(List<string> args)
+        {
+            const string usage = "QA TEST SAVE ONLY: civilwars.qa_force_white_peace [Kingdom] | [Kingdom] | CONFIRM_TEST_SAVE";
+            if (args == null || args.Count < 5 || args.Count(arg => arg == "|") != 2)
+                return usage;
+            int firstSeparator = args.FindIndex(value => value == "|");
+            int secondSeparator = args.FindIndex(firstSeparator + 1, value => value == "|");
+            if (firstSeparator <= 0 || secondSeparator <= firstSeparator + 1
+                || secondSeparator != args.Count - 2 || args[args.Count - 1] != "CONFIRM_TEST_SAVE")
+                return usage;
+            try { BellumIntegrationBehavior.RequireCampaignThread(); }
+            catch (InvalidOperationException) { return "Error: active campaign thread required; QA did nothing."; }
+            if (Campaign.Current == null || !WarPeaceRevampBehavior.IsRevampEnabled())
+                return "Error: no active campaign or War & Peace Revamp disabled; QA did nothing.";
+            if (!TryResolveKingdom(string.Join(" ", args.Take(firstSeparator)), out Kingdom first, out string firstError))
+                return firstError;
+            if (!TryResolveKingdom(string.Join(" ", args.Skip(firstSeparator + 1).Take(secondSeparator - firstSeparator - 1)), out Kingdom second, out string secondError))
+                return secondError;
+            if (first == second || first.IsEliminated || second.IsEliminated
+                || WarPeaceRevampBehavior.IsPlayerPoliticalParticipant(first, second)
+                || Clan.PlayerClan?.Kingdom == first || Clan.PlayerClan?.Kingdom == second)
+                return "Error: QA requires two different, surviving NPC-only kingdoms; QA did nothing.";
+            if (!first.IsAtWarWith(second) || !second.IsAtWarWith(first))
+                return "Error: the two kingdoms are not mutually at war; QA did nothing.";
+            WarScoreBehavior score = Campaign.Current.GetCampaignBehavior<WarScoreBehavior>();
+            ForeignTreatyBehavior treaties = Campaign.Current.GetCampaignBehavior<ForeignTreatyBehavior>();
+            if (score == null || treaties == null)
+                return "Error: Bellum war/treaty behavior unavailable; QA did nothing.";
+            WarScoreRecord war = score.GetActiveWar(first, second);
+            if (war == null || !war.IsActive || war.ConflictType != WarScoreConflictType.ForeignWar)
+                return "Error: no active Bellum foreign-war record for the pair; QA did nothing.";
+            if (score.GetActiveWars().Count(candidate => candidate != null && candidate.WarKey == war.WarKey) != 1
+                || string.IsNullOrWhiteSpace(war.ConflictInstanceId)
+                || !Guid.TryParseExact(war.ConflictInstanceId, "N", out Guid parsedId)
+                || parsedId == Guid.Empty)
+                return "Error: ambiguous or invalid Bellum war identity; QA did nothing.";
+            if (war.ParleyPending || war.TerminalResolutionQueued || war.ResolutionPending)
+                return "Error: war has pending resolution or parley; QA did nothing.";
+            // The witness is NEVER an execution authority. For this explicit manual QA only,
+            // a new war must at least have matching observational evidence before queuing.
+            ForeignWarNativeWitnessSnapshot witness = score.ObserveForeignWarNativeWitness(
+                war.ConflictInstanceId, war.AttackerKingdomId, war.DefenderKingdomId, CampaignTime.Now.ToDays);
+            if (witness.IdentityStatus != ForeignConflictIdentityStatus.RecordedActive
+                || witness.WitnessStatus != ForeignWarNativeWitnessStatus.WeakTimestampMatchNotProof)
+                return "Error: native war witness missing, changed or ambiguous; QA did nothing.";
+            string instanceId = war.ConflictInstanceId;
+            bool queued = treaties.TryQueueAiParley(war, forced: true, preferWhitePeace: true,
+                reason: "explicit QA test-save forced white peace", drafter: first, out string report);
+            BellumCivileLogger.Log($"BELLUM_QA_TREATY_WHITE_PEACE result={(queued ? "queued" : "rejected")}; war={war.WarKey}; instance={instanceId}; npc_only=true; forced=true; terms=white_peace; report={report}; tester_confirmed=true.");
+            BellumCivileLogger.Flush();
+            return (queued ? "QA_BELLUM_PARLEY_QUEUED" : "QA_BELLUM_PARLEY_REJECTED")
+                + $" war={war.WarKey}; instance={instanceId}; {report}. "
+                + (queued ? "Unpause for >1 in-game day, then inspect civilwars.foreign_treaties and civilwars.dump_war_ids. Not an instant peace." : "No peace was applied.");
+        }
+#endif
 
         [CommandLineFunctionality.CommandLineArgumentFunction("foreign_treaties", "civilwars")]
         public static string ForeignTreaties(List<string> args)

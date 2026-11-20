@@ -1,0 +1,5 @@
+Exception: /workspace/scratch/3f3917dc1a40/restoration_receipt_stage/scripts/Build-CrBellumModuleWindows.ps1:13
+Line |
+  13 |  … ]::Win32NT){throw 'Windows and actual installed game references requi …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Windows and actual installed game references required.

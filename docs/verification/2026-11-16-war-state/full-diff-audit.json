@@ -1,0 +1,14 @@
+{
+  "base": "b7b03265a1ec98922b3f16812d3aee0f1044e539",
+  "base_branch": "feature/cr-existing-council-state-2026-11-16",
+  "baseline_blobs_verified_unchanged": 1532,
+  "changed_existing": [],
+  "missing_in_source_candidate": [],
+  "production_additions": [
+    "WarStateSnapshot.cs",
+    "BellumIntegrationWarState.cs",
+    "Behaviors/WarScoreIntegrationState.cs"
+  ],
+  "build_outputs_included": false,
+  "note": "Three prior evidence files read from office_stage at their exact Git blob bytes. Existing scratch bin/obj excluded from source package."
+}

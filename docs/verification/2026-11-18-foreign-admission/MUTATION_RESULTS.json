@@ -1,0 +1,22 @@
+[
+  {
+    "name": "owner_fault_falls_through",
+    "rejected_by_assertion": true
+  },
+  {
+    "name": "terminal_becomes_ordinary_intent",
+    "rejected_by_assertion": true
+  },
+  {
+    "name": "ratification_accepts_without_consent",
+    "rejected_by_assertion": true
+  },
+  {
+    "name": "pending_activation_allowed",
+    "rejected_by_assertion": true
+  },
+  {
+    "name": "default_unknown_permitted",
+    "rejected_by_assertion": true
+  }
+]

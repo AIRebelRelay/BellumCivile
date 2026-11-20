@@ -2,6 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $behavior = Get-Content -Raw (Join-Path $root 'Behaviors/HereditaryLoyaltyBehavior.cs')
 $vm = Get-Content -Raw (Join-Path $root 'UI/VanillaTabs/Kingdoms/Succession/KingdomSuccessionTabVM.cs')
+$disposition = Get-Content -Raw (Join-Path $root 'UI/VanillaTabs/Kingdoms/Succession/SuccessionDisposition.cs')
 $crown = Get-Content -Raw (Join-Path $root 'Behaviors/CrownAccessionBehavior.cs')
 $court = Get-Content -Raw (Join-Path $root 'Behaviors/CourtAgendaBehavior.cs')
 $intent = Get-Content -Raw (Join-Path $root 'RebellionIntentAssessment.cs')
@@ -27,13 +28,13 @@ Check ($read -notmatch 'Observe\(|_memories.Add|ShockSubjects\s*=' -and
     $vm -notmatch 'HereditaryLoyaltyBehavior.Instance\?\.Observe') 'Assessment and UI reads cannot create accession memories.'
 Check ($behavior -notmatch 'DeclareWarAction|ChangeKingdomAction|new FactionObject|MBRandom|ShowInquiry') 'Meter cannot start a challenge, move a house or roll a war.'
 Check ($vm.Contains('AddLoyaltyRow(rows,') -and $vm.Contains('BC_Loyalty_Sovereign') -and
-    $vm.Contains('BC_Loyalty_Disloyal')) 'Portrait tooltip explains components, lawful sovereign and disposition.'
+    $vm.Contains('SuccessionDisposition.Value(loyalty.Total)') -and $disposition.Contains('BC_Loyalty_Disloyal')) 'Portrait tooltip explains components, lawful sovereign and disposition.'
 Check ($behavior.Contains('CharacterRelationManager.GetHeroRelation(hero, memory.Sovereign)') -and
     $behavior.Contains('realm.RulingClan.Fiefs.Count, relation, concession, testTarget, submission };')) 'Visible relation, concession, submission and testing override participate in cache freshness.'
 Check ($behavior.Contains('GetTotalControversy(realm)') -and $intent.Contains('GetTotalControversy(clan.Kingdom)') -and
     $vm.Contains('Ruler Controversy')) 'Ruler Controversy uses the same source as rebellious intent.'
 $xml = [xml](Get-Content -Raw (Join-Path $root 'ModuleData/Languages/EN/strings.xml'))
-$ids = [regex]::Matches($vm, '\{=(BC_Loyalty_[A-Za-z]+)\}') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique
+$ids = [regex]::Matches(($vm + $disposition), '\{=(BC_Loyalty_[A-Za-z]+)\}') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique
 Check ($behavior.Contains('if (store.IsLoading) _testLoyalty.Clear();') -and $behavior.Contains('_testLoyalty.Remove(realm);') -and
     $behavior -notmatch 'SyncData\([^\r\n]+ref _testLoyalty') 'Testing overrides are session-only and end on sovereign change; saving does not clear them.'
 Check ($behavior.Contains('_cache.Remove(realm);') -and $vm.Contains('BC_Loyalty_Test')) 'Testing overrides invalidate cached assessments and explain their adjustment in the tooltip.'

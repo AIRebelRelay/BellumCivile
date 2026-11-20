@@ -1,0 +1,92 @@
+{
+  "base": "S25B1.4.12.7",
+  "version": "1.4.12.8",
+  "remote_head_rechecked": "903f6772a8bebab68b1296121d770b741ae1a232",
+  "preserved_files": 1702,
+  "changed_existing_files": [
+    "Behaviors/WarScoreBehavior.cs",
+    "Properties/AssemblyInfo.cs",
+    "WarScoreRecord.cs",
+    "_Module/SubModule.xml",
+    "scripts/Build-CrBellumModuleWindows.ps1",
+    "scripts/Test-ForeignDiplomacyCheckpoint.ps1"
+  ],
+  "new_production_files": [],
+  "new_save_field": "WarScoreRecord string _conflictInstanceId field38",
+  "old_record_fields": "all37 declarations preserved exactly across3 partials",
+  "save_type_id_and_key_unchanged": true,
+  "final_identity_cases_passed": 31,
+  "schema_assertion_passed": true,
+  "mutation_probes_rejected": 5,
+  "checkpoint": [
+    {
+      "Test": "WarConflictIdentity.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignCrisisWindow.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignCrisisBudget.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Schema.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingPoliticalPressure.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingWarState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingClaimState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingCouncilState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingRecordedName.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "RealmPreparationReceipt.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "CompleteReleaseNaval.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ModuleLocalLogs.Tests",
+      "ExitCode": 0
+    }
+  ],
+  "checkpoint_identity_cases": 29,
+  "final_two_load_cases_tested_separately_after_checkpoint": true,
+  "guarantee": "recorded-conflict lifetime, not full engine-stance/reconciliation proof",
+  "shipping_windows_build_native_save_game": "NOT_RUN",
+  "diplomacy_execution_changed": false
+}

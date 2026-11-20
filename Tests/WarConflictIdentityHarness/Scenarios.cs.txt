@@ -1,0 +1,54 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using BellumCivile;
+using BellumCivile.Behaviors;
+public static class WarConflictIdentityScenarios {
+ static int count;static void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);count++;Console.WriteLine("PASS "+name);}
+ static WarScoreRecord New(WarScoreConflictType kind=WarScoreConflictType.ForeignWar){return new WarScoreRecord("a|b","a","b",10,null,kind);}
+ static FieldInfo IdentityField(){return typeof(WarScoreRecord).GetField("_conflictInstanceId",BindingFlags.Instance|BindingFlags.NonPublic);}
+ static void Put(WarScoreRecord war,string value){IdentityField().SetValue(war,value);}
+ static bool Valid(string value){Guid id;return Guid.TryParseExact(value,"N",out id)&&id!=Guid.Empty;}
+ public static void Run(){
+  var first=New();var second=New();var id=first.ConflictInstanceId;
+  Check(Valid(id),"new_record_has_canonical_instance_id");Check(id!=second.ConflictInstanceId,"same_pair_same_day_different_instances");
+  var endedId=id;first.MarkEnded(20);var later=New();Check(first.ConflictInstanceId==endedId&&later.ConflictInstanceId!=endedId,"new_war_never_reuses_ended_identity");
+  Check(first.WarKey==later.WarKey&&first.StartedDay==later.StartedDay,"instance_independent_of_pair_timestamp");
+  var behavior=new WarScoreBehavior();behavior.Rows.Add(first);behavior.Rows.Add(later);behavior.Rows.Add(null);var store=new IdentityStore();behavior.SyncData(store);
+  Check(store.Key=="BellumCivile_WarScore_Wars","existing_save_key_unchanged");
+  Check(first.ConflictInstanceId==endedId&&later.ConflictInstanceId!=endedId,"saving_preserves_existing_ids");
+  var reload=new WarScoreBehavior();store.Loading=true;reload.SyncData(store);
+  Check(reload.Rows[0].ConflictInstanceId==endedId&&reload.Rows[1].ConflictInstanceId==later.ConflictInstanceId&&reload.Rows[2]==null,"field_copy_load_preserves_ids_and_null_row");
+  var legacy=New();Put(legacy,null);legacy.AddBattleScore(12,100);legacy.RecordPeaceRejection(12);var digest=IdentityStore.LegacyDigest(legacy);
+  Check(legacy.ConflictInstanceId==null&&IdentityField().GetValue(legacy)==null,"legacy_read_is_passive_no_guid_allocation");
+  var migration=new WarScoreBehavior();migration.Rows.Add(legacy);migration.SyncData(new IdentityStore());var migratedId=legacy.ConflictInstanceId;
+  Check(Valid(migratedId),"legacy_missing_id_assigned_by_sync");Check(IdentityStore.LegacyDigest(legacy)==digest,"migration_preserves_all_prior_saved_fields");
+  migration.SyncData(new IdentityStore());Check(legacy.ConflictInstanceId==migratedId,"repeated_sync_does_not_reassign");
+  var oldLoadedRecord=(WarScoreRecord)IdentityStore.Clone(legacy);Put(oldLoadedRecord,null);
+  var preUpgrade=new IdentityStore{Loading=true,Saved=new System.Collections.Generic.List<WarScoreRecord>{oldLoadedRecord}};
+  var oldLoader=new WarScoreBehavior();oldLoader.SyncData(preUpgrade);var oldLoadId=oldLoader.Rows[0].ConflictInstanceId;
+  Check(Valid(oldLoadId)&&IdentityStore.LegacyDigest(oldLoader.Rows[0])==digest,"actual_load_hook_migrates_missing_identity_only");
+  var firstUpgradedSave=new IdentityStore();oldLoader.SyncData(firstUpgradedSave);firstUpgradedSave.Loading=true;var firstUpgradedLoad=new WarScoreBehavior();firstUpgradedLoad.SyncData(firstUpgradedSave);
+  Check(firstUpgradedLoad.Rows[0].ConflictInstanceId==oldLoadId,"first_save_after_legacy_load_keeps_allocated_id");
+  var upgraded=new IdentityStore();migration.SyncData(upgraded);upgraded.Loading=true;var loaded=new WarScoreBehavior();loaded.SyncData(upgraded);
+  Check(loaded.Rows[0].ConflictInstanceId==migratedId,"upgraded_save_retains_migrated_identity");
+  foreach(string invalid in new[]{""," ","bad",new string('0',32),"ABCDEF0123456789ABCDEF0123456789"}){
+   var corrupt=New();Put(corrupt,invalid);var b=new WarScoreBehavior();b.Rows.Add(corrupt);b.SyncData(new IdentityStore());
+   Check(corrupt.ConflictInstanceId==null&&((string)IdentityField().GetValue(corrupt))==invalid,"malformed_id_preserved_unknown_"+invalid);
+  }
+  var a=New();var b2=New();Put(a,null);Put(b2,null);var old=new WarScoreBehavior();old.Rows.Add(a);old.Rows.Add(b2);old.SyncData(new IdentityStore());Check(a.ConflictInstanceId!=b2.ConflictInstanceId,"two_legacy_records_migrate_independently");
+  var empty=new WarScoreBehavior();empty.Rows=null;empty.SyncData(new IdentityStore());Check(empty.Rows!=null&&empty.Rows.Count==0,"null_list_recovery_unchanged");
+  var counter=New();var original=counter.ConflictInstanceId;counter.SetOccupationScore(20);counter.AddBattleScore(5,100);counter.AddRaidScore(5,100);Check(counter.Score==30&&counter.ConflictInstanceId==original,"score_math_preserved");
+  Check(counter.QueueTerminalResolution("test")&&counter.ConflictInstanceId==original,"terminal_queue_keeps_identity");counter.ClearTerminalResolution();Check(counter.BeginParley(true,12)&&counter.ConflictInstanceId==original,"parley_keeps_identity");counter.EndParley();Check(counter.BeginResolution()&&counter.ConflictInstanceId==original,"resolution_keeps_identity");counter.CancelResolution();
+  var civil=new WarScoreRecord("a|b","a","b",10,null,WarScoreConflictType.CivilWar);var civilId=civil.ConflictInstanceId;
+  Check(civil.TryRetargetCivilWarDefender("b","c")&&civil.ConflictInstanceId==civilId&&civil.WarKey=="a|c","civil_retarget_keeps_record_identity_and_pair_update");
+  var rival=new WarScoreRecord("a|b","a","b",10,null,WarScoreConflictType.CivilWar,CivilWarPairRecord.RivalryPrefix+"fixture");var rivalId=rival.ConflictInstanceId;rival.AddBattleScore(10,100);
+  Check(rival.TryPromoteRivalry("a","b","c")&&rival.ConflictInstanceId==rivalId&&rival.Score==-10&&rival.WarKey=="b|c","rival_promotion_preserves_identity_and_score_reversal");
+  var feud=New(WarScoreConflictType.ClaimFeud);var feudId=feud.ConflictInstanceId;feud.UpdateFeudObjectiveControl("a",true,10);feud.UpdateFeudObjectiveControl("a",true,12);Check(feud.Score==2&&feud.ConflictInstanceId==feudId,"claim_feud_objective_partial_preserved");
+  var fields=IdentityStore.Fields(typeof(WarScoreRecord));var ids=fields.Select(f=>f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>().Id).ToArray();
+  Check(fields.Length==41&&ids.Distinct().Count()==41&&ids.OrderBy(n=>n).SequenceEqual(Enumerable.Range(1,41)),"global_record_partial_field_ids_unique_1_to_41");
+  Check(IdentityField().FieldType==typeof(string)&&IdentityField().GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>().Id==38,"new_identity_is_string_field38");
+  Check(typeof(WarScoreRecord).GetProperty("ConflictInstanceId").GetSetMethod()==null,"identity_has_no_public_setter");
+  Console.WriteLine("WAR IDENTITY PASS "+count+"; actual record and SyncData; engine serializer/game NOT_RUN");
+ }
+}

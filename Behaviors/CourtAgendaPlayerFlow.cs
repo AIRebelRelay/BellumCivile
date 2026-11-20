@@ -86,6 +86,7 @@ namespace BellumCivile.Behaviors
             _activePlayerInquiry = null;
             if (ProcessProtectionInquiry()) return;
             if (ProcessTitlePetitionInquiry()) return;
+            if (ProcessTitleGrantOfferInquiry()) return;
             var agenda = _agendas.Where(ValidPlayerAgenda)
                 .Where(a => a.Faction != null)
                 .Where(a => a.CrisisInterventionPending || a.State == CourtAgendaState.AwaitingPlayerDecision
@@ -121,6 +122,14 @@ namespace BellumCivile.Behaviors
             if (agenda.Faction == null)
             {
                 agenda.State = choice == 1 ? CourtAgendaState.Blocked : CourtAgendaState.Announced;
+                agenda.PlayerSelectionConfirmed = true;
+                NotifyAgenda(agenda);
+                return;
+            }
+            if (choice == 1 && grace != null)
+            {
+                agenda.CrisisInterventionPending = false;
+                agenda.State = agenda.IsPolicy && Policy(agenda) == null ? CourtAgendaState.NotProposed : CourtAgendaState.Announced;
                 agenda.PlayerSelectionConfirmed = true;
                 NotifyAgenda(agenda);
                 return;

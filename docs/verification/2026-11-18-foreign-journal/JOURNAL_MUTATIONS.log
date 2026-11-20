@@ -1,0 +1,6 @@
+JOURNAL_MUTATION_REJECTED stale_begin_allowed
+JOURNAL_MUTATION_REJECTED ruler_binding_removed
+JOURNAL_MUTATION_REJECTED retry_replaces_operation_id
+JOURNAL_MUTATION_REJECTED cancelled_intent_resurrected
+JOURNAL_MUTATION_REJECTED load_keeps_old_session
+JOURNAL MUTATIONS REJECTED 5

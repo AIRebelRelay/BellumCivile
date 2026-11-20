@@ -10,7 +10,8 @@ $dynasty = Read 'Behaviors/DynasticHeirBehavior.cs'
 $panel = Read 'UI/VanillaTabs/Kingdoms/Succession/KingdomSuccessionTabVM.cs'
 Check ($line -match 'Clan.All.Where' -and $line -match 'CanConsiderClan' -and $line -match 'IsTemporaryBellumKingdom') 'Realm candidates include permanent foreign households while handling temporary realms explicitly.'
 Check ($line -match 'GetAncestors\(hero\).Overlaps\(ancestors\)' -and $line -match 'applyInheritanceAdvances: false') 'Crown eligibility requires genealogy, not household membership or a fresh estate entitlement.'
-Check ($panel -match 'return HereditaryRealmSuccession.GetLine\(_kingdom\)') 'Succession panel uses the complete realm line.'
+Check ($panel.Contains('HereditaryLoyaltyBehavior.Instance?.GetLine(_kingdom).ToList() ?? HereditaryRealmSuccession.GetLine(_kingdom)') -and
+    (Read 'Behaviors/HereditaryLoyaltyBehavior.cs').Contains('cache.Line = HereditaryRealmSuccession.GetLine(realm);')) 'Succession panel uses the complete realm line.'
 foreach ($file in @('Behaviors/CrownAccessionBehavior.cs', 'Behaviors/CrownAbdication.cs', 'Behaviors/CrownForcedAbdication.cs')) {
     $code = Read $file
     Check ($code -match 'HereditaryRealmSuccession.GetLine' -and $code -notmatch 'SuccessionLawHelper.GetLegalSuccessionLine') "$file has no clan-local Crown fallback."

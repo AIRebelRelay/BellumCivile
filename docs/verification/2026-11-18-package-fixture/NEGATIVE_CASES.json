@@ -1,0 +1,14 @@
+[
+  {
+    "case": "missing_naval",
+    "exit_code": 1,
+    "expected_failure": "zip_missing=",
+    "detected": true
+  },
+  {
+    "case": "core_substituted_for_naval",
+    "exit_code": 1,
+    "expected_failure": "packaged Naval bytes match Naval input",
+    "detected": true
+  }
+]

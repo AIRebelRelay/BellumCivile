@@ -24,6 +24,18 @@ namespace BellumCivile
         [SaveableField(16)] public List<Clan> ParentHouses = new List<Clan>();
         [SaveableField(17)] public List<Kingdom> ExternalEnemies = new List<Kingdom>();
 
+        // Historical preparation evidence only; not political settlement or NPC knowledge.
+        [SaveableField(18)] public string PreparationReceiptId;
+        [SaveableField(19)] public double PreparationDay;
+        [SaveableField(20)] public string PreparationParentId;
+        [SaveableField(21)] public string PreparationSourceId;
+        [SaveableField(22)] public string PreparationSuccessorId;
+        [SaveableField(23)] public string PreparationFounderHouseId;
+        [SaveableField(24)] public string PreparationRulingHouseId;
+        [SaveableField(25)] public string PreparationRulerHeroId;
+        [SaveableField(26)] public bool PreparationWasReplacement;
+        [SaveableField(27)] public string PreparationChallengeId;
+
         internal bool Protects(Kingdom realm) => !Ready && realm != null
             && (realm == Parent || !MovesComplete && (realm == Source || realm == Successor || realm.StringId == SuccessorId));
     }

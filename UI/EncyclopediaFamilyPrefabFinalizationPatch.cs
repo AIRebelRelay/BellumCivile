@@ -59,6 +59,7 @@ namespace BellumCivile.UI
         {
             // Run after every module's edits, but before UIExtender fingerprints or compiles the prefab.
             if (movieName == "EncyclopediaHeroPage") new EncyclopediaHeroFamilyPrefabPatch().Apply(document);
+            if (movieName == "EncyclopediaClanPage") new EncyclopediaClanHouseholdPrefabPatch().Apply(document);
         }
     }
 }

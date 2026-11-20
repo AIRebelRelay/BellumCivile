@@ -1,0 +1,15 @@
+{
+  "repository": "AIRebelRelay/BellumCivile",
+  "package_base": "7c31ecba800374d50859b7fb8ebf7a9cc90ce1f6",
+  "base_branch": "feature/cr-existing-war-state-2026-11-16",
+  "baseline_blobs_verified_unchanged": 1544,
+  "changed_existing": [],
+  "missing_existing": [],
+  "production_additions": [
+    "ClaimStateSnapshot.cs",
+    "BellumIntegrationClaimState.cs",
+    "Behaviors/FeudalClaimIntegrationState.cs"
+  ],
+  "build_outputs_included": false,
+  "note": "Includes prior council and war source/evidence byte-for-byte. No stage is claimed Native/live validated."
+}

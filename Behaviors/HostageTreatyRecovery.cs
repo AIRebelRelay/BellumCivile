@@ -36,8 +36,24 @@ namespace BellumCivile.Behaviors
             // executing again, release its security, and explicitly report the interruption.
             if (proposal != null && proposal.State != TreatyProposalState.Applied)
                 proposal.SetState(TreatyProposalState.Cancelled, "hostage treaty settlement interrupted; concessions were not replayed", (float)CampaignTime.Now.ToDays);
-            if (pact.FirstRealm != null && pact.SecondRealm != null)
-                Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>()?.GetActiveWar(pact.FirstRealm, pact.SecondRealm)?.EndParley();
+            // A recovering *old* hostage treaty must never clear parley state on a later
+            // war between the same kingdoms. Legacy proposals without a bound instance
+            // cannot safely authorize this cleanup side effect.
+            if (proposal != null && pact.FirstRealm != null && pact.SecondRealm != null)
+            {
+                WarScoreBehavior scores = Campaign.Current?.GetCampaignBehavior<WarScoreBehavior>();
+                WarScoreRecord current = scores?.GetActiveWar(pact.FirstRealm, pact.SecondRealm);
+                if (TreatyWarInstanceBinding.Matches(
+                    proposal.BoundConflictInstanceId, current?.ConflictInstanceId,
+                    proposal.WarKey, current?.WarKey, current?.IsActive == true,
+                    current?.ConflictType == WarScoreConflictType.ForeignWar,
+                    current?.NativeForeignDeclarationAmbiguous == true)
+                    && scores.GetExistingForeignConflictByInstance(
+                        proposal.BoundConflictInstanceId, current.AttackerKingdomId,
+                        current.DefenderKingdomId, CampaignTime.Now.ToDays).Status
+                    == ForeignConflictIdentityStatus.RecordedActive)
+                    current.EndParley();
+            }
             pact.TryAbortPreparation();
             if (!pact.Reported)
             {

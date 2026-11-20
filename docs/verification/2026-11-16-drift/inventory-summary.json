@@ -1,0 +1,7 @@
+{
+  "routes": 112,
+  "cs_test_files": 266,
+  "files_with_uninitialized": 198,
+  "files_with_patches": 183,
+  "facade_declarations": 33
+}

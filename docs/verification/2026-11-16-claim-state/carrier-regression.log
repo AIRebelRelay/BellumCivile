@@ -1,0 +1,6 @@
+PASS: Hereditary player marriage retains the actual blood carrier.
+PASS: Foreign player marriage does not discard hereditary birthrights.
+PASS: Legacy spouse-based dynastic claim is not granted in hereditary realms.
+PASS: Claim relocation follows cadet household formation.
+PASS: Only unexpired active claims belonging to this carrier are relocated.
+Source contracts only; live claim indexes and save/load require campaign testing.

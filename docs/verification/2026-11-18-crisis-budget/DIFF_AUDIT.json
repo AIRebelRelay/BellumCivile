@@ -1,0 +1,81 @@
+{
+  "base_candidate": "S24 1.4.12.5",
+  "remote_head_rechecked": "903f6772a8bebab68b1296121d770b741ae1a232",
+  "version": "1.4.12.6",
+  "existing_files_byte_identical": 1680,
+  "changed_existing_files": [
+    "Properties/AssemblyInfo.cs",
+    "_Module/SubModule.xml",
+    "scripts/Build-CrBellumModuleWindows.ps1",
+    "scripts/Test-ForeignDiplomacyCheckpoint.ps1"
+  ],
+  "new_production_files": [
+    "ForeignCrisisBudgetEstimator.cs"
+  ],
+  "production_callers": [],
+  "existing_production_methods_changed": 0,
+  "save_schema_changes": 0,
+  "new_budget_assertions_passed": 64,
+  "budget_mutations_rejected": 5,
+  "checkpoint_suites": [
+    {
+      "Test": "ForeignCrisisBudget.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Schema.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyJournal.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ForeignDiplomacyAdmission.Mutations",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingPoliticalPressure.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingWarState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingClaimState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingCouncilState.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ExistingRecordedName.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "RealmPreparationReceipt.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "CompleteReleaseNaval.Tests",
+      "ExitCode": 0
+    },
+    {
+      "Test": "ModuleLocalLogs.Tests",
+      "ExitCode": 0
+    }
+  ],
+  "profiles": "synthetic fixtures only; real provider calibration NOT_RUN",
+  "active_crisis_timer": "NOT_IMPLEMENTED",
+  "shipping_build_game_save_load": "NOT_RUN"
+}

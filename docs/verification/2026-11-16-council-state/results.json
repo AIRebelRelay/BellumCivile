@@ -1,0 +1,22 @@
+{
+  "base": "73f53ededb351c50928104612cbffc61e795145b",
+  "status": "source_candidate_native_validation_pending",
+  "named_cases": 20,
+  "pass": 20,
+  "compiler": "C#7.3 / PowerShell 7.5.4 with explicit Native boundaries",
+  "actual_source_inputs": [
+    "new DTO",
+    "new reader",
+    "new facade",
+    "PrivyCouncilOfficeRecord.cs",
+    "PrivyCouncilOffice.cs",
+    "BellumKingdomVisibilityHelper.cs",
+    "extracted unchanged IsEligiblePermanentRealm"
+  ],
+  "existing_files_modified": 0,
+  "new_production_files": 3,
+  "save_schema_changes": 0,
+  "prompt_or_runtime_bridge_wiring": false,
+  "native_build": "PENDING_WINDOWS",
+  "game_validation": "PENDING"
+}

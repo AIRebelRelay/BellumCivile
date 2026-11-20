@@ -118,6 +118,14 @@ internal static class CadetHouseholdPreparationTests
         _cadet = Blank<Clan>(); _cadet.StringId = "bc_partition_estate_test";
         _foreign = Blank<Clan>(); _foreign.StringId = "independent_child_house";
         _home = Blank<Settlement>(); _realm = Blank<Kingdom>();
+        // The native HomeSettlement getter may inline past its Harmony prefix.
+        // An empty estate must still have a real residence in the stub source clan.
+        var nativeHome = AccessTools.Field(typeof(Clan), "_home")
+            ?? AccessTools.Field(typeof(Clan), "_homeSettlement")
+            ?? AccessTools.Field(typeof(Clan), "<HomeSettlement>k__BackingField");
+        if (nativeHome == null)
+            throw new InvalidOperationException("Cadet fixture: native Clan.HomeSettlement field missing.");
+        nativeHome.SetValue(_source, _home);
         var behavior = new PartitionSuccessionBehavior();
         var manager = new Manager();
         var prepare = AccessTools.Method(typeof(PartitionSuccessionBehavior), "PrepareAbdicationCadet");
@@ -155,6 +163,7 @@ internal static class CadetHouseholdPreparationTests
             Patch(AccessTools.PropertyGetter(typeof(Clan), "IsEliminated"), nameof(No));
             Patch(AccessTools.PropertyGetter(typeof(Clan), "Kingdom"), nameof(Realm));
             Patch(AccessTools.PropertyGetter(typeof(Clan), "All"), nameof(Clans));
+            Patch(AccessTools.PropertyGetter(typeof(Clan), "HomeSettlement"), nameof(FindHome));
             Patch(AccessTools.Method(typeof(Clan), "SetLeader"), nameof(Found));
             Patch(AccessTools.Method(typeof(Clan), "ConsiderAndUpdateHomeSettlement"), nameof(Skip));
             Patch(AccessTools.Method(typeof(Settlement), "Find"), nameof(FindHome));
@@ -250,7 +259,6 @@ internal static class CadetHouseholdPreparationTests
             manager.Items.Add(Blank<FeudalTitleBehavior>());
             Patch(AccessTools.PropertyGetter(typeof(Hero), "Mother"), nameof(Mother));
             Patch(AccessTools.PropertyGetter(typeof(Hero), "Father"), nameof(Father));
-            Patch(AccessTools.PropertyGetter(typeof(Clan), "HomeSettlement"), nameof(FindHome));
             Patch(AccessTools.Method(typeof(FeudalTitleBehavior), "MoveCrownHeirClaims"), nameof(Skip));
             var settle = AccessTools.Method(typeof(CrownAccessionBehavior), "SettleCrownCadet");
             var retain = AccessTools.Method(typeof(CrownAccessionBehavior), "RetainExistingCrownChildren");

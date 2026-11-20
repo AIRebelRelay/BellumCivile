@@ -1,0 +1,122 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+
+public static class WarNativeWitnessScenarios
+{
+    static int checks;
+    static void Check(bool condition, string name)
+    {
+        if (!condition) throw new Exception("FAIL " + name);
+        checks++; Console.WriteLine("PASS " + name);
+    }
+    static WarScoreRecord NewRecord(WarScoreConflictType type = WarScoreConflictType.ForeignWar)
+        => new WarScoreRecord("a|b", "a", "b", 10f, null, type);
+    static void Set(WarScoreRecord record, string field, object value)
+        => typeof(WarScoreRecord).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(record, value);
+    static ForeignWarNativeWitnessSnapshot Read(WarScoreBehavior b, WarScoreRecord r)
+        => b.ObserveForeignWarNativeWitness(r.ConflictInstanceId, "a", "b", 100);
+
+    public static void Run()
+    {
+        var a = new Kingdom { StringId = "a", NativeWarDay = 20d };
+        var b = new Kingdom { StringId = "b", NativeWarDay = 20d };
+        Kingdom.All.Clear(); Kingdom.All.Add(a); Kingdom.All.Add(b);
+        var behavior = new WarScoreBehavior();
+        Campaign.Current = new Campaign { Wars = behavior };
+        var row = NewRecord(); behavior.Rows.Add(row);
+        var before = IdentityReaderDigest.Dump(behavior.Rows);
+        var unknown = Read(behavior, row);
+        Check(unknown.IdentityStatus == ForeignConflictIdentityStatus.RecordedActive
+            && unknown.WitnessStatus == ForeignWarNativeWitnessStatus.Unwitnessed
+            && !unknown.AuthorizesAction, "legacy_or_reconciliation_is_unwitnessed");
+        Check(before == IdentityReaderDigest.Dump(behavior.Rows), "unwitnessed_read_does_not_mutate");
+        Check(!row.CaptureNewNativeForeignWarStart(double.NaN)
+            && !row.CaptureNewNativeForeignWarStart(double.PositiveInfinity)
+            && !row.CaptureNewNativeForeignWarStart(-1), "reject_invalid_native_start");
+        var id = row.ConflictInstanceId;
+        Check(row.CaptureNewNativeForeignWarStart(20)
+            && row.NativeForeignWarStartObserved && row.NativeForeignWarStartDay == 20,
+            "new_record_captures_once");
+        Check(!row.CaptureNewNativeForeignWarStart(21)
+            && row.NativeForeignWarStartDay == 20 && row.ConflictInstanceId == id,
+            "witness_immutable_and_record_id_preserved");
+        var saved = IdentityReaderDigest.Dump(behavior.Rows);
+        var weak = Read(behavior, row);
+        Check(weak.WitnessStatus == ForeignWarNativeWitnessStatus.WeakTimestampMatchNotProof
+            && !weak.AuthorizesAction && weak.RecordedNativeStartDay == 20
+            && weak.CurrentNativeStartDay == 20, "same_stamp_is_weak_evidence_not_authority");
+        Check(saved == IdentityReaderDigest.Dump(behavior.Rows), "matching_read_is_passive");
+        a.NativeWarDay = 30; b.NativeWarDay = 30;
+        Check(Read(behavior,row).WitnessStatus == ForeignWarNativeWitnessStatus.NativeStartChanged,
+            "changed_native_start_rejects_old_witness");
+        a.NativeWarDay = 20; b.NativeWarDay = 20;
+        a.Hostile = false;
+        Check(Read(behavior,row).IdentityStatus == ForeignConflictIdentityStatus.NotAtWar,
+            "non_hostility_never_affirmative");
+        a.Hostile = true;
+        Check(row.FlagAmbiguousNativeForeignDeclaration()
+            && Read(behavior,row).WitnessStatus == ForeignWarNativeWitnessStatus.AmbiguousDeclaration
+            && !Read(behavior,row).AuthorizesAction, "second_callback_quarantines_provenance_without_rotating");
+        Check(!row.FlagAmbiguousNativeForeignDeclaration() && row.ConflictInstanceId == id,
+            "repeat_ambiguity_idempotent_no_id_rotation");
+        var dumpBefore = IdentityReaderDigest.Dump(behavior.Rows);
+        var report = behavior.BuildForeignWarNativeWitnessDump();
+        Check(report.Count == 3 && report[1].Contains("witness=AmbiguousDeclaration")
+            && report[1].Contains("authority=false") && report[2].Contains("END"),
+            "native_dump_is_detached_and_non_authorizing");
+        Check(IdentityReaderDigest.Dump(behavior.Rows) == dumpBefore,
+            "native_dump_does_not_touch_saved_fields");
+        var historical = NewRecord(); behavior.Rows.Add(historical);
+        Set(historical, "_conflictInstanceId", id);
+        Check(Read(behavior,row).IdentityStatus == ForeignConflictIdentityStatus.Ambiguous
+            && Read(behavior,row).WitnessStatus == ForeignWarNativeWitnessStatus.IdentityUnavailable,
+            "duplicate_global_identity_fails_closed");
+        behavior.Rows.Remove(historical);
+        row.MarkEnded(25);
+        Check(Read(behavior,row).IdentityStatus == ForeignConflictIdentityStatus.Ended,
+            "ended_witness_never_affirmative");
+        var internalWar = NewRecord(WarScoreConflictType.CivilWar);
+        Check(!internalWar.CaptureNewNativeForeignWarStart(20)
+            && !internalWar.FlagAmbiguousNativeForeignDeclaration(),
+            "internal_wars_unaffected");
+        var stale = NewRecord();
+        Set(stale,"_nativeForeignWarStartObserved",true);
+        Set(stale,"_nativeForeignWarStartDay",20d);
+        Set(stale,"_nativeForeignDeclarationAmbiguous",true);
+        var copy = NewRecord();
+        foreach(var field in typeof(WarScoreRecord).GetFields(BindingFlags.Instance|BindingFlags.NonPublic))
+            if(field.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null)
+                field.SetValue(copy,field.GetValue(stale));
+        Check(IdentityReaderDigest.Dump(stale)==IdentityReaderDigest.Dump(copy)
+            && copy.NativeForeignDeclarationAmbiguous && copy.NativeForeignWarStartObserved,
+            "saved_field_copy_roundtrip_preserves_witness_and_ambiguity");
+        var versions = typeof(WarScoreRecord).GetFields(BindingFlags.Instance|BindingFlags.NonPublic)
+            .Where(f=>f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null)
+            .Select(f=>f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>().Id).ToList();
+        Check(versions.Distinct().Count()==versions.Count
+            && versions.Contains(38) && versions.Contains(39) && versions.Contains(40) && versions.Contains(41),
+            "append_only_schema_numbers_unique");
+        // Live regression: a real declaration stamped with double native time
+        // produces a float StartedDay slightly ABOVE that same capture instant.
+        double nativeDay = 396062.74737220025d;
+        var rounded = new WarScoreRecord("a|b", "a", "b", (float)nativeDay, null);
+        Check(rounded.StartedDay > nativeDay && rounded.CaptureNewNativeForeignWarStart(nativeDay),
+            "captured_native_time_reproduces_float_rounding");
+        behavior.Rows.Clear(); behavior.Rows.Add(rounded);
+        a.NativeWarDay = nativeDay; b.NativeWarDay = nativeDay;
+        var roundedObservation = behavior.ObserveForeignWarNativeWitness(rounded.ConflictInstanceId,"a","b",nativeDay);
+        Check(roundedObservation.IdentityStatus == ForeignConflictIdentityStatus.RecordedActive
+            && roundedObservation.WitnessStatus == ForeignWarNativeWitnessStatus.WeakTimestampMatchNotProof
+            && !roundedObservation.AuthorizesAction,
+            "fresh_witness_not_invalid_due_to_float_rounding_and_never_authorizing");
+        var preSave = IdentityReaderDigest.Dump(behavior.Rows);
+        Check(preSave == IdentityReaderDigest.Dump(behavior.Rows),
+            "rounded_witness_read_does_not_mutate_saved_record");
+        Console.WriteLine("WAR_NATIVE_WITNESS_PASS " + checks + "; actual records and passive observer; game NOT_RUN; no unique Native epoch proof");
+    }
+}

@@ -25,6 +25,6 @@ namespace BellumCivile.Behaviors
             CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, TrackVote);
             CampaignEvents.TickEvent.AddNonSerializedListener(this, DispatchCouncilAppointments);
         }
-        public override void SyncData(IDataStore store) { SyncLegitimacy(store); SyncPartitions(store); SyncVotes(store); }
+        public override void SyncData(IDataStore store) { PrepareForeignDiplomacySync(store); SyncLegitimacy(store); SyncPartitions(store); SyncVotes(store); SyncForeignDiplomacy(store); }
     }
 }

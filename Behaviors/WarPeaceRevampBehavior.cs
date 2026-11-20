@@ -102,6 +102,12 @@ namespace BellumCivile.Behaviors
             }
         }
 
+        // Passive integration read: no getters, defaults, collection initialization or gameplay effects.
+        internal PoliticalPressureStateSnapshot GetExistingPoliticalPressureStateSnapshot(Clan clan, float day)
+        {
+            return PoliticalPressureStateReader.Read(clan, day, _warWillByClanId, _pressureRecords);
+        }
+
         public float GetWarWill(Clan clan)
         {
             if (clan == null || string.IsNullOrWhiteSpace(clan.StringId))
@@ -141,6 +147,16 @@ namespace BellumCivile.Behaviors
             }
 
             return scores;
+        }
+
+        internal bool TryGetCachedTargetScore(Clan clan, Kingdom target, out float score)
+        {
+            score = 0f;
+            if (clan == null || target == null || string.IsNullOrWhiteSpace(clan.StringId)
+                || _targetScoresByClanId == null || !_targetScoresByClanId.TryGetValue(clan.StringId, out var scores)
+                || scores == null) return false;
+            score = scores.FirstOrDefault(item => item?.TargetKingdom == target)?.Score ?? 0f;
+            return !float.IsNaN(score) && !float.IsInfinity(score);
         }
 
         internal WarTargetScore GetPreferredTarget(Clan clan, bool forceRefresh = false)

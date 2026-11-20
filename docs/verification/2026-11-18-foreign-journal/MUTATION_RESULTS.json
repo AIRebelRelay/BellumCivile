@@ -1,0 +1,22 @@
+[
+  {
+    "name": "stale_begin_allowed",
+    "rejected_by_behavioral_assertion": true
+  },
+  {
+    "name": "ruler_binding_removed",
+    "rejected_by_behavioral_assertion": true
+  },
+  {
+    "name": "retry_replaces_operation_id",
+    "rejected_by_behavioral_assertion": true
+  },
+  {
+    "name": "cancelled_intent_resurrected",
+    "rejected_by_behavioral_assertion": true
+  },
+  {
+    "name": "load_keeps_old_session",
+    "rejected_by_behavioral_assertion": true
+  }
+]

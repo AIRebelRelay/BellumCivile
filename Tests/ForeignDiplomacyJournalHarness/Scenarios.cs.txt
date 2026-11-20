@@ -1,0 +1,119 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.SaveSystem;
+public static class ForeignDiplomacyJournalScenarios {
+ static int passed;
+ static void Check(bool value,string name){if(!value)throw new Exception("FAIL "+name);passed++;Console.WriteLine("PASS "+name);}
+ static ForeignDiplomacyIntentRequest Request(string key="req",string owner="bridge",string origin="origin",
+  string a="realm_a",string b="realm_b",string rulerA="king_a",string rulerB="king_b",
+  string epoch="war_1",string draft="sha256:terms_1",ForeignDiplomacySource source=ForeignDiplomacySource.AutomaticForeignPeace){
+  return new ForeignDiplomacyIntentRequest(key,owner,origin,a,b,rulerA,rulerB,epoch,draft,source);
+ }
+ static BellumIntegrationBehavior Install(){var b=new BellumIntegrationBehavior();Campaign.Current=new Campaign();Campaign.Current.CampaignBehaviorManager.Behavior=b;return b;}
+ static bool Throws(Action action){try{action();return false;}catch(InvalidOperationException){return true;}}
+ static ForeignDiplomacyJournalState State(JournalStore s){return (ForeignDiplomacyJournalState)s.Saved["BC_Integration_ForeignDiplomacyJournal_v1"];}
+ public static void Run(){
+  var behavior=Install();var session=behavior.GetForeignDiplomacyJournalSession();ForeignDiplomacyIntentSnapshot first,again;
+  Check(behavior.BeginForeignDiplomacyIntent(session,Request(),5,out first)==ForeignDiplomacyJournalResult.Added,"new_operation_added");
+  Check(behavior.BeginForeignDiplomacyIntent(session,Request(),6,out again)==ForeignDiplomacyJournalResult.Existing&&first.OperationId==again.OperationId,"retry_same_id_and_creation_day");
+  Check(again.CreatedDay==5,"retry_preserves_original_day");
+  var altered=new[]{Request(owner:"other"),Request(origin:"other"),Request(a:"other"),Request(b:"other"),Request(rulerA:"new_king"),Request(rulerB:"new_king"),Request(epoch:"war_2"),Request(draft:"new_terms"),Request(source:ForeignDiplomacySource.AutomaticForeignWar),Request(key:"different_key")};
+  for(int i=0;i<altered.Length;i++)Check(behavior.BeginForeignDiplomacyIntent(session,altered[i],6,out again)==ForeignDiplomacyJournalResult.Conflict,"identity_conflict_"+i);
+  Check(behavior.BeginForeignDiplomacyIntent(session,null,6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"null_request_refused");
+  Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",a:"realm_b"),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"same_realm_refused");
+  Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",owner:"  "),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"blank_owner_refused");
+  Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",draft:"x\ny"),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"control_character_refused");
+  foreach(var source in new[]{ForeignDiplomacySource.Unknown,ForeignDiplomacySource.VoluntaryPact,ForeignDiplomacySource.HostageChoice,ForeignDiplomacySource.InternalConflict,ForeignDiplomacySource.TerminalForeignWar,ForeignDiplomacySource.PendingForeignRatification})
+   Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",source:source),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"out_of_scope_source_"+source);
+  foreach(double day in new[]{double.NaN,double.PositiveInfinity,-1})Check(behavior.BeginForeignDiplomacyIntent(session,Request(),day,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"invalid_creation_day_"+day);
+  Check(behavior.BeginForeignDiplomacyIntent(null,Request(),6,out again)==ForeignDiplomacyJournalResult.StaleSession,"missing_session_refused");
+  var saved=new JournalStore();behavior.SyncData(saved);
+  Check(string.Join(",",behavior.LegacyCalls)=="legitimacy,partitions,votes","existing_sync_order_preserved");
+  Check(saved.Keys.SequenceEqual(new[]{"BC_Integration_ForeignDiplomacyJournal_v1"}),"isolated_new_save_key");
+  Check(behavior.GetForeignDiplomacyJournalSession().SessionId==session.SessionId,"saving_keeps_live_session");
+  Check(State(saved).Entries.Count==1&&State(saved).Entries[0].OperationId==first.OperationId,"save_captures_original_operation");
+  saved.IsLoading=true;behavior.SyncData(saved);var loaded=behavior.GetForeignDiplomacyJournalSession();
+  Check(loaded.CampaignId==session.CampaignId&&loaded.SessionId!=session.SessionId,"load_keeps_campaign_rotates_session");
+  Check(behavior.BeginForeignDiplomacyIntent(session,Request(),7,out again)==ForeignDiplomacyJournalResult.StaleSession,"late_preload_reply_refused");
+  Check(behavior.CancelForeignDiplomacyIntent(session,Request())==ForeignDiplomacyJournalResult.StaleSession,"late_preload_cancel_refused");
+  Check(behavior.GetForeignDiplomacyIntentForRevalidation(session,"req","bridge",out again)==ForeignDiplomacyJournalResult.StaleSession,"late_preload_read_refused");
+  Check(behavior.BeginForeignDiplomacyIntent(loaded,Request(),7,out again)==ForeignDiplomacyJournalResult.Existing&&again.OperationId==first.OperationId,"load_retry_does_not_duplicate");
+  Check(behavior.GetForeignDiplomacyIntentForRevalidation(loaded,"req","bridge",out again)==ForeignDiplomacyJournalResult.Found&&again.RequiresWorldRevalidation,"recovery_requires_world_revalidation");
+  IReadOnlyList<ForeignDiplomacyIntentSnapshot> pending;
+  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(loaded,"bridge",out pending)==ForeignDiplomacyJournalResult.Found&&pending.Count==1&&pending[0].RequiresWorldRevalidation,"pending_recovery_inventory");
+  Check(((IList<ForeignDiplomacyIntentSnapshot>)pending).IsReadOnly,"pending_projection_read_only");
+  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(loaded,"other",out pending)==ForeignDiplomacyJournalResult.Found&&pending.Count==0,"pending_inventory_owner_filtered");
+  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(session,"bridge",out pending)==ForeignDiplomacyJournalResult.StaleSession,"old_inventory_session_rejected");
+  Check(again.Request.FirstRulerId=="king_a"&&again.Request.DraftFingerprint=="sha256:terms_1"&&again.Request.ConflictEpoch=="war_1","historical_identity_preserved");
+  Check(behavior.GetForeignDiplomacyIntentForRevalidation(loaded,"req","intruder",out again)==ForeignDiplomacyJournalResult.Conflict,"other_owner_cannot_read");
+  Check(behavior.GetForeignDiplomacyIntentForRevalidation(loaded,"absent","bridge",out again)==ForeignDiplomacyJournalResult.NotFound,"missing_operation_explicit");
+  Check(behavior.CancelForeignDiplomacyIntent(loaded,Request(draft:"new_terms"))==ForeignDiplomacyJournalResult.Conflict,"changed_draft_cannot_cancel");
+  Check(behavior.CancelForeignDiplomacyIntent(loaded,Request())==ForeignDiplomacyJournalResult.Cancelled,"cancellation_recorded");
+  Check(behavior.CancelForeignDiplomacyIntent(loaded,Request())==ForeignDiplomacyJournalResult.AlreadyCancelled,"cancel_retry_idempotent");
+  Check(behavior.BeginForeignDiplomacyIntent(loaded,Request(),8,out again)==ForeignDiplomacyJournalResult.Existing&&again.Cancelled&&again.OperationId==first.OperationId,"cancelled_intent_never_resurrected");
+  Check(!first.Cancelled,"earlier_snapshot_detached_from_cancellation");
+  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(loaded,"bridge",out pending)==ForeignDiplomacyJournalResult.Found&&pending.Count==0,"cancelled_not_in_pending_inventory");
+  var tombstoneSave=new JournalStore();behavior.SyncData(tombstoneSave);tombstoneSave.IsLoading=true;
+  var replacement=Install();replacement.SyncData(tombstoneSave);var replacementSession=replacement.GetForeignDiplomacyJournalSession();
+  Check(replacementSession.CampaignId==session.CampaignId,"fresh_behavior_loads_same_campaign");
+  Check(replacement.BeginForeignDiplomacyIntent(replacementSession,Request(),9,out again)==ForeignDiplomacyJournalResult.Existing&&again.Cancelled,"tombstone_survives_field_copy");
+  Check(Throws(()=>behavior.GetForeignDiplomacyJournalSession()),"old_behavior_rejected_after_campaign_switch");
+  Check(replacement.BeginForeignDiplomacyIntent(loaded,Request(),9,out again)==ForeignDiplomacyJournalResult.StaleSession,"other_behavior_session_rejected");
+  bool denied=false;var thread=new Thread(()=>{denied=Throws(()=>replacement.GetForeignDiplomacyJournalSession());});thread.Start();thread.Join();Check(denied,"actual_guard_rejects_worker_thread");
+  var other=Install();var otherSession=other.GetForeignDiplomacyJournalSession();
+  Check(otherSession.CampaignId!=session.CampaignId,"new_campaign_distinct_identity");
+  Check(other.BeginForeignDiplomacyIntent(replacementSession,Request(),9,out again)==ForeignDiplomacyJournalResult.StaleSession,"cross_campaign_session_rejected");
+  var oldSave=new JournalStore{IsLoading=true};other.SyncData(oldSave);var initialized=other.GetForeignDiplomacyJournalSession();
+  Check(other.BeginForeignDiplomacyIntent(initialized,Request(),1,out again)==ForeignDiplomacyJournalResult.Added,"old_save_without_key_initializes_empty_journal");
+  // Every corrupt payload must be quarantined, not silently normalized or replaced.
+  var corruptions=new Action<ForeignDiplomacyJournalState>[] {
+   s=>s.SchemaVersion=2,s=>s.CampaignId="bad",s=>s.Entries=null,
+   s=>s.Entries.Add(null),s=>s.Entries.Add(s.Entries[0]),
+   s=>s.Entries[0].OwnerId="",s=>s.Entries[0].Source=999,
+   s=>s.Entries[0].OperationId="bad",s=>s.Entries[0].CreatedDay=double.NaN,
+   s=>s.Entries[0].FirstKingdomId=s.Entries[0].SecondKingdomId,
+   s=>s.Entries[0].FirstRulerId="",s=>s.Entries[0].ConflictEpoch="",
+   s=>s.Entries[0].DraftFingerprint="",s=>s.Entries[0].RequestKey=new string('x',129),
+   s=>s.CampaignId="ABCDEF0123456789ABCDEF0123456789",s=>s.Entries[0].OperationId=new string('0',32)
+  };
+  for(int i=0;i<corruptions.Length;i++){
+   var state=(ForeignDiplomacyJournalState)JournalStore.Clone(State(saved));corruptions[i](state);
+   var store=new JournalStore{IsLoading=true};store.Saved["BC_Integration_ForeignDiplomacyJournal_v1"]=state;
+   var b=Install();b.SyncData(store);var token=b.GetForeignDiplomacyJournalSession();
+   Check(b.BeginForeignDiplomacyIntent(token,Request(),9,out again)==ForeignDiplomacyJournalResult.Unavailable,"corrupt_quarantined_"+i);
+   store.IsLoading=false;b.SyncData(store);Check(JournalStore.SameSaved(State(store),state),"corrupt_payload_not_replaced_"+i);
+  }
+  var presentNull=new JournalStore{IsLoading=true};presentNull.Saved["BC_Integration_ForeignDiplomacyJournal_v1"]=null;
+  var nullB=Install();nullB.SyncData(presentNull);Check(nullB.BeginForeignDiplomacyIntent(nullB.GetForeignDiplomacyJournalSession(),Request(),1,out again)==ForeignDiplomacyJournalResult.Unavailable,"present_null_not_old_save");
+  var full=Install();var fullSession=full.GetForeignDiplomacyJournalSession();
+  for(int i=0;i<ForeignDiplomacyJournal.Capacity;i++)if(full.BeginForeignDiplomacyIntent(fullSession,Request(key:"k"+i,origin:"o"+i),i,out again)!=ForeignDiplomacyJournalResult.Added)throw new Exception("capacity setup");
+  Check(full.BeginForeignDiplomacyIntent(fullSession,Request(key:"overflow",origin:"overflow"),5,out again)==ForeignDiplomacyJournalResult.Capacity,"full_journal_refuses_without_eviction");
+  Check(full.BeginForeignDiplomacyIntent(fullSession,Request(key:"k0",origin:"o0"),5,out again)==ForeignDiplomacyJournalResult.Existing,"full_journal_keeps_idempotency");
+  var oversized=new JournalStore();full.SyncData(oversized);State(oversized).Entries.Add((ForeignDiplomacyIntentRecord)JournalStore.Clone(State(oversized).Entries[0]));oversized.IsLoading=true;
+  full.SyncData(oversized);Check(full.BeginForeignDiplomacyIntent(full.GetForeignDiplomacyJournalSession(),Request(),5,out again)==ForeignDiplomacyJournalResult.Unavailable,"oversize_load_quarantined");
+  var fail=Install();var beforeFail=fail.GetForeignDiplomacyJournalSession();
+  Check(Throws(()=>fail.SyncData(new JournalStore{IsLoading=true,ThrowOnSync=true})),"datastore_exception_propagates");
+  Check(fail.BeginForeignDiplomacyIntent(beforeFail,Request(),5,out again)==ForeignDiplomacyJournalResult.StaleSession,"failed_load_still_invalidates_old_session");
+  var early=Install();var earlySession=early.GetForeignDiplomacyJournalSession();early.FailLegacySync=true;
+  Check(Throws(()=>early.SyncData(new JournalStore{IsLoading=true})),"earlier_legacy_load_failure_propagates");
+  Check(early.BeginForeignDiplomacyIntent(earlySession,Request(),5,out again)==ForeignDiplomacyJournalResult.StaleSession,"earlier_legacy_load_failure_invalidates_session");
+  Check(early.BeginForeignDiplomacyIntent(early.GetForeignDiplomacyJournalSession(),Request(),5,out again)==ForeignDiplomacyJournalResult.Unavailable,"failed_load_never_reopens_old_state");
+  Campaign.Current=null;Check(Throws(()=>fail.GetForeignDiplomacyJournalSession()),"missing_campaign_denied");
+  foreach(var type in new[]{typeof(ForeignDiplomacyJournalState),typeof(ForeignDiplomacyIntentRecord)}){
+   var fields=type.GetFields(BindingFlags.Public|BindingFlags.Instance);var ids=fields.Select(f=>f.GetCustomAttribute<SaveableFieldAttribute>()).ToArray();
+   Check(ids.All(a=>a!=null)&&ids.Select(a=>a.Id).Distinct().Count()==fields.Length,"all_fields_unique_save_ids_"+type.Name);
+  }
+  var stateSchema=typeof(ForeignDiplomacyJournalState).GetFields().Select(f=>f.Name+":"+f.FieldType.FullName+":"+f.GetCustomAttribute<SaveableFieldAttribute>().Id).ToArray();
+  Check(stateSchema.SequenceEqual(new[]{"SchemaVersion:System.Int32:1","CampaignId:System.String:2","Entries:"+typeof(List<ForeignDiplomacyIntentRecord>).FullName+":3"}),"state_exact_field_schema");
+  string[] names={"OperationId","RequestKey","OwnerId","OriginId","FirstKingdomId","SecondKingdomId","FirstRulerId","SecondRulerId","ConflictEpoch","DraftFingerprint","Source","CreatedDay","Cancelled"};
+  var recordFields=typeof(ForeignDiplomacyIntentRecord).GetFields();
+  Check(recordFields.Length==13&&recordFields.Select((f,i)=>f.Name==names[i]&&f.GetCustomAttribute<SaveableFieldAttribute>().Id==i+1&&f.FieldType==(i<10?typeof(string):i==10?typeof(int):i==11?typeof(double):typeof(bool))).All(x=>x),"intent_exact_field_schema");
+  Console.WriteLine("JOURNAL TOTAL PASS "+passed+"; engine_serializer_game=NOT_RUN");
+ }
+}

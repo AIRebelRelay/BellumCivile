@@ -45,7 +45,7 @@ namespace BellumCivile
             }
             catch (Exception ex)
             {
-                BellumCivileLogger.Log($"Failed to apply realm-name settings migration: {ex.Message}");
+                BellumCivileLogger.Log($"Failed to apply realm-name settings migration: {ex}");
             }
 
             _uiExtender = UIExtender.Create("BellumCivile");
@@ -67,7 +67,7 @@ namespace BellumCivile
                 }
                 catch (Exception ex)
                 {
-                    BellumCivileLogger.Log($"Failed to apply Harmony patch '{type.Name}': {ex.Message}");
+                    BellumCivileLogger.Log($"Failed to apply Harmony patch '{type.Name}': {ex}");
                 }
             }
 
@@ -212,6 +212,9 @@ namespace BellumCivile
 
         private static bool ShouldSkipOptionalPatch(Type type)
         {
+            if (type == typeof(Patches.LordshipVillageIncomePatch) || type == typeof(Patches.LordshipSurplusPatch))
+                return true;
+
             if (type == typeof(Patches.DiplomacyKingdomFactionsButtonHijackPatch))
                 return true;
 
@@ -228,6 +231,13 @@ namespace BellumCivile
                 return true;
 
             return false;
+        }
+
+        protected override void OnApplicationTick(float dt)
+        {
+            base.OnApplicationTick(dt);
+            if (Behaviors.LordshipBehavior.Instance?.Ready == true)
+                Patches.LordshipMapBannerPatch.Initialize();
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
@@ -265,6 +275,7 @@ namespace BellumCivile
                 campaignStarter.AddModel(new BellumCouncilSettlementFoodModel(baseSettlementFoodModel));
 
                 ClanFinanceModel baseClanFinanceModel = campaignStarter.GetModel<ClanFinanceModel>() ?? new DefaultClanFinanceModel();
+                Patches.LordshipFinancePatches.Initialize();
                 campaignStarter.AddModel(new BellumFeudalClanFinanceModel(baseClanFinanceModel));
 
                 ClanPoliticsModel baseClanPoliticsModel = campaignStarter.GetModel<ClanPoliticsModel>() ?? new DefaultClanPoliticsModel();
@@ -311,6 +322,8 @@ namespace BellumCivile
                 campaignStarter.AddBehavior(new ClaimFeudWarBehavior());
                 campaignStarter.AddBehavior(new RetainedTreatyPrisonerBehavior());
                 campaignStarter.AddBehavior(new HostagePactBehavior());
+                campaignStarter.AddBehavior(new VoluntaryPactProposalBehavior());
+                campaignStarter.AddBehavior(new VoluntaryPactAiBehavior());
                 campaignStarter.AddBehavior(new HouseholdRansomBehavior());
                 campaignStarter.AddBehavior(new CompanionSubinfeudationBehavior());
                 campaignStarter.AddBehavior(new ClientKingdomBehavior());
@@ -322,7 +335,9 @@ namespace BellumCivile
                 campaignStarter.AddBehavior(new ForeignPolicyBehavior());
                 campaignStarter.AddBehavior(new DiplomacyCompatibilityBehavior());
                 campaignStarter.AddBehavior(new RegencyBehavior());
+                campaignStarter.AddBehavior(new LordshipBehavior());
                 campaignStarter.AddBehavior(new CrownAccessionBehavior());
+                campaignStarter.AddBehavior(new TitleAcquisitionBehavior());
                 campaignStarter.AddBehavior(new ElectiveSuccessionBehavior());
                 campaignStarter.AddBehavior(new ElectionLobbyingBehavior());
                 campaignStarter.AddBehavior(new ElectiveContestBehavior());

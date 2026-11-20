@@ -22,7 +22,11 @@ internal static class DeJureDriftConflictTests
     private static bool Eliminated(ref bool __result) { __result = false; return false; }
     private static bool Eligible(ref FeudalDeJureDriftEligibility __2, ref string __3, ref bool __result)
     { __2 = _eligibility; __3 = "test control change"; __result = _eligible; return false; }
-    private static bool Delta(ref float __result) { __result = .01f; return false; }
+    private static int _deltaCalls;
+    private static float _elapsedDays;
+    private static bool Delta(float __0, ref float __result)
+    { _deltaCalls++; _elapsedDays = __0; __result = .01f; return false; }
+    private static void EvaluationPostfix() { }
 
     internal static void Run(Action<bool, string> check)
     {
@@ -35,6 +39,7 @@ internal static class DeJureDriftConflictTests
         var independent = Kingdom("drift_home_indep_test");
         _clan = Blank<Clan>(); _clan.StringId = "drift_owner";
         _leader = Blank<Hero>();
+        _day = 0; _deltaCalls = 0; _elapsedDays = 0; _eligible = false; _eligibility = null;
         var behavior = new FeudalDeJureDriftBehavior();
         var type = typeof(FeudalDeJureDriftBehavior);
         var clans = (Dictionary<string, Clan>)AccessTools.Field(type, "_clansById").GetValue(behavior);
@@ -84,7 +89,13 @@ internal static class DeJureDriftConflictTests
             }
             _realm = home; _eligible = true; _eligibility = new FeudalDeJureDriftEligibility(title, parent, target, home, _leader);
             Patch(AccessTools.Method(type, "CalculateProgressDelta"), nameof(Delta));
+            // Earlier pause evaluations can JIT-inline the original delta before its patch.
+            // Re-emit the caller only after all mocks are installed (test-local patch).
+            h.Patch(AccessTools.Method(type, "EvaluateAndMaintainRecord"),
+                postfix: new HarmonyMethod(typeof(DeJureDriftConflictTests), nameof(EvaluationPostfix)));
             _day += 7; Evaluate();
+            check(_deltaCalls == 1 && _elapsedDays == 7,
+                "Resumption uses the patched delta for only the seven days since the last pause evaluation");
             check(Math.Abs(record.Progress - .46f) < .00001f && record.State == FeudalDeJureDriftState.Advancing,
                 "Reunification resumes the same record instead of starting again from zero");
         }

@@ -1,0 +1,46 @@
+PASS active claim is copied with exact clan day and strength
+PASS expiry zero is expired unlike pressure zero
+PASS expiry at current day is excluded
+PASS future expiry remains active
+PASS negative expiry retains existing no-expiry semantics
+PASS float-day precision matches native active predicate
+PASS inactive saved flag is excluded without reactivation
+PASS other clan is excluded
+PASS barred hereditary carrier is excluded
+PASS empty hereditary carrier falls back to barred source hero
+PASS current eligible carrier wins over barred source hero
+PASS generation depth makes otherwise ordinary source hereditary
+PASS all hereditary source labels use barred filter
+PASS nonhereditary claim preserves existing barred-person semantics
+PASS missing title is explicit without dropping the claim
+PASS missing title collection remains null and unknown
+PASS inactive title is explicit and not reactivated
+PASS dissolved title takes precedence over active flag
+PASS mismatched target dictionary identity fails closed
+PASS null claim storage remains null and unavailable
+PASS empty saved list is recorded empty
+PASS missing behavior is explicit
+PASS null clan is unavailable
+PASS eliminated clan is unavailable
+PASS detached same-ID clan object is rejected
+PASS blank clan ID is rejected
+PASS null saved row fails closed without repair
+PASS duplicate claim IDs fail closed without choosing a winner
+PASS distinct claims to one title are not normalized
+PASS blank claim ID fails closed
+PASS blank target fails closed
+PASS unknown strength fails closed
+PASS nonfinite expiry is invalid rather than silently expired
+PASS infinite expiry fails closed
+PASS future created day fails closed
+PASS invalid capture day fails closed
+PASS capacity overflow is explicit without partial result
+PASS capacity boundary is complete and ordinal sorted
+PASS source mutation cannot alter prior copy
+PASS read preserves every claim field and list identity
+PASS returned collection is immutable
+PASS private provenance and hero IDs are absent from DTO
+PASS actual thread guard rejects worker read
+PASS missing integration service is blocked by actual guard
+PASS missing campaign is blocked by actual guard
+RESULT 45 named cases PASS; actual predicates/records, Native boundary doubles; not a shipping build or game test.

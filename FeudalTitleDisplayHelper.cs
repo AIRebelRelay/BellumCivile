@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BellumCivile.Behaviors;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 
 namespace BellumCivile
@@ -212,6 +213,9 @@ namespace BellumCivile
             if (TryGetWandererDisplayStyle(hero, out displayTitle, out rankStyle))
                 return true;
 
+            if (TryGetIndenturedCaptainDisplayStyle(hero, out displayTitle, out rankStyle))
+                return true;
+
             if (TryGetNobleDisplayStyle(hero, out displayTitle, out rankStyle))
                 return true;
 
@@ -246,6 +250,32 @@ namespace BellumCivile
 
             return FormatLandedTitle(style?.TitleFormat, titleNoun, root);
         }
+
+        internal static TextObject FormatLordshipName(Settlement village)
+        {
+            var style = ResolveLordshipStyle(village);
+            string format = style?.LordshipFormat;
+            if (string.IsNullOrWhiteSpace(format))
+                format = string.IsNullOrWhiteSpace(style?.LordshipName)
+                    ? "{=BC_Lordship_Name}Lordship of {VILLAGE}"
+                    : "{=BC_Lordship_Format}{TITLE_NOUN} of {VILLAGE}";
+            var name = village?.Name ?? TextObject.GetEmpty();
+            return new TextObject(format).SetTextVariable("TITLE_NOUN", ResolveLordshipNoun(style))
+                .SetTextVariable("VILLAGE", name).SetTextVariable("TITLE_NAME", name);
+        }
+
+        internal static TextObject GetLordshipNoun(Settlement village) => ResolveLordshipNoun(ResolveLordshipStyle(village));
+
+        internal static TextObject GetLordshipNounForClan(Clan clan)
+            => ResolveLordshipNoun(ResolveRankStyle(FeudalTitleType.Barony, clan));
+
+        private static FeudalTitleConfig.RankStyle ResolveLordshipStyle(Settlement village)
+            => ResolveRankStyle(FeudalTitleType.Barony, village?.Village?.Bound?.Town?.OwnerClan,
+                fallbackCultureRef: village?.Culture?.StringId ?? string.Empty);
+
+        private static TextObject ResolveLordshipNoun(FeudalTitleConfig.RankStyle style)
+            => new TextObject(string.IsNullOrWhiteSpace(style?.LordshipName)
+                ? "{=BC_Hierarchy_TierLordship}Lordship" : style.LordshipName);
 
         public static string GetLandedTitleNoun(FeudalTitleType type, Clan styleClan, Kingdom fallbackKingdom = null, string fallbackCultureRef = "")
         {
@@ -492,14 +522,17 @@ namespace BellumCivile
             // Companions are retainers of the clan, not members of its peerage.
             // A configured wanderer rank may style them through the dedicated path,
             // but they must never inherit the generic Lord/Lady fallback.
-            if (IsWandererRetainer(hero))
+            if (LordshipBehavior.Instance?.Ready == true
+                ? !HouseholdMembership.IsFamily(hero) && hero != hero.Clan.Leader
+                : IsWandererRetainer(hero))
                 return false;
 
             bool isPlayerClan = hero.Clan == Clan.PlayerClan;
             if ((!hero.Clan.IsNoble && !isPlayerClan) || hero.IsChild)
                 return false;
 
-            if (!hero.IsLord && hero.Clan.Leader != hero && hero.Spouse?.Clan?.Leader != hero.Spouse)
+            if (!hero.IsLord && hero.Clan.Leader != hero && hero.Spouse?.Clan?.Leader != hero.Spouse
+                && !(LordshipBehavior.Instance?.Ready == true && HouseholdMembership.IsFamily(hero)))
                 return false;
 
             FeudalTitleRecord sovereignTitle = GetSovereignTitleForKingdom(hero.Clan.Kingdom);
@@ -547,22 +580,28 @@ namespace BellumCivile
         {
             displayTitle = null;
             rankStyle = null;
-            if (!IsWandererRetainer(hero) || hero?.Clan?.Kingdom == null || hero.Clan.IsEliminated)
+            bool personal = LordshipBehavior.Instance?.Ready == true;
+            if (personal ? !HouseholdMembership.IsRetainer(hero) || hero.IsChild || LordshipBehavior.Instance.GetGrant(hero) == null
+                : !IsWandererRetainer(hero))
+                return false;
+            if (hero?.Clan == null || hero.Clan.IsEliminated)
                 return false;
 
             FeudalTitleRecord sovereignTitle = GetSovereignTitleForKingdom(hero.Clan.Kingdom);
-            if (sovereignTitle == null)
+            if (sovereignTitle == null && !personal)
                 return false;
 
             FeudalTitleConfig.RankStyle style = ResolveRankStyle(
-                sovereignTitle.TitleType,
+                sovereignTitle?.TitleType ?? FeudalTitleType.Kingdom,
                 hero.Clan,
-                ResolveKingdom(sovereignTitle.AssociatedKingdomId),
-                sovereignTitle.FallbackCultureRef);
+                ResolveKingdom(sovereignTitle?.AssociatedKingdomId),
+                sovereignTitle?.FallbackCultureRef);
             string configuredText = hero.IsFemale
                 ? FirstNonEmpty(style?.FemaleWandererRank, style?.WandererRank)
                 : FirstNonEmpty(style?.WandererRank, style?.FemaleWandererRank);
 
+            if (personal && string.IsNullOrWhiteSpace(configuredText))
+                configuredText = hero.IsFemale ? "{=BC_Lordship_Dame}Dame" : "{=BC_Lordship_Sir}Sir";
             if (string.IsNullOrWhiteSpace(configuredText))
                 return false;
 
@@ -618,7 +657,8 @@ namespace BellumCivile
                 return false;
 
             bool isPlayerClan = hero.Clan == Clan.PlayerClan;
-            if (!isPlayerClan && (hero.IsWanderer || hero.IsNotable))
+            if (!isPlayerClan && (hero.IsNotable || (hero.IsWanderer && LordshipBehavior.Instance?.GetGrant(hero) == null
+                && !(LordshipBehavior.Instance?.Ready == true && HouseholdMembership.IsFamily(hero)))))
                 return false;
 
             return !hero.Clan.IsMinorFaction || isPlayerClan;
@@ -629,7 +669,7 @@ namespace BellumCivile
             Clan clan = hero?.Clan;
             return clan != null && clan.Leader == hero && hero.IsAlive && !hero.IsDisabled
                 && !hero.IsChild && !hero.IsNotable && !clan.IsEliminated && !clan.IsBanditFaction
-                && (clan.IsMinorFaction || clan.IsUnderMercenaryService);
+                && (clan.IsUnderMercenaryService || clan != Clan.PlayerClan && clan.IsMinorFaction);
         }
 
         private static bool TryGetMercenaryLeaderDisplayStyle(Hero hero, out string displayTitle,
@@ -639,17 +679,42 @@ namespace BellumCivile
             rankStyle = null;
             if (!IsMercenaryLeader(hero)) return false;
 
-            Clan clan = hero.Clan;
+            rankStyle = ResolveCaptainRankStyle(hero.Clan);
+            displayTitle = ResolveMercenaryLeaderTitle(rankStyle, hero.IsFemale);
+            return !string.IsNullOrWhiteSpace(displayTitle);
+        }
+
+        internal static bool IsIndenturedCaptain(Hero hero)
+        {
+            LordshipBehavior lordships = LordshipBehavior.Instance;
+            return lordships?.Ready == true && lordships.GetIndenture(hero) != null
+                && hero.IsAlive && !hero.IsDisabled && !hero.IsChild
+                && HouseholdMembership.IsRetainer(hero) && lordships.GetGrant(hero) == null;
+        }
+
+        private static bool TryGetIndenturedCaptainDisplayStyle(Hero hero, out string displayTitle,
+            out FeudalTitleConfig.RankStyle rankStyle)
+        {
+            displayTitle = null;
+            rankStyle = null;
+            if (!IsIndenturedCaptain(hero)) return false;
+
+            rankStyle = ResolveCaptainRankStyle(hero.Clan);
+            displayTitle = ResolveMercenaryLeaderTitle(rankStyle, hero.IsFemale)
+                ?? new TextObject("{=BC_Indenture_Captain}Captain").ToString();
+            return !string.IsNullOrWhiteSpace(displayTitle);
+        }
+
+        private static FeudalTitleConfig.RankStyle ResolveCaptainRankStyle(Clan clan)
+        {
             // A company's cultural style remains available between contracts, without a sovereign title.
-            rankStyle = FeudalTitleConfig.Instance.Styles
+            return FeudalTitleConfig.Instance.Styles
                 .Where(style => style != null && MatchesRef(style.CultureRef, clan.Culture?.StringId, clan.Culture?.Name?.ToString()))
                 .SelectMany(style => style.Ranks)
                 .FirstOrDefault(rank => rank != null && rank.Tier == FeudalTitleType.Kingdom
                     && (!string.IsNullOrWhiteSpace(rank.MercenaryLeaderRank)
                         || !string.IsNullOrWhiteSpace(rank.FemaleMercenaryLeaderRank)))
                 ?? ResolveRankStyle(FeudalTitleType.Kingdom, clan);
-            displayTitle = ResolveMercenaryLeaderTitle(rankStyle, hero.IsFemale);
-            return !string.IsNullOrWhiteSpace(displayTitle);
         }
 
         private static string ResolveMercenaryLeaderTitle(FeudalTitleConfig.RankStyle style, bool isFemale)

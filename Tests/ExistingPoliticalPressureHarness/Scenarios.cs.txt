@@ -1,0 +1,84 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+public static class ExistingPoliticalPressureScenarios
+{
+    private static int count;
+    private static Clan clan;
+    private static WarPeaceRevampBehavior behavior;
+    private static void Check(bool ok,string why) { if(!ok)throw new Exception(why); }
+    private static void Case(string name,Action run) {
+        clan=new Clan{StringId="house"};Clan.All=new List<Clan>{clan};
+        behavior=new WarPeaceRevampBehavior();Campaign.Current=new Campaign{Pressure=behavior};CampaignTime.Now.ToDays=100;
+        run();count++;Console.WriteLine("PASS "+name);
+    }
+    private static WarWillPressureRecord Row(string id="p",string house="house",float amount=-12,float expiry=110,WarWillReasonType reason=WarWillReasonType.BattleDefeat) {
+        return new WarWillPressureRecord(id,house,"realm","conflict",amount,"private_reason",90,expiry,reason,"private_settlement","private_title","private_hero");
+    }
+    private static void Set(object row,string field,object value) { row.GetType().GetField(field,BindingFlags.Instance|BindingFlags.NonPublic).SetValue(row,value); }
+    private static PoliticalPressureStateSnapshot Read() {
+        var s=BellumIntegration.GetExistingPoliticalPressureState(clan);Check(behavior.EnsureCalls==0,"read initialized storage");return s;
+    }
+    private static void Invalid(WarWillPressureRecord row) { behavior.FixturePressures.Add(row);Check(Read().Status==PoliticalPressureStateStatus.InvalidRecords&&Read().Pressures.Count==0&&Read().RecordedWarWill==null,"invalid state leaked"); }
+    public static void Run() {
+        Case("recorded will and applied pressure copy exact scope and values",()=>{
+            behavior.FixtureWill.Add("house",36);behavior.FixturePressures.Add(Row());var s=Read();var p=s.Pressures.Single();
+            Check(s.Status==PoliticalPressureStateStatus.Recorded&&s.ClanId=="house"&&s.CapturedDay==100&&s.WarWillStatus==RecordedWarWillStatus.Recorded&&s.RecordedWarWill==36,"scope/will");
+            Check(s.PressureStatus==PressureRecordsStatus.Recorded&&s.ActivePressureCount==1&&p.Amount==-12&&p.RecordId=="p"&&p.TargetRealmId=="realm"&&p.ConflictKey=="conflict"&&p.ReasonType==WarWillReasonType.BattleDefeat&&p.CreatedDay==90&&p.ExpiresDay==110,"copy");
+        });
+        Case("missing will stays unknown without inserting initial value",()=>{var s=Read();Check(s.WarWillStatus==RecordedWarWillStatus.NotRecorded&&s.RecordedWarWill==null&&behavior.FixtureWill.Count==0,"initial invented");});
+        Case("recorded zero remains zero",()=>{behavior.FixtureWill.Add("house",0);Check(Read().RecordedWarWill==0&&Read().WarWillStatus==RecordedWarWillStatus.Recorded,"zero became missing/default");});
+        Case("finite stored value is never silently clamped or recomputed",()=>{behavior.FixtureWill.Add("house",103);Check(Read().RecordedWarWill==103&&behavior.FixtureWill["house"]==103,"stored value clamped");});
+        Case("pressure deltas are not added to already recorded will",()=>{behavior.FixtureWill.Add("house",36);behavior.FixturePressures.Add(Row(amount:20));Check(Read().RecordedWarWill==36,"delta applied twice");});
+        Case("missing will storage remains unavailable and null",()=>{behavior.FixtureWill=null;var s=Read();Check(s.WarWillStatus==RecordedWarWillStatus.RecordsUnavailable&&s.RecordedWarWill==null&&behavior.FixtureWill==null,"will storage created");});
+        Case("missing pressure storage is explicit while stored will stays usable",()=>{behavior.FixtureWill.Add("house",36);behavior.FixturePressures=null;var s=Read();Check(s.RecordedWarWill==36&&s.PressureStatus==PressureRecordsStatus.RecordsUnavailable&&behavior.FixturePressures==null,"pressure absence masked");});
+        Case("both absent sections remain absent",()=>{behavior.FixtureWill=null;behavior.FixturePressures=null;var s=Read();Check(s.Status==PoliticalPressureStateStatus.Recorded&&s.WarWillStatus==RecordedWarWillStatus.RecordsUnavailable&&s.PressureStatus==PressureRecordsStatus.RecordsUnavailable,"absent sections invented");});
+        Case("empty pressure storage is known empty",()=>{Check(Read().PressureStatus==PressureRecordsStatus.Recorded&&Read().ActivePressureCount==0,"empty unknown");});
+        Case("pressure zero expiry is nonexpiring",()=>{behavior.FixturePressures.Add(Row(expiry:0));Check(Read().Pressures.Count==1,"zero pressure expiry treated as claim expiry");});
+        Case("negative expiry preserves Native nonexpiring semantics",()=>{behavior.FixturePressures.Add(Row(expiry:-1));Check(Read().Pressures.Count==1,"negative expiry changed");});
+        Case("expiry at capture day is excluded without ending source",()=>{var p=Row(expiry:100);behavior.FixturePressures.Add(p);Check(Read().Pressures.Count==0&&p.IsActive,"expired source ended");});
+        Case("past positive expiry is excluded",()=>{behavior.FixturePressures.Add(Row(expiry:99));Check(Read().Pressures.Count==0,"expired included");});
+        Case("future expiry remains included",()=>{behavior.FixturePressures.Add(Row(expiry:101));Check(Read().Pressures.Count==1,"future excluded");});
+        Case("positive negative and zero amounts preserve recorded signs",()=>{behavior.FixturePressures.Add(Row("a",amount:12));behavior.FixturePressures.Add(Row("b",amount:-9));behavior.FixturePressures.Add(Row("c",amount:0));Check(Read().Pressures.Select(p=>p.Amount).SequenceEqual(new float[]{12,-9,0}),"signs changed");});
+        Case("ended pressure remains excluded",()=>{var p=Row();p.End();behavior.FixturePressures.Add(p);Check(Read().Pressures.Count==0&&!p.IsActive,"ended pressure reactivated");});
+        Case("other clan pressure and will are excluded",()=>{behavior.FixtureWill.Add("other",88);behavior.FixturePressures.Add(Row(house:"other"));Check(Read().RecordedWarWill==null&&Read().Pressures.Count==0,"other clan leak");});
+        Case("corrupt other-clan numeric state does not contaminate scope",()=>{behavior.FixtureWill.Add("other",float.NaN);behavior.FixturePressures.Add(Row(house:"other",amount:float.NaN));Check(Read().Status==PoliticalPressureStateStatus.Recorded,"unrelated data contaminated scope");});
+        Case("null row fails closed without removing it",()=>{behavior.FixturePressures.Add(null);Check(Read().Status==PoliticalPressureStateStatus.InvalidRecords&&behavior.FixturePressures.Single()==null,"null repaired");});
+        Case("duplicate pressure IDs fail closed",()=>{behavior.FixturePressures.Add(Row());Invalid(Row());});
+        Case("blank pressure ID fails closed",()=>{Invalid(Row(id:" "));});
+        Case("nonfinite stored will fails closed",()=>{behavior.FixtureWill.Add("house",float.NaN);Check(Read().Status==PoliticalPressureStateStatus.InvalidRecords&&Read().RecordedWarWill==null,"nan will");});
+        Case("infinite stored will fails closed",()=>{behavior.FixtureWill.Add("house",float.PositiveInfinity);Check(Read().Status==PoliticalPressureStateStatus.InvalidRecords,"infinite will");});
+        Case("nonfinite pressure amount fails closed",()=>{Invalid(Row(amount:float.NaN));});
+        Case("infinite pressure amount fails closed",()=>{Invalid(Row(amount:float.NegativeInfinity));});
+        Case("unknown reason enum fails closed",()=>{Invalid(Row(reason:(WarWillReasonType)999));});
+        Case("unknown reason zero remains valid without invented text",()=>{behavior.FixturePressures.Add(Row(reason:WarWillReasonType.Unknown));Check(Read().Pressures.Single().ReasonType==WarWillReasonType.Unknown,"unknown reason rewritten");});
+        Case("nonfinite expiry fails closed before expiration filtering",()=>{Invalid(Row(expiry:float.NaN));});
+        Case("infinite expiry fails closed",()=>{Invalid(Row(expiry:float.PositiveInfinity));});
+        Case("future creation day fails closed",()=>{var p=Row();Set(p,"_createdDay",101f);Invalid(p);});
+        Case("negative creation day fails closed",()=>{var p=Row();Set(p,"_createdDay",-1f);Invalid(p);});
+        Case("invalid capture day fails closed",()=>{CampaignTime.Now.ToDays=double.NaN;Check(Read().Status==PoliticalPressureStateStatus.InvalidRecords,"nan time");});
+        Case("null clan is unavailable",()=>{Check(BellumIntegration.GetExistingPoliticalPressureState(null).Status==PoliticalPressureStateStatus.UnavailableClan,"null accepted");});
+        Case("eliminated clan is unavailable",()=>{clan.IsEliminated=true;Check(Read().Status==PoliticalPressureStateStatus.UnavailableClan,"eliminated accepted");});
+        Case("detached same-ID clan is unavailable",()=>{Check(BellumIntegration.GetExistingPoliticalPressureState(new Clan{StringId="house"}).Status==PoliticalPressureStateStatus.UnavailableClan,"detached accepted");});
+        Case("blank clan ID is unavailable",()=>{clan.StringId=" ";Check(Read().Status==PoliticalPressureStateStatus.UnavailableClan,"blank scope");});
+        Case("missing behavior is explicit",()=>{Campaign.Current.Pressure=null;Check(Read().Status==PoliticalPressureStateStatus.BehaviorUnavailable,"behavior absence masked");});
+        Case("capacity overflow has no partial data or will fallback",()=>{for(int i=0;i<=128;i++)behavior.FixturePressures.Add(Row("p"+i));var s=Read();Check(s.Status==PoliticalPressureStateStatus.CapacityExceeded&&s.ActivePressureCount==129&&s.Pressures.Count==0&&s.RecordedWarWill==null,"silent overflow");});
+        Case("capacity boundary stays complete and ordinal sorted",()=>{for(int i=127;i>=0;i--)behavior.FixturePressures.Add(Row("p"+i.ToString("D3")));Check(Read().Pressures.Count==128&&Read().Pressures.First().RecordId=="p000","boundary/order");});
+        Case("expired records do not consume active capacity",()=>{for(int i=0;i<200;i++)behavior.FixturePressures.Add(Row("p"+i,expiry:99));Check(Read().Status==PoliticalPressureStateStatus.Recorded&&Read().Pressures.Count==0,"expired records consume cap");});
+        Case("later source mutation cannot change captured snapshot",()=>{var p=Row();behavior.FixturePressures.Add(p);behavior.FixtureWill.Add("house",36);var s=Read();p.End();behavior.FixtureWill["house"]=90;Check(s.Pressures.Count==1&&s.RecordedWarWill==36&&Read().Pressures.Count==0,"mutable source escaped");});
+        Case("read preserves every saved pressure field and storage identity",()=>{var p=Row();behavior.FixturePressures.Add(p);behavior.FixtureWill.Add("house",36);var list=behavior.FixturePressures;var dict=behavior.FixtureWill;var fields=typeof(WarWillPressureRecord).GetFields(BindingFlags.Instance|BindingFlags.NonPublic);var before=fields.Select(f=>f.GetValue(p)).ToArray();Read();Check(fields.Select((f,i)=>object.Equals(before[i],f.GetValue(p))).All(x=>x)&&object.ReferenceEquals(list,behavior.FixturePressures)&&object.ReferenceEquals(dict,behavior.FixtureWill)&&dict["house"]==36,"source changed");});
+        Case("returned collection is immutable",()=>{behavior.FixturePressures.Add(Row());bool denied=false;try{((IList<PoliticalPressureRecordSnapshot>)Read().Pressures).Clear();}catch(NotSupportedException){denied=true;}Check(denied,"mutable collection");});
+        Case("private reason contexts and future target preference are absent",()=>{var props=typeof(PoliticalPressureRecordSnapshot).GetProperties();Check(props.All(p=>!p.CanWrite)&&!props.Any(p=>p.Name=="Reason"||p.Name.StartsWith("Context")||p.Name.Contains("Hero")||p.Name.Contains("Preferred")),"private fields exported");});
+        Case("existing GetWarWill still materializes initial value when explicitly called",()=>{Read();Check(behavior.GetWarWill(clan)==57&&behavior.FixtureWill["house"]==57&&behavior.EnsureCalls==1,"legacy getter changed");});
+        Case("existing PeekWarWill still uses initial default without insertion",()=>{Check(behavior.PeekWarWill(clan)==57&&behavior.FixtureWill.Count==0&&behavior.EnsureCalls==0,"legacy peek changed");});
+        Case("actual guard rejects worker-thread read",()=>{bool denied=Task.Run(()=>{try{Read();return false;}catch(InvalidOperationException){return true;}}).GetAwaiter().GetResult();Check(denied,"worker accepted");});
+        Case("actual guard rejects missing integration",()=>{Campaign.Current.Integration=null;bool denied=false;try{Read();}catch(InvalidOperationException){denied=true;}Check(denied,"missing integration accepted");});
+        Case("actual guard rejects missing campaign",()=>{Campaign.Current=null;bool denied=false;try{Read();}catch(InvalidOperationException){denied=true;}Check(denied,"missing campaign accepted");});
+        Console.WriteLine("RESULT "+count+" named cases PASS; actual records and extracted methods; Native boundary doubles, not a shipping build or game test.");
+    }
+}

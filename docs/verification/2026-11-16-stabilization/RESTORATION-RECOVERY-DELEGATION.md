@@ -1,0 +1,13 @@
+RESTORATION-RECOVERY-DELEGATION
+
+ROOT CAUSE AND TRACE
+CreateRestoredSuccessorKingdom delegates to PrepareRestoredRealm. Source observer now follows this call and requires deterministic challenge seed, existing-realm adoption, OutcomeRealm, initialization and readiness receipts in RestoredRealmRecovery. All other war/estate/tribunal checks retained. Complete suite PASS.
+
+BOUNDARY
+TOUCH: Tests/SuccessionWar.Tests.ps1 and this evidence note only.
+DO NOT TOUCH: production code, defaults, shared helpers, persistence, Bridge/Relay, authority or notification behavior.
+MUST FIX: obsolete source observation.
+MUST NOT CHANGE: existing neighboring checks except the documented moved/current contract.
+
+VALIDATION LIMIT
+Source contract only. Native compilation, save/load and campaign behavior remain unverified. No release or merge authorized by these results.

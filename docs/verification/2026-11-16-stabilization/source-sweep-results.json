@@ -1,0 +1,792 @@
+[
+  {
+    "file": "bellum/Tests/AcceptedIndependence.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/AiInfluenceNpcCrownBaseline.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/AiInfluenceNpcCrownStage7.Source.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/AiInfluenceNpcCrownStage8.Source.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/AllocationCustody.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/AsylumAudience.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/AutomaticWhitePeaceFallback.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum1412ClientRelease.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum1412MarshalBattleCap.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157CouncilIncidentApi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157DiplomacyModelAbi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157DiplomacyOverviewHarnessAbi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157FeudMemorySuppress.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157GeneratedAdjectiveApi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157GrantFiefClosure.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157HostageExecutionHonor.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157KingdomUiFormalName.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157LoyaltyModelAbi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157NativeExecutionContext.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157PartySizeAbi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157PrisonerDonationAbi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157RealmNamesApi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157SeparateSpouseStage3C.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Bellum157SettlementCauseAbi.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/BilateralMarriage.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CadetHousehold.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CivilWarContinuation.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CivilWarGrace.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CivilWarRewardHistory.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CivilWarRivalCollapse.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CivilWarRivalPromotion.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CivilWarRivalry.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ClientLiberation.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CoalitionSuccession.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ConflictOutcomes.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CouncilAgendaLifecycle.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CouncilCaptivityScheduling.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CouncilNominationCaching.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtActivityLifecycle.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtAgendaDates.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtAppeasement.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtCampaignObjective.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtClaimObjective.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtCouncilSchedulerCleanup.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtCrownAlignment.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtDynasticObjective.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtExecutiveScheduler.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtForeignSchedulerCleanup.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtHistoryPresentation.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtLegacySweep.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtLiberation.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtMandate.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtMeetingCleanup.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtObjectiveReports.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtPeaceObjective.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtPlayerPicker.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtPoliticalReactions.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtProtectionAssessment.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtProtectionOffers.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtRally.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtReactionCompletion.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtRoyalPeace.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtSectionLayout.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtSessionReports.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtSubjugationObjective.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtTermPreparation.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtTitleGrant.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CourtTradeObjective.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrossClanEstate.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownAccessionNotices.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownCadetName.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownClaimCarrier.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownFavorCost.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownIncomingHouse.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownPanelCleanup.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownPlayerDeparture.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/CrownRoyalPeaceMenu.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectionLobbying.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveAcceptance.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveContests.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveDeposition.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveEdgeCases.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveMandates.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveStartup.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveSurrenderContinuation.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ElectiveTesting.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/EncyclopediaConcepts.Tests.ps1",
+    "exit": 1,
+    "pass": false
+  },
+  {
+    "file": "bellum/Tests/EstateInheritanceDisplay.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ForcedAbdication.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/ForeignAccession.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/HereditaryAbdication.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/HereditaryLoyalty.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/HereditaryRealmLine.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/HierarchyActionMenu.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/HostagePactRow.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/IndependenceRulerSaveRepair.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/IndependentDrift.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/InheritanceAllocationCustody.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/InternalInstability.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/LocalizationCatalog.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/MarriageCadetRetirement.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P004CivilWarGraceSourceContract.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P005CrownRebellionSafetySource.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P011BDynasticRulingClan.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P011CPrivyCouncilCrown.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P011CourtCrownStability.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P012AFamilyViewModel.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P012BFamilyUiCompatibility.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P012CInheritanceHover.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P013AVoluntaryFiefRedistribution.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P013BGrandCoalitionRankless.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P014AHeroFamilyHarness.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P014CRecoveryGraceCrownHarness.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P014DRelayVersionIdentity.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P014IArmedCrownMembership.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P014JGraceFreeCrisisSetAside.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P014LNavalReference.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/P101BRestoredRealmRecoveryContract.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/PartyVisualRefresh.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/PeaceParleyCapitulation.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/PeaceParleyOverBudget.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/RealmLawGroups.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/RealmLeadershipDiagnostics.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/RegencyAdulthood.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/RelationMemoryLocalization.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/RestoredRealmRecovery.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/RetiredRedistribution.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/RoyalPeace.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SingleClaimantCollapse.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SpouseHousehold.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage27A.DeferredLegalExpelScope.Source.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage31DCourtObjectiveSnapshot.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage31ECourtTerminalRetentionSourceAudit.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage31FCourtEvictionReceiptSourceContract.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage31GCourtReadOnlyInventory.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage31JCourtPublicProvenanceSourceAudit.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage31KPolicyVotePublicProvenance.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage31LPolicyVoteJoinedReadOnly.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32CCourtPolicyVoteRecipientRoster.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32E1NativeCourtNpcKnowledgePersistence.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32H2HPartitionNoticeOrigin.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32H2NAiiForeignCustody.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32H2OPendingParleyOffFence.RED.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32H2PFreezePendingParley.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32H2QDeferredParleyTickOff.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/Stage32H2TMod145ReleaseMetadata.Tests.ps1",
+    "exit": 1,
+    "pass": false
+  },
+  {
+    "file": "bellum/Tests/StandingElections.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/StorylinePeaceRetries.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionAutomatic.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionChallenges.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionDispatch.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionPanel.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionPlayer.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionPledges.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionPretenders.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/SuccessionWar.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/TitleReorganization.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  },
+  {
+    "file": "bellum/Tests/TreatyDurationSettings.Tests.ps1",
+    "exit": 0,
+    "pass": true
+  }
+]

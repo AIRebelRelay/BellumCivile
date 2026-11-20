@@ -52,10 +52,10 @@ Check ($project.Contains('<Reference Include="Bannerlord.UIExtenderEx"') -and
 Check ($startup.Contains('Family mixin registers through the real UIExtender refresh transpiler before game texts exist') -and
        $startup.Contains('Optional Family Tree refresh inspection does not initialize native game texts') -and
        $startup.Contains('Startup probe begins before native game texts are initialized')) 'Startup path protects early GameTexts and Family Tree adapter.'
-Check (-not $startup.Contains('LordshipAppointmentPatches') -and
-       -not $startup.Contains('LordshipMapBannerPatch') -and
-       -not $startup.Contains('EncyclopediaClanPageVM') -and
-       -not $startup.Contains('HouseholdOccupationDisplayPatch')) 'Test-only startup probe does not import missing Lordship, retainer or Clan Household dependencies.'
+Check ($startup.Contains('Retainer occupation display is not patched before native game texts exist') -and
+       $startup.Contains('Deferred lordship appointment/UI hooks install successfully and only once') -and
+       $startup.Contains('Clan household mixin registration does not initialize native game texts early') -and
+       $startup.Contains('Startup probe begins before the optional Sandbox view-model assembly is loaded')) 'Imported Lordship, retainer and Clan Household startup fixtures enforce deferred installation and no early native context.'
 Check ($startup.Contains('Deferred hostage history patch installs successfully') -and
        $startup.Contains('Startup patches leave CampaignUIHelper usable after game-text initialization')) 'Original hostage startup and CampaignUIHelper checks remain.'
 'P0-14A source regression contract passed; PowerShell and compiled/net472/game harness remain unexecuted.'

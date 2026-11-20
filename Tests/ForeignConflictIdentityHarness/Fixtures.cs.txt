@@ -1,0 +1,32 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+namespace TaleWorlds.SaveSystem{[AttributeUsage(AttributeTargets.Field)]public sealed class SaveableFieldAttribute:Attribute{public int Id;public SaveableFieldAttribute(int id){Id=id;}}}
+namespace TaleWorlds.CampaignSystem{
+ public sealed class CampaignTime{public static CampaignTime Now=new CampaignTime();public double ToDays=100;}
+ public sealed class Campaign{
+  public static Campaign Current;public Manager CampaignBehaviorManager=new Manager();public BellumCivile.Behaviors.WarScoreBehavior Wars;
+  public T GetCampaignBehavior<T>()where T:class{return Wars as T;}
+ }
+ public sealed class Manager{public BellumCivile.Behaviors.BellumIntegrationBehavior Integration;public T GetBehavior<T>()where T:class{return Integration as T;}}
+ public sealed class Kingdom{
+  public static List<Kingdom> All=new List<Kingdom>();public string StringId;public bool IsEliminated;public bool Hostile=true;
+  public bool IsAtWarWith(Kingdom other){return Hostile;}
+ }
+}
+namespace BellumCivile.Behaviors{
+ public sealed partial class WarScoreBehavior{
+  private List<WarScoreRecord> _wars=new List<WarScoreRecord>();
+  public List<WarScoreRecord> Rows{get{return _wars;}set{_wars=value;}}
+ }
+}
+public static class IdentityReaderDigest{
+ public static string Dump(object value){
+  if(value==null)return "null";Type t=value.GetType();if(t.IsPrimitive||t.IsEnum||t==typeof(string))return t.FullName+":"+Convert.ToString(value,System.Globalization.CultureInfo.InvariantCulture);
+  var list=value as IList;if(list!=null)return "["+string.Join(";",list.Cast<object>().Select(Dump))+"]";
+  var map=value as IDictionary;if(map!=null){var rows=new List<string>();foreach(DictionaryEntry p in map)rows.Add(Dump(p.Key)+"="+Dump(p.Value));return "{"+string.Join(";",rows.OrderBy(x=>x))+"}";}
+  return string.Join(";",t.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Where(f=>f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null).OrderBy(f=>f.Name).Select(f=>f.Name+"="+Dump(f.GetValue(value))));
+ }
+}

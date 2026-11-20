@@ -12,8 +12,12 @@ $patches = Read 'Patches/CourtDynasticPatches.cs'
 Check ($source.Contains('FactionType.Nobility') -and $source.Contains('Mood > -60') -and $source.Contains('MemberCount(o.Faction) >= 2')) 'Royal marriage respects ordinary Nobility agenda eligibility.'
 Check ($source.Contains('d.IsAllowed() && d.CanMakeDecision(out _)') -and $source.Contains('AlliedKingdoms.Contains')) 'Discovery keeps native alliance viability and excludes existing alliances.'
 Check ($source.Contains('HasCourtMarriageOpportunity') -and $strategy.Contains('CampaignTime.Now.ToDays + 1 <= deadline')) 'Court marriage opportunity depends on remaining time, not a spent annual random roll.'
-Check ($strategy.IndexOf('PursueDynasticMarriage(clan, this)') -lt $strategy.IndexOf('if (!ShouldEvaluateToday(clan))')) 'Court marriage pursuit runs before the ordinary annual eligibility and chance gates.'
-Check ($strategy.IndexOf('_lastHouseEvaluationYear[clan.StringId] = year') -ge 0 -or $strategy.Contains('_lastHouseEvaluationYear[clan.StringId] = CurrentDay / GetCampaignDaysInYear();')) 'Marriage opportunity receipt persists before the chance roll.'
+Check ($strategy.IndexOf('PursueDynasticMarriage(clan, this)') -ge 0 -and
+    $strategy.IndexOf('EvaluateMarriageOpportunity(clan, false)') -gt $strategy.IndexOf('PursueDynasticMarriage(clan, this)') -and
+    $strategy.Contains('household ? !ShouldEvaluateOpportunity(clan, true) : !ShouldEvaluateToday(clan)')) 'Court marriage pursuit runs before the ordinary annual eligibility and chance gates.'
+Check ($strategy.Contains('var last = household ? _lastHouseholdEvaluationYear : _lastHouseEvaluationYear;') -and
+    $strategy.IndexOf('last[clan.StringId] = year;') -ge 0 -and
+    $strategy.IndexOf('float roll = MBRandom.RandomFloat;') -gt $strategy.IndexOf('last[clan.StringId] = year;')) 'Marriage opportunity receipt persists before the chance roll.'
 Check ($selection.Contains('hero != hero.Clan.Leader') -and $selection.Contains('IsBloodRelative') -and $selection.Contains('GetPairRejectionReason')) 'Royal relatives retain ordinary legal and household marriage gates.'
 Check ($selection.Contains('context, false') -and $selection.Contains('match.CandidateAcceptance >= BellumCivileConstants.MarriageStrategyMinimumScore')) 'Discovery forecasts aligned domestic consideration without bribing foreign acceptance.'
 Check ($behavior.Contains('CourtAgendaState.Completed') -and $behavior.Contains('ReceivesPoliticalSupport(a, voter, a.Dynastic.Members)')) 'Completed weddings retain shared political support until the original term ends.'

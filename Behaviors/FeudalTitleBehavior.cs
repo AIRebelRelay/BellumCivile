@@ -73,6 +73,9 @@ namespace BellumCivile.Behaviors
         {
             Instance = this;
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
+            CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, SkipNewGameIndependenceRulerRepair);
+            CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, StartIndependenceRulerRepair);
+            CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, ProcessIndependenceRulerRepair);
             CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, OnHourlyTick);
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
             CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, OnSettlementOwnerChanged);
@@ -113,6 +116,7 @@ namespace BellumCivile.Behaviors
             RebuildRuntimeIndexes();
             if (duplicateClaimsDeactivated > 0)
                 BellumCivileLogger.Log($"Feudal claim load repair deactivated duplicate active clan/title claims; duplicates={duplicateClaimsDeactivated}.");
+            SyncIndependenceRulerRepair(dataStore);
         }
 
         public FeudalTitleRecord GetTitle(string titleId)
@@ -253,6 +257,17 @@ namespace BellumCivile.Behaviors
                 .OrderBy(title => title.TitleType)
                 .ThenBy(title => title.Name)
                 .ToList();
+        }
+
+        internal bool HasActiveChildTitle(FeudalTitleRecord parentTitle, FeudalHierarchyMode mode)
+        {
+            EnsureCollectionsInitialized();
+            if (parentTitle == null || !parentTitle.IsActive || string.IsNullOrWhiteSpace(parentTitle.TitleId))
+                return false;
+
+            var index = mode == FeudalHierarchyMode.DeFacto ? _childrenByDeFactoParentTitleId : _childrenByParentTitleId;
+            return index.TryGetValue(parentTitle.TitleId, out List<string> children)
+                && children.Any(id => id != parentTitle.TitleId && GetTitle(id)?.IsActive == true);
         }
 
         public IReadOnlyCollection<FeudalTitleRecord> GetTitleAndDescendants(FeudalTitleRecord rootTitle)
@@ -730,6 +745,8 @@ namespace BellumCivile.Behaviors
                 && CrownAccessionBehavior.Instance?.IsPending(kingdom) != true)
                 Campaign.Current.GetCampaignBehavior<IdeologyEventShockBehavior>()?
                     .CompleteCrownAccession(kingdom, ElectiveSuccessionBehavior.LegalHead(rulerClan));
+            if (CrownAccessionBehavior.Instance?.IsPending(kingdom) != true)
+                TitleAcquisitionBehavior.Acquired(rulerClan, title, oldDeJure, oldDeFacto);
             return true;
         }
 
@@ -1427,6 +1444,7 @@ namespace BellumCivile.Behaviors
             BellumCivileLogger.Log(
                 $"Feudal title formed: clan={clan?.StringId ?? "null"}; title={title.TitleId}; type={candidate.TargetType}; mode={candidate.Mode}; children={candidate.ChildTitleIds.Count}; affected_parents={candidate.AffectedParentTitleIds.Count}; vassals={candidate.VassalClanIds.Count}; coequal_sovereign={candidate.CreatesCoequalSovereignTitle}; succession_risk={candidate.HasIndependentSuccessionRisk}; legal_seed={candidate.DeJureHeldChildren}/{candidate.RequiredDeJureChildren}; cost={(chargeCost ? candidate.GoldCost : 0)}; influence={(chargeCost ? candidate.InfluenceReward : 0f):0}.");
             NotificationHelper.ShowFeudalTitleFormed(clan, title, candidate.ChildTitleIds.Count);
+            TitleAcquisitionBehavior.Acquired(clan, title, null, null);
             if (independentKingdom != null)
             {
                 NotificationHelper.ShowSovereignTitleElevated(
@@ -2100,6 +2118,7 @@ namespace BellumCivile.Behaviors
                 && claim.TargetTitleId == title.TitleId);
 
             FinishInheritedTitleTransfer(title, "partition title legalized");
+            TitleAcquisitionBehavior.Acquired(heirClan, title, oldDeJure, oldDeFacto);
             BellumCivileLogger.Log(
                 $"Feudal partition title legalized; title={title.TitleId}; heir_clan={heirClan.StringId}; de_jure={oldDeJure}->{title.DeJureHolderClanId}; de_facto={oldDeFacto}->{title.DeFactoHolderClanId}.");
         }
@@ -2122,6 +2141,7 @@ namespace BellumCivile.Behaviors
             inheritedTitle.MarkSynced(CurrentDay);
             RemoveRedundantClaimsForHolder(heirClan, inheritedTitle);
             FinishInheritedTitleTransfer(inheritedTitle, reason);
+            TitleAcquisitionBehavior.Acquired(heirClan, inheritedTitle, oldDeJure, oldDeFacto);
 
             BellumCivileLogger.Log(
                 $"Feudal title inheritance legalized; title={inheritedTitle.TitleId}; heir_clan={heirClan.StringId}; type={inheritedTitle.TitleType}; de_jure={oldDeJure}->{inheritedTitle.DeJureHolderClanId}; de_facto={oldDeFacto}->{inheritedTitle.DeFactoHolderClanId}; de_jure_parent={inheritedTitle.ParentTitleId}; origin_realm={GetDriftOriginKingdomId(inheritedTitle)}; reason={reason ?? "unknown"}.");
@@ -2163,7 +2183,9 @@ namespace BellumCivile.Behaviors
             ReconcileAllDeFactoParents("court title delivery recovery");
             RebuildRuntimeIndexes();
             QueueServiceReviewForTitleAndChildren(title, "court title delivery");
-            return CourtTitleGrantRules.Delivered(plan, title.DeJureHolderClanId, title.DeFactoHolderClanId);
+            bool delivered = CourtTitleGrantRules.Delivered(plan, title.DeJureHolderClanId, title.DeFactoHolderClanId);
+            if (delivered) TitleAcquisitionBehavior.Acquired(plan.Recipient, title, plan.OldLegal, plan.OldPractical);
+            return delivered;
         }
 
         public bool TryGrantTitleByRuler(
@@ -2282,6 +2304,7 @@ namespace BellumCivile.Behaviors
 
             BellumCivileLogger.Log(
                 $"Feudal title granted by ruler; grantor={grantorClan.StringId}; recipient={recipientClan.StringId}; title={title.TitleId}; type={title.TitleType}; independent={independentKingdom?.StringId ?? "no"}; recipient_old_kingdom={oldRecipientKingdom?.StringId ?? "none"}; de_jure={oldDeJure}->{title.DeJureHolderClanId}; de_facto={oldDeFacto}->{title.DeFactoHolderClanId}; repairs={politicalRepairs}.");
+            TitleAcquisitionBehavior.Acquired(recipientClan, title, oldDeJure, oldDeFacto);
             return true;
         }
 
@@ -2543,6 +2566,7 @@ namespace BellumCivile.Behaviors
             QueueServiceReviewForTitleAndChildren(title, reason);
             result = $"title={title.TitleId}; claimant={claimantClan.StringId}; old_de_jure={oldDeJure}; old_de_facto={oldDeFacto}; reason={reason ?? "unknown"}";
             BellumCivileLogger.Log($"Feudal claim feud resolved for claimant; {result}.");
+            TitleAcquisitionBehavior.Acquired(claimantClan, title, oldDeJure, oldDeFacto);
             return true;
         }
 
@@ -2588,6 +2612,7 @@ namespace BellumCivile.Behaviors
             QueueServiceReviewForTitleAndChildren(title, reason);
             result = $"title={title.TitleId}; holder={holderClan.StringId}; claimant={claimantClan.StringId}; old_de_jure={oldDeJure}; old_de_facto={oldDeFacto}; strength={claimStrength}; reason={reason ?? "unknown"}";
             BellumCivileLogger.Log($"Feudal claim feud resolved for holder; {result}.");
+            TitleAcquisitionBehavior.Acquired(holderClan, title, oldDeJure, oldDeFacto);
             return true;
         }
 
@@ -6870,7 +6895,7 @@ namespace BellumCivile.Behaviors
                 && hero.Clan != null
                 && !hero.Clan.IsEliminated
                 && hero.IsAlive
-                && hero.IsLord
+                && MarriageParticipantPolicy.IsParticipant(hero)
                 && !hero.IsDisabled;
         }
 
@@ -6885,7 +6910,8 @@ namespace BellumCivile.Behaviors
                 return false;
             }
 
-            Hero leader = clan.Leader;
+            Hero leader = MarriageHouseholdPolicy.LegalHead(clan);
+            if (!HouseholdMembership.IsBloodRelative(hero, leader)) return false;
             if (leader != null)
             {
                 if (hero == leader)

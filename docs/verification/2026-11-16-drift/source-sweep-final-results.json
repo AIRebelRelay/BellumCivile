@@ -1,0 +1,950 @@
+[
+  {
+    "test": "AcceptedIndependence.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 16
+  },
+  {
+    "test": "AiInfluenceNpcCrownBaseline.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 12
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage7.Source.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 12
+  },
+  {
+    "test": "AiInfluenceNpcCrownStage8.Source.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "AllocationCustody.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 7
+  },
+  {
+    "test": "AsylumAudience.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 82
+  },
+  {
+    "test": "AutomaticWhitePeaceFallback.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 34
+  },
+  {
+    "test": "Bellum1412ClientRelease.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 52
+  },
+  {
+    "test": "Bellum1412MarshalBattleCap.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 39
+  },
+  {
+    "test": "Bellum157CouncilIncidentApi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 18
+  },
+  {
+    "test": "Bellum157DiplomacyModelAbi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 7
+  },
+  {
+    "test": "Bellum157DiplomacyOverviewHarnessAbi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 13
+  },
+  {
+    "test": "Bellum157FeudMemorySuppress.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 14
+  },
+  {
+    "test": "Bellum157GeneratedAdjectiveApi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 12
+  },
+  {
+    "test": "Bellum157GrantFiefClosure.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 21
+  },
+  {
+    "test": "Bellum157HostageExecutionHonor.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 31
+  },
+  {
+    "test": "Bellum157KingdomUiFormalName.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 18
+  },
+  {
+    "test": "Bellum157LoyaltyModelAbi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 12
+  },
+  {
+    "test": "Bellum157NativeExecutionContext.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 22
+  },
+  {
+    "test": "Bellum157PartySizeAbi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 17
+  },
+  {
+    "test": "Bellum157PrisonerDonationAbi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 23
+  },
+  {
+    "test": "Bellum157RealmNamesApi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 31
+  },
+  {
+    "test": "Bellum157SeparateSpouseStage3C.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 32
+  },
+  {
+    "test": "Bellum157SettlementCauseAbi.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 21
+  },
+  {
+    "test": "BilateralMarriage.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 14
+  },
+  {
+    "test": "CadetHousehold.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 7
+  },
+  {
+    "test": "CivilWarContinuation.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 0
+  },
+  {
+    "test": "CivilWarGrace.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 8
+  },
+  {
+    "test": "CivilWarRewardHistory.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 5
+  },
+  {
+    "test": "CivilWarRivalCollapse.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "CivilWarRivalPromotion.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 10
+  },
+  {
+    "test": "CivilWarRivalry.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 2
+  },
+  {
+    "test": "ClientLiberation.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "CoalitionSuccession.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 20
+  },
+  {
+    "test": "ConflictOutcomes.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 73
+  },
+  {
+    "test": "CouncilAgendaLifecycle.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 15
+  },
+  {
+    "test": "CouncilCaptivityScheduling.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 7
+  },
+  {
+    "test": "CouncilNominationCaching.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 8
+  },
+  {
+    "test": "CourtActivityLifecycle.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 12
+  },
+  {
+    "test": "CourtAgendaDates.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 11
+  },
+  {
+    "test": "CourtAppeasement.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 23
+  },
+  {
+    "test": "CourtCampaignObjective.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 13
+  },
+  {
+    "test": "CourtClaimObjective.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 53
+  },
+  {
+    "test": "CourtCouncilSchedulerCleanup.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 13
+  },
+  {
+    "test": "CourtCrownAlignment.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "CourtDynasticObjective.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 3
+  },
+  {
+    "test": "CourtExecutiveScheduler.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 13
+  },
+  {
+    "test": "CourtForeignSchedulerCleanup.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 12
+  },
+  {
+    "test": "CourtHistoryPresentation.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 144
+  },
+  {
+    "test": "CourtLegacySweep.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 185
+  },
+  {
+    "test": "CourtLiberation.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 29
+  },
+  {
+    "test": "CourtMandate.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 54
+  },
+  {
+    "test": "CourtMeetingCleanup.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 23
+  },
+  {
+    "test": "CourtObjectiveReports.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 43
+  },
+  {
+    "test": "CourtPeaceObjective.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 9
+  },
+  {
+    "test": "CourtPlayerPicker.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 16
+  },
+  {
+    "test": "CourtPoliticalReactions.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 20
+  },
+  {
+    "test": "CourtProtectionAssessment.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "CourtProtectionOffers.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 63
+  },
+  {
+    "test": "CourtRally.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 14
+  },
+  {
+    "test": "CourtReactionCompletion.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 18
+  },
+  {
+    "test": "CourtRoyalPeace.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 46
+  },
+  {
+    "test": "CourtSectionLayout.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 5
+  },
+  {
+    "test": "CourtSessionReports.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 128
+  },
+  {
+    "test": "CourtSubjugationObjective.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 15
+  },
+  {
+    "test": "CourtTermPreparation.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 19
+  },
+  {
+    "test": "CourtTitleGrant.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 89
+  },
+  {
+    "test": "CourtTradeObjective.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 36
+  },
+  {
+    "test": "CrossClanEstate.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 19
+  },
+  {
+    "test": "CrownAccessionNotices.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 12
+  },
+  {
+    "test": "CrownCadetName.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 5
+  },
+  {
+    "test": "CrownClaimCarrier.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 5
+  },
+  {
+    "test": "CrownFavorCost.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 11
+  },
+  {
+    "test": "CrownIncomingHouse.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 10
+  },
+  {
+    "test": "CrownPanelCleanup.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 24
+  },
+  {
+    "test": "CrownPlayerDeparture.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 33
+  },
+  {
+    "test": "CrownRoyalPeaceMenu.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 10
+  },
+  {
+    "test": "ElectionLobbying.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 67
+  },
+  {
+    "test": "ElectiveAcceptance.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 35
+  },
+  {
+    "test": "ElectiveContests.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 55
+  },
+  {
+    "test": "ElectiveDeposition.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 17
+  },
+  {
+    "test": "ElectiveEdgeCases.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 6
+  },
+  {
+    "test": "ElectiveMandates.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 16
+  },
+  {
+    "test": "ElectiveStartup.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "ElectiveSurrenderContinuation.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 7
+  },
+  {
+    "test": "ElectiveTesting.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 22
+  },
+  {
+    "test": "EncyclopediaConcepts.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 0
+  },
+  {
+    "test": "EstateInheritanceDisplay.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 26
+  },
+  {
+    "test": "ForcedAbdication.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 14
+  },
+  {
+    "test": "ForeignAccession.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 1
+  },
+  {
+    "test": "HereditaryAbdication.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 10
+  },
+  {
+    "test": "HereditaryLoyalty.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 8
+  },
+  {
+    "test": "HereditaryRealmLine.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 2
+  },
+  {
+    "test": "HierarchyActionMenu.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 0
+  },
+  {
+    "test": "HostagePactRow.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 2
+  },
+  {
+    "test": "IndependenceRulerSaveRepair.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 21
+  },
+  {
+    "test": "IndependentDrift.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 8
+  },
+  {
+    "test": "InheritanceAllocationCustody.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 7
+  },
+  {
+    "test": "InternalInstability.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 21
+  },
+  {
+    "test": "LocalizationCatalog.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 3
+  },
+  {
+    "test": "MarriageCadetRetirement.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "P004CivilWarGraceSourceContract.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 28
+  },
+  {
+    "test": "P005CrownRebellionSafetySource.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 13
+  },
+  {
+    "test": "P011BDynasticRulingClan.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 10
+  },
+  {
+    "test": "P011CPrivyCouncilCrown.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "P011CourtCrownStability.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 11
+  },
+  {
+    "test": "P012AFamilyViewModel.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 66
+  },
+  {
+    "test": "P012BFamilyUiCompatibility.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 14
+  },
+  {
+    "test": "P012CInheritanceHover.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 9
+  },
+  {
+    "test": "P013AVoluntaryFiefRedistribution.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 16
+  },
+  {
+    "test": "P013BGrandCoalitionRankless.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 14
+  },
+  {
+    "test": "P014AHeroFamilyHarness.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 18
+  },
+  {
+    "test": "P014CRecoveryGraceCrownHarness.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 2
+  },
+  {
+    "test": "P014DRelayVersionIdentity.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "P014IArmedCrownMembership.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "P014JGraceFreeCrisisSetAside.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "P014LNavalReference.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "P101BRestoredRealmRecoveryContract.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 24
+  },
+  {
+    "test": "PartyVisualRefresh.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 7
+  },
+  {
+    "test": "PeaceParleyCapitulation.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 9
+  },
+  {
+    "test": "PeaceParleyOverBudget.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 18
+  },
+  {
+    "test": "RealmLawGroups.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 49
+  },
+  {
+    "test": "RealmLeadershipDiagnostics.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 6
+  },
+  {
+    "test": "RegencyAdulthood.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 10
+  },
+  {
+    "test": "RelationMemoryLocalization.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 1
+  },
+  {
+    "test": "RestoredRealmRecovery.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 21
+  },
+  {
+    "test": "RetiredRedistribution.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 16
+  },
+  {
+    "test": "RoyalPeace.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 25
+  },
+  {
+    "test": "SingleClaimantCollapse.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 11
+  },
+  {
+    "test": "SpouseHousehold.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 11
+  },
+  {
+    "test": "Stage27A.DeferredLegalExpelScope.Source.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 1
+  },
+  {
+    "test": "Stage31DCourtObjectiveSnapshot.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 27
+  },
+  {
+    "test": "Stage31ECourtTerminalRetentionSourceAudit.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 14
+  },
+  {
+    "test": "Stage31FCourtEvictionReceiptSourceContract.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 20
+  },
+  {
+    "test": "Stage31GCourtReadOnlyInventory.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 22
+  },
+  {
+    "test": "Stage31JCourtPublicProvenanceSourceAudit.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 13
+  },
+  {
+    "test": "Stage31KPolicyVotePublicProvenance.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 0
+  },
+  {
+    "test": "Stage31LPolicyVoteJoinedReadOnly.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 14
+  },
+  {
+    "test": "Stage32CCourtPolicyVoteRecipientRoster.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 16
+  },
+  {
+    "test": "Stage32E1NativeCourtNpcKnowledgePersistence.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 12
+  },
+  {
+    "test": "Stage32H2HPartitionNoticeOrigin.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 14
+  },
+  {
+    "test": "Stage32H2NAiiForeignCustody.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 1
+  },
+  {
+    "test": "Stage32H2OPendingParleyOffFence.RED.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 0
+  },
+  {
+    "test": "Stage32H2PFreezePendingParley.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 0
+  },
+  {
+    "test": "Stage32H2QDeferredParleyTickOff.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 0
+  },
+  {
+    "test": "Stage32H2TMod145ReleaseMetadata.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 0
+  },
+  {
+    "test": "StandingElections.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 5
+  },
+  {
+    "test": "StorylinePeaceRetries.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 8
+  },
+  {
+    "test": "SuccessionAutomatic.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 6
+  },
+  {
+    "test": "SuccessionChallenges.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 15
+  },
+  {
+    "test": "SuccessionDispatch.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 11
+  },
+  {
+    "test": "SuccessionPanel.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 38
+  },
+  {
+    "test": "SuccessionPlayer.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 19
+  },
+  {
+    "test": "SuccessionPledges.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 36
+  },
+  {
+    "test": "SuccessionPretenders.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 8
+  },
+  {
+    "test": "SuccessionWar.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "checks": 10
+  },
+  {
+    "test": "TitleReorganization.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 11
+  },
+  {
+    "test": "TreatyDurationSettings.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "checks": 10
+  }
+]

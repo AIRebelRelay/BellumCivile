@@ -1,0 +1,106 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using BellumCivile;
+using BellumCivile.Behaviors;
+using TaleWorlds.CampaignSystem;
+public static class RealmPreparationScenarios
+{
+    private static int _count;
+    private static void Check(bool result, string name)
+    { if (!result) throw new Exception("FAIL " + name); Console.WriteLine("PASS " + name); _count++; }
+    private static RestoredRealmCreationRecord New(bool replacement = false)
+    {
+        var hero = new Hero { StringId = "ruler" };
+        var ruling = new Clan { StringId = "ruling", Leader = hero };
+        return new RestoredRealmCreationRecord {
+            Parent = new Kingdom { StringId = "parent" }, Source = new Kingdom { StringId = "source" },
+            Successor = new Kingdom { StringId = "successor", RulingClan = ruling, Leader = hero },
+            SuccessorId = "successor", Founder = new Clan { StringId = "founder" }, Replacement = replacement,
+            Challenge = new SuccessionChallengeRecord { Id = "challenge" }
+        };
+    }
+    public static void Run()
+    {
+        var b = new CivilWarResolutionBehavior(); Campaign.Current = new Campaign { Behavior = b };
+        Check(typeof(RestoredRealmCreationRecord).GetField("PreparationReceiptId") != null, "receipt schema exists");
+        var r = New(); b.Complete(r); b.Set(r);
+        var s = BellumIntegration.GetRecentRealmPreparations();
+        Check(s.Status == RealmPreparationStateStatus.Recorded && s.Receipts.Count == 1 && r.Ready, "new prepared successor");
+        var saved = s.Receipts[0]; string id = saved.ReceiptId;
+        Check(saved.CompletedDay == 42 && saved.FounderHouseId == "founder" && saved.RulingHouseId == "ruling" && saved.RulerHeroId == "ruler", "actual ruler differs from founder");
+        Check(r.Challenge.RestoredRealmReady && saved.ChallengeId == "challenge", "existing challenge flag preserved");
+        b.Complete(r); Check(r.PreparationReceiptId == id, "early Ready retry keeps source identity");
+        Check(!RealmPreparationReceiptCapture.TryStamp(r) && r.PreparationReceiptId == id, "direct repeated stamp cannot overwrite");
+        var interrupted = New(); CampaignEventDispatcher.Instance.Callback = k => { throw new Exception("listener interruption"); };
+        try { b.Complete(interrupted); } catch (Exception) { }
+        CampaignEventDispatcher.Instance.Callback = null;
+        Check(interrupted.CreatedNotified && !interrupted.Ready && interrupted.PreparationReceiptId == null, "throwing creation listener never creates preparation receipt");
+        CampaignTime.Day = 44; b.Complete(interrupted); CampaignTime.Day = 42;
+        Check(interrupted.Ready && interrupted.PreparationDay == 44, "retry stamps actual later completion not earlier notification");
+        var invalidated = New(); CampaignEventDispatcher.Instance.Callback = k => k.IsEliminated = true;
+        b.Complete(invalidated); CampaignEventDispatcher.Instance.Callback = null;
+        Check(invalidated.CreatedNotified && !invalidated.Ready && invalidated.PreparationReceiptId == null, "callback invalidation stays before Ready");
+        r.Successor.RulingClan.StringId = "new-house"; r.Successor.Leader.StringId = "new-ruler";
+        r.Parent.StringId = "renamed-id"; r.Replacement = true;
+        s = BellumIntegration.GetRecentRealmPreparations();
+        Check(s.Receipts[0].RulingHouseId == "ruling" && s.Receipts[0].ParentRealmId == "parent" && !s.Receipts[0].WasReplacement, "historical strings do not follow live mutations");
+        Check(saved.RulerHeroId == "ruler", "detached previous snapshot unchanged");
+        var loaded = new RestoredRealmCreationRecord();
+        foreach (var field in typeof(RestoredRealmCreationRecord).GetFields())
+            if (field.GetCustomAttributes(false).Any()) field.SetValue(loaded, field.GetValue(r));
+        b.Set(loaded); Check(BellumIntegration.GetRecentRealmPreparations().Receipts[0].ReceiptId == id, "save-field copy retains receipt (not native save serialization)");
+        var old = New(); old.Ready = true; b.Complete(old); b.Set(old);
+        s = BellumIntegration.GetRecentRealmPreparations();
+        Check(old.PreparationReceiptId == null && s.UndatedReadyCount == 1 && s.Receipts.Count == 0, "old Ready rows stay undated");
+        var pending = New(); b.Set(pending);
+        Check(BellumIntegration.GetRecentRealmPreparations().PendingCount == 1 && !pending.Ready && pending.PreparationReceiptId == null, "reading pending does not prepare or stamp");
+        b.Complete(pending); Check(pending.PreparationReceiptId != null, "previously pending record can complete now");
+        var repl = New(true); repl.Source = repl.Parent; b.Complete(repl); b.Set(repl);
+        Check(BellumIntegration.GetRecentRealmPreparations().Receipts.Single().WasReplacement, "replacement allows same parent and source");
+        var noHero = New(); noHero.Successor.Leader = null; b.Complete(noHero); b.Set(noHero);
+        Check(BellumIntegration.GetRecentRealmPreparations().Receipts[0].RulerHeroId == "", "unknown historical hero is not invented");
+        var badMeta = New(); badMeta.SuccessorId = "wrong"; b.Complete(badMeta); b.Set(badMeta);
+        Check(badMeta.Ready && badMeta.Challenge.RestoredRealmReady && badMeta.PreparationReceiptId == null && BellumIntegration.GetRecentRealmPreparations().UndatedReadyCount == 1, "capture failure preserves mechanical success");
+        var clock = New(); CampaignTime.Throw = true; b.Complete(clock); CampaignTime.Throw = false;
+        Check(clock.Ready && clock.PreparationReceiptId == null && clock.PreparationParentId == null, "capture exception leaves no partial stamp");
+        var a = New(); b.Complete(a); var c = New(); b.Complete(c); b.Set(a,c);
+        Check(BellumIntegration.GetRecentRealmPreparations().Receipts.Count == 2 && a.PreparationReceiptId != c.PreparationReceiptId, "separate procedures with identical entity IDs remain distinct");
+        c.PreparationReceiptId = a.PreparationReceiptId; b.Set(a,c);
+        Check(BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.InvalidRecords, "duplicate source ID fails closed");
+        a.PreparationDay = 43; b.Set(a);
+        Check(BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.InvalidRecords, "future receipt fails closed");
+        a.PreparationDay = double.NaN;
+        Check(BellumIntegration.GetRecentRealmPreparations().Receipts.Count == 0, "nonfinite saved day has no payload");
+        a.PreparationDay = 42; a.PreparationReceiptId = "not-an-id";
+        Check(BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.InvalidRecords, "corrupt identity fails closed");
+        var partial = New(); partial.PreparationParentId = "partial"; b.Complete(partial); b.Set(partial);
+        Check(partial.Ready && partial.PreparationReceiptId == null && BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.InvalidRecords, "partial stamp is not silently repaired");
+        var early = New(); b.Set(early); Check(!RealmPreparationReceiptCapture.TryStamp(early), "no stamp before Ready");
+        b.Set(); Check(BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.NotRecorded, "empty existing store gives no event");
+        Campaign.Current.Behavior = null; Check(BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.BehaviorUnavailable, "missing behavior explicit"); Campaign.Current.Behavior = b;
+        bool denied = false; var worker = new Thread(() => { try { BellumIntegration.GetRecentRealmPreparations(); } catch (InvalidOperationException) { denied = true; } }); worker.Start(); worker.Join();
+        Check(denied, "worker query rejected by facade guard");
+        var campaign = Campaign.Current; Campaign.Current = null; denied = false;
+        try { BellumIntegration.GetRecentRealmPreparations(); } catch (InvalidOperationException) { denied = true; }
+        Campaign.Current = campaign; Check(denied, "query without campaign rejected");
+        var integration = Campaign.Current.CampaignBehaviorManager.Integration;
+        Campaign.Current.CampaignBehaviorManager.Integration = null; denied = false;
+        try { BellumIntegration.GetRecentRealmPreparations(); } catch (InvalidOperationException) { denied = true; }
+        Campaign.Current.CampaignBehaviorManager.Integration = integration;
+        Check(denied, "missing integration owner rejected by actual guard");
+        var upper = New(); b.Complete(upper); upper.PreparationReceiptId = "ABCDEF0123456789ABCDEF0123456789"; b.Set(upper);
+        Check(BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.InvalidRecords, "noncanonical GUID spelling rejected");
+        CampaignTime.Day = 0; var zero = New(); b.Complete(zero); b.Set(zero);
+        Check(BellumIntegration.GetRecentRealmPreparations().Receipts.Single().CompletedDay == 0, "valid campaign day zero retained");
+        CampaignTime.Day = 42;
+        var rows = Enumerable.Range(0,101).Select(i => { var x = New(); b.Complete(x); return x; }).ToArray(); b.Set(rows);
+        s = BellumIntegration.GetRecentRealmPreparations(); Check(s.Receipts.Count == 100 && s.OmittedCount == 1, "bounded projection reports omission without deleting history");
+        b.Set((RestoredRealmCreationRecord[])null); Check(BellumIntegration.GetRecentRealmPreparations().Status == RealmPreparationStateStatus.InvalidRecords, "null store is not initialized by reader");
+        var fields = typeof(RestoredRealmCreationRecord).GetFields().Select(f => f.GetCustomAttributes(false).OfType<TaleWorlds.SaveSystem.SaveableFieldAttribute>().FirstOrDefault()).Where(x => x != null).ToArray();
+        Check(fields.Length == 27 && fields.Select(x => x.Id).Distinct().Count() == 27, "save field numbers unique and additive 18 through 27");
+        Check(typeof(RealmPreparationReceipt).GetProperties().All(p => p.PropertyType == typeof(string) || p.PropertyType == typeof(double) || p.PropertyType == typeof(bool)), "public receipt contains only detached primitives");
+        Console.WriteLine("REALM_PREPARATION_PASS " + _count + " named cases; native_save_build_game=NOT_RUN");
+    }
+}

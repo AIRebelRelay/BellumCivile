@@ -1,0 +1,6 @@
+BUDGET_MUTATION_REJECTED serial_calls_not_summed
+BUDGET_MUTATION_REJECTED attempt_time_ignored
+BUDGET_MUTATION_REJECTED tps_formula_wrong
+BUDGET_MUTATION_REJECTED cap_silently_truncates
+BUDGET_MUTATION_REJECTED calibration_range_not_checked
+BUDGET MUTATIONS REJECTED 5

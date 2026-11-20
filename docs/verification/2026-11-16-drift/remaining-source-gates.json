@@ -1,0 +1,234 @@
+[
+  {
+    "test": "CivilWarContinuation.Tests.ps1",
+    "message": "Active wars bypass synchronous ruler-change faction removal and ultimatum logic.",
+    "assertion_line": 7,
+    "assertion": "$manager = Read 'Behaviors/FactionManagerBehavior.cs'\n$event = $manager.Substring($manager.IndexOf('private void OnRulingClanChanged'))\nCheck ($event.IndexOf('if (faction.HasTrackedRebelKingdom') -lt $event.IndexOf('if (faction.Type == FactionType.Abdication)')) 'Active wars bypass synchronous ruler-change faction removal and ultimatum logic.'\nCheck ($manager.Contains('!f.HasTrackedRebelKingdom && !f.IsChallengeStartupPending')) 'Daily pruning cannot discard a tracked war whose claimant gains the Crown.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CivilWarGrace.Tests.ps1",
+    "message": "Hereditary initiation and new election disputes use the same realm restriction.",
+    "assertion_line": 30,
+    "assertion": "Check ($manager.Contains('if (IsCivilWarGraceBlocked(newFaction)) return;') -and\n    ([regex]::Matches($faction, 'IsCivilWarGraceBlocked\\(this\\)')).Count -ge 4) 'Backend formation, support, discontent, ultimatum and direct secession paths are guarded.'\nCheck ((Read 'Behaviors/SuccessionChallengeBehavior.cs').Contains('manager?.HasCivilWarGrace(realm) == true') -and\n    (Read 'Behaviors/SuccessionChallengeInitiation.cs').Contains('manager.HasCivilWarGrace(realm)') -and",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CivilWarRivalry.Tests.ps1",
+    "message": "Generic internal white peace cannot settle a whole claimant coalition for a rivalry pairing.",
+    "assertion_line": 12,
+    "assertion": "Check ($rivalry -notmatch 'DeclareWar|CreateKingdom|TriggerUltimatum') 'Rival-pair registration observes existing hostility; it does not activate a new war.'\nCheck ($score.Contains('TryResolveRivalVictory(war, primaryVictory)') -and $score.Contains('faction.ParentKingdom != opposing')) 'Rival scores cannot accidentally install a claimant through the ordinary Crown-victory resolver.'\nCheck ($score.Contains('if (CivilWarConflictBehavior.IsRivalryScore(war)) return false;')) 'Generic internal white peace cannot settle a whole claimant coalition for a rivalry pairing.'\nCheck ($settle.Contains('TransferCivilWarClan(clan, loser.Realm, winner.Realm, winner.Faction)') -and $settle.Contains('winner.Faction.AddMember(clan)')) 'Surviving defeated houses enter the victorious claimant realm through guarded transfers and join its existing coalition.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CouncilAgendaLifecycle.Tests.ps1",
+    "message": "Term opening uses batch arbitration.",
+    "assertion_line": 25,
+    "assertion": "Check ($council.Contains('agenda.ObjectiveData?.Kind == CourtExecutiveRules.Decree')) 'Vacancy priority respects royal decree business.'\nCheck ($queue.Contains('CourtAgendaBehavior.Current?.IsCouncilOfficeSettled(kingdom, office)')) 'Office cooldown queries use only term-owned restrictions.'\nCheck ($agenda.Contains('_objectiveSelector.SelectBatch(context,')) 'Term opening uses batch arbitration.'\nCheck ($queue.Contains('_pendingVoteDate[pendingKey] = scheduledVoteDate;')) 'New filing requires and preserves the frozen agenda date.'",
+    "classification": "WHITESPACE_SENSITIVE_SOURCE_CHECK",
+    "evidence_or_next_check": "SelectBatch(context, is split across a newline before context in current CourtAgendaBehavior. The batch call remains; literal Contains produces this first failure. Remaining assertions still need execution."
+  },
+  {
+    "test": "CouncilCaptivityScheduling.Tests.ps1",
+    "message": "Captive incumbent is the only prisoner eligible for a retention ballot.",
+    "assertion_line": 17,
+    "assertion": "Check ($council.Contains('LegacyCouncilExpense') -and $hub.Contains('LegacyCouncilExpense(agenda)')) 'Old paid motions retain their refund classification.'\nCheck ($record.Contains('[SaveableField(17)] private bool _captivityVacancy;') -and !$record.Contains('VacateForCaptivity')) 'Legacy saved vacancy state remains readable without new writers.'\nCheck ($behavior.Contains('candidate == incumbent || !candidate.Leader.IsPrisoner')) 'Captive incumbent is the only prisoner eligible for a retention ballot.'\nCheck ($behavior.Contains('HeroPrisonerTaken.AddNonSerializedListener') -and $behavior.Contains('HeroPrisonerReleased.AddNonSerializedListener')) 'Capture and release refresh cached operational effects.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CourtActivityLifecycle.Tests.ps1",
+    "message": "Activity hover area is conditional, not an empty generic tooltip.",
+    "assertion_line": 24,
+    "assertion": "Check ((Read 'Behaviors/IdeologyBehavior.cs').Contains('Legacy faction meetings have been retired.')) 'Legacy forced meetings cannot bypass activity selection.'\n[xml]$ui = Read 'GUI/Prefabs/KingdomManagement/Factions/BellumFactionsPanel.xml'\nCheck ($null -ne $ui.SelectSingleNode('//*[@IsVisible=\"@HasActivityHint\" and @Command.HoverBegin=\"ExecuteBeginActivityHint\"]')) 'Activity hover area is conditional, not an empty generic tooltip.'\n'Source and XML contracts only; campaign persistence and rendered hints require live testing.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CourtCampaignObjective.Tests.ps1",
+    "message": "Campaign expiry is processed before new-term cleanup.",
+    "assertion_line": 28,
+    "assertion": "Check ($warVote.Contains('support = supportWarOutcome ? raw : -raw')) 'Supporting and opposing outcomes stay symmetric.'\nCheck ($behavior.Contains('WarPeaceRevampBehavior.CanSupportCourtCampaign(realm, target)')) 'Live restrictions can suspend campaign assistance.'\nCheck ($agenda.IndexOf('MaintainCampaignObjectives();') -lt $agenda.IndexOf('OpenTerm(realm, manager, ideology);')) 'Campaign expiry is processed before new-term cleanup.'\nCheck ($behavior.Contains('detail == DeclareWarAction.DeclareWarDetail.CausedByKingdomDecision') -and $behavior.Contains('bool initiated = agenda.Realm == attacker && target == defender')) 'Only an authorized offensive receives success credit.'",
+    "classification": "STALE_DIRECT_CALL_CONTRACT",
+    "evidence_or_next_check": "Current Tick calls MaintainCampaignObjectives before PrepareQueuedCourtTerms; OpenTerm is now inside bounded term preparation."
+  },
+  {
+    "test": "CourtDynasticObjective.Tests.ps1",
+    "message": "Court marriage pursuit runs before the ordinary annual eligibility and chance gates.",
+    "assertion_line": 15,
+    "assertion": "Check ($source.Contains('d.IsAllowed() && d.CanMakeDecision(out _)') -and $source.Contains('AlliedKingdoms.Contains')) 'Discovery keeps native alliance viability and excludes existing alliances.'\nCheck ($source.Contains('HasCourtMarriageOpportunity') -and $strategy.Contains('CampaignTime.Now.ToDays + 1 <= deadline')) 'Court marriage opportunity depends on remaining time, not a spent annual random roll.'\nCheck ($strategy.IndexOf('PursueDynasticMarriage(clan, this)') -lt $strategy.IndexOf('if (!ShouldEvaluateToday(clan))')) 'Court marriage pursuit runs before the ordinary annual eligibility and chance gates.'\nCheck ($strategy.IndexOf('_lastHouseEvaluationYear[clan.StringId] = year') -ge 0 -or $strategy.Contains('_lastHouseEvaluationYear[clan.StringId] = CurrentDay / GetCampaignDaysInYear();')) 'Marriage opportunity receipt persists before the chance roll.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CourtPeaceObjective.Tests.ps1",
+    "message": "Expired objectives settle before new-term cleanup and selection.",
+    "assertion_line": 20,
+    "assertion": "Check ($treaty.Contains('PeaceInitiativeBonus(kingdom, war, clan)') -and $treaty.Contains('\"Court peace initiative\"')) 'Treaty ratification and previews include a separately explained bonus.'\nCheck ($votes.Contains('PeaceInitiativeBonus(source, war, voter)') -and $votes.Contains('support = supportPeaceOutcome ? raw : -raw')) 'Native peace support keeps symmetric outcome scoring with the bonus.'\nCheck ($agenda.IndexOf('MaintainPeaceObjectives();') -lt $agenda.IndexOf('OpenTerm(realm, manager, ideology);')) 'Expired objectives settle before new-term cleanup and selection.'\nCheck ($agenda.Contains('!a.IsUnopened && !a.IsOngoingObjective') -and (Read 'Behaviors/CourtExecutiveAgendas.cs').Contains('!a.IsUnopened && !a.IsOngoingObjective')) 'Ongoing objectives survive term and closed-vote cleanup.'",
+    "classification": "STALE_DIRECT_CALL_CONTRACT",
+    "evidence_or_next_check": "MaintainPeaceObjectives precedes PrepareQueuedCourtTerms; test compares to removed direct OpenTerm call and gets -1."
+  },
+  {
+    "test": "CourtPlayerPicker.Tests.ps1",
+    "message": "Alternate nomination respects confirmed selection: Behaviors/CourtCouncilAgendas.cs",
+    "assertion_line": 27,
+    "assertion": "Check ($flow.Contains('if (agenda.Faction == null)') -and $flow.Contains('choice == 1 ? CourtAgendaState.Blocked')) 'Crown none closes ordinary business without a faction blocking charge.'\nforeach ($name in @('Behaviors/CourtCouncilAgendas.cs', 'Behaviors/CourtExecutiveAgendas.cs')) {\n    Check ((Read $name).Contains('agenda.PlayerSelectionConfirmed || agenda.IsFiled')) \"Alternate nomination respects confirmed selection: $name\"\n}",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CourtRally.Tests.ps1",
+    "message": "Foreign exhaustion is scoped while internal surrender stays base.",
+    "assertion_line": 28,
+    "assertion": "Check (!$settlement.Contains('UsedWarScore') -and $settlement.Contains('TreatyTermType.ReleasePrisoner') -and $settlement.Contains('TreatyTermType.ArrangeRoyalMarriage')) 'Budget credits and reciprocal/marriage clauses do not manufacture victory.'\nCheck ($will.Contains('requireLowWill: true') -and $score.Contains('.Where(war => !requireLowWill || CourtAgendaBehavior.EffectiveWarWill')) 'Proposer keeps looking for another eligible front.'\nCheck ($score.Contains('CalculatePowerWeightedWarWill(primary,war)') -and $score.Contains('float losingWill = CalculatePowerWeightedWarWill(losingSide);')) 'Foreign exhaustion is scoped while internal surrender stays base.'\nCheck ($ratification.Contains('EffectiveWarWill(clan,war,enthusiasm) - enthusiasm') -and $ratification.Contains('-rallyDelta * .5f')) 'Snapshot base receives one capped live treaty delta.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "CourtSubjugationObjective.Tests.ps1",
+    "message": "Old objectives settle before next-term selection.",
+    "assertion_line": 33,
+    "assertion": "$maintenance = $behavior.Substring($behavior.IndexOf('private void MaintainSubjugationObjectives()'))\nCheck ($maintenance.IndexOf('RecoverSubjugationResult(agenda)') -lt $maintenance.IndexOf('CourtSubjugationObjectiveSource.ValidPair')) 'Established clientage is recognized before client status invalidates eligibility.'\nCheck ($agenda.IndexOf('MaintainSubjugationObjectives();') -lt $agenda.IndexOf('OpenTerm(realm, manager, ideology);')) 'Old objectives settle before next-term selection.'\nCheck (!$behavior.Contains('MakePeace.Add') -and !$behavior.Contains('WarDeclared.Add')) 'Peace without clientage and enemy aggression do not prematurely settle the objective.'",
+    "classification": "STALE_DIRECT_CALL_CONTRACT",
+    "evidence_or_next_check": "MaintainSubjugationObjectives precedes PrepareQueuedCourtTerms; old direct OpenTerm index is absent."
+  },
+  {
+    "test": "EncyclopediaConcepts.Tests.ps1",
+    "message": "Cannot find path '/workspace/scratch/3f3917dc1a40/bellum/docs/encyclopedia-articles-draft.md' because it does not exist.",
+    "assertion_line": 4,
+    "assertion": "$root = Split-Path $PSScriptRoot -Parent\n. (Join-Path $PSScriptRoot 'ConceptArticleSource.ps1')\n$expected = @(Get-BellumConceptArticles -Root $root)\n[xml]$concepts = Get-Content (Join-Path $root 'ModuleData/bellum_concepts.xml') -Raw",
+    "classification": "MISSING_TEST_REFERENCE_DOCUMENT",
+    "evidence_or_next_check": "Get-BellumConceptArticles requires docs/encyclopedia-articles-draft.md, absent from current source ZIP."
+  },
+  {
+    "test": "ForeignAccession.Tests.ps1",
+    "message": "Existing foreign sovereigns wait for union support instead of losing their first realm.",
+    "assertion_line": 12,
+    "assertion": "$incoming = Read 'Behaviors/CrownIncomingHouse.cs'\nCheck ($foreign -match 'ApplyByJoinToKingdom\\(house, record.Realm' -and $foreign -notmatch 'ApplyByLeave|DeclareWarAction|ApplyByJoinToKingdomByDefection') 'Foreign accession never invokes confiscation, rebellion or defection actions.'\nCheck ($foreign -match 'RequiresRealmUnion' -and $foreign -match 'realm union is not implemented yet') 'Existing foreign sovereigns wait for union support instead of losing their first realm.'\nCheck ($foreign -match 'ForeignMoveStarted = true' -and $foreign.IndexOf('ForeignMoveStarted = true') -lt $foreign.IndexOf('ChangeKingdomAction.ApplyByJoin')) 'Foreign movement is journaled before native membership callbacks.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "HereditaryLoyalty.Tests.ps1",
+    "message": "Portrait tooltip explains components, lawful sovereign and disposition.",
+    "assertion_line": 29,
+    "assertion": "    $vm -notmatch 'HereditaryLoyaltyBehavior.Instance\\?\\.Observe') 'Assessment and UI reads cannot create accession memories.'\nCheck ($behavior -notmatch 'DeclareWarAction|ChangeKingdomAction|new FactionObject|MBRandom|ShowInquiry') 'Meter cannot start a challenge, move a house or roll a war.'\nCheck ($vm.Contains('AddLoyaltyRow(rows,') -and $vm.Contains('BC_Loyalty_Sovereign') -and\n    $vm.Contains('BC_Loyalty_Disloyal')) 'Portrait tooltip explains components, lawful sovereign and disposition.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "HereditaryRealmLine.Tests.ps1",
+    "message": "Succession panel uses the complete realm line.",
+    "assertion_line": 13,
+    "assertion": "Check ($line -match 'Clan.All.Where' -and $line -match 'CanConsiderClan' -and $line -match 'IsTemporaryBellumKingdom') 'Realm candidates include permanent foreign households while handling temporary realms explicitly.'\nCheck ($line -match 'GetAncestors\\(hero\\).Overlaps\\(ancestors\\)' -and $line -match 'applyInheritanceAdvances: false') 'Crown eligibility requires genealogy, not household membership or a fresh estate entitlement.'\nCheck ($panel -match 'return HereditaryRealmSuccession.GetLine\\(_kingdom\\)') 'Succession panel uses the complete realm line.'\nforeach ($file in @('Behaviors/CrownAccessionBehavior.cs', 'Behaviors/CrownAbdication.cs', 'Behaviors/CrownForcedAbdication.cs')) {",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "P011CourtCrownStability.Tests.ps1",
+    "message": "FAIL: Term admission rechecked after ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);",
+    "assertion_line": 37,
+    "assertion": "foreach ($mutator in @('UpdatePlayerAgenda(old);', 'ideology.BeginCourtTerm(realm);', 'ElectiveSuccessionBehavior.Instance?.Maintain(realm, renewal: true);', 'OpenCrownTerm(realm, manager);')) {\n    $pos = $open.IndexOf($mutator, [StringComparison]::Ordinal)\n    Check ($pos -ge 0 -and $open.IndexOf('if (!CourtRulerUnchanged(realm, house, ruler)) return;', $pos, [StringComparison]::Ordinal) -gt $pos) \"Term admission rechecked after $mutator\"\n}",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "P012BFamilyUiCompatibility.Tests.ps1",
+    "message": "FAIL: Finalizer touches only Hero Family; unported clan household is excluded.",
+    "assertion_line": 49,
+    "assertion": "       $final.Contains('FindTarget(') -and\n       $final.Contains('ApplyPatches') -and $final.Contains('ProcessMovie')) 'Prefab finalizer verifies installed UIExtender method shape before patching.'\nCheck ($final.Contains('if (movieName == \"EncyclopediaHeroPage\")') -and\n       !$final.Contains('EncyclopediaClanHouseholdPrefabPatch') -and",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "P012CInheritanceHover.Tests.ps1",
+    "message": "FAIL: Existing titles, claims, family and Allies sections are preserved.",
+    "assertion_line": 34,
+    "assertion": "       $xml.SelectNodes(\"//GridWidget[@DataSource='{BellumInheritance}']//TextWidget[@Text='@Value']\").Count -eq 0 -and\n       $xml.SelectNodes(\"//GridWidget[@DataSource='{BellumInheritance}']//HintWidget[@DataSource='{Hint}']\").Count -eq 1) 'Only title text is visible; native hover covers name text.'\nCheck ($xml.SelectNodes(\"//*[@Id='BellumTitlesDivider']\").Count -eq 1 -and\n       $xml.SelectNodes(\"//*[@Id='BellumClaimsDivider']\").Count -eq 1 -and",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "P014AHeroFamilyHarness.Tests.ps1",
+    "message": "FAIL: Test-only startup probe does not import missing Lordship, retainer or Clan Household dependencies.",
+    "assertion_line": 55,
+    "assertion": "       $startup.Contains('Optional Family Tree refresh inspection does not initialize native game texts') -and\n       $startup.Contains('Startup probe begins before native game texts are initialized')) 'Startup path protects early GameTexts and Family Tree adapter.'\nCheck (-not $startup.Contains('LordshipAppointmentPatches') -and\n       -not $startup.Contains('LordshipMapBannerPatch') -and",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "P014CRecoveryGraceCrownHarness.Tests.ps1",
+    "message": "FAIL: Absent ProtectedRealmLoadMigrationPatch is explicitly excluded; no dummy compatibility patch introduced.",
+    "assertion_line": 23,
+    "assertion": "       $restored.Contains('Only verified elimination removes the cleanup record') -and\n       $restored.Contains('A saved unfinished restoration is not treated as an unowned historical orphan')) 'Household retry and neighboring orphan protection remain exercised.'\nCheck (-not $restored.Contains('ProtectedRealmLoadMigrationPatch') -and\n       -not $restored.Contains('IsMigrationActive') -and",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "Stage31KPolicyVotePublicProvenance.Tests.ps1",
+    "message": "STAGE31K FAIL actual_source_vote_conclude_caller_unchanged",
+    "assertion_line": 17,
+    "assertion": "$old31j = Read 'Tests/Stage31JCourtPublicProvenanceSourceAudit.Tests.ps1'\n\nCheck ($patch.Contains('[HarmonyPatch(typeof(KingdomPolicyDecision), \"ApplyChosenOutcome\")]') -and\n    $patch.Contains('Resolved.Add(__instance, new object());') -and",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "Stage32H2OPendingParleyOffFence.RED.Tests.ps1",
+    "message": "STAGE32H2O_RED previous valid sign and treaty path still exists for ON",
+    "assertion_line": 31,
+    "assertion": "Check ($f1.Contains('ShouldPreventAutonomousForeignResolution') -and\n    $war.Contains('if (IsAiInfluenceForeignLedger(war))')) 'AII ledger remains accounting-only in ordinary scoring and terminal path'\nCheck ($sign.Contains('SpendCouncilCommitments(proposal, winnerCouncil, loserCouncil)') -and\n    $sign.Contains('ApplyTreaty(war, proposal, winner, loser)') -and",
+    "classification": "STALE_CALL_SIGNATURE_FIRST_FAILURE",
+    "evidence_or_next_check": "ApplyTreaty now accepts playerReviewedWhitePeace at the signing call. Original four-argument string absent. This does not validate all OFF behavior."
+  },
+  {
+    "test": "Stage32H2PFreezePendingParley.Tests.ps1",
+    "message": "STAGE32H2P_RED original ON signing, councils and treaty execution retained",
+    "assertion_line": 37,
+    "assertion": "CheckFreeze 'Open' $open 'GetPendingProposalForPlayer(war)'\nCheckFreeze 'Edit draft' $draft '_proposals.FirstOrDefault('\nCheck ($sign.Contains('SpendCouncilCommitments(proposal, winnerCouncil, loserCouncil)') -and\n       $sign.Contains('ApplyTreaty(war, proposal, winner, loser)')) 'original ON signing, councils and treaty execution retained'",
+    "classification": "STALE_CALL_SIGNATURE_FIRST_FAILURE",
+    "evidence_or_next_check": "First failure expects four-argument ApplyTreaty at player signing; current call passes explicit player-reviewed-white-peace flag."
+  },
+  {
+    "test": "Stage32H2QDeferredParleyTickOff.Tests.ps1",
+    "message": "STAGE32H2Q_RED Revamp OFF returns before scanning proposal and war every tick",
+    "assertion_line": 24,
+    "assertion": "$offGuard = $onTick.IndexOf('|| !WarPeaceRevampBehavior.IsRevampEnabled()', [StringComparison]::Ordinal)\n$scan = $onTick.IndexOf('EnsureCollectionsInitialized();', [StringComparison]::Ordinal)\nCheck ($firstGuard -ge 0 -and $offGuard -gt $firstGuard -and $offGuard -lt $scan) 'Revamp OFF returns before scanning proposal and war every tick'\nCheck ($onTick.Contains('|| InformationManager.IsAnyInquiryActive()') -and",
+    "classification": "DEMONSTRATED_MISSING_EARLY_GUARD",
+    "evidence_or_next_check": "OnTick actually lacks the !IsRevampEnabled early fence before scanning. TryOpenPlayerParley has its own downstream fence; exact gameplay/performance impact and history require separate stage."
+  },
+  {
+    "test": "Stage32H2TMod145ReleaseMetadata.Tests.ps1",
+    "message": "STAGE32H2T_RED main_Bellum_mod_id_and_version_146",
+    "assertion_line": 22,
+    "assertion": "$assembly = Get-Content -LiteralPath $assemblyPath -Raw\n$verifier = Get-Content -LiteralPath $verifierPath -Raw\nCheck ($manifest.Module.Name.value -eq 'Bellum Civile' -and\n    $manifest.Module.Id.value -eq 'BellumCivile' -and",
+    "classification": "OLD_VERSION_GATE",
+    "evidence_or_next_check": "Test explicitly targets Bellum mod 1.4.6 / Bannerlord 1.4.8 / old Naval identity, not the current 1.4.12b port candidate."
+  },
+  {
+    "test": "StandingElections.Tests.ps1",
+    "message": "Personal promises have captured expiry dates and survive renewal while valid.",
+    "assertion_line": 17,
+    "assertion": "Check ($crown.Contains('ElectiveElection = sovereign == victim') -and $crown.Contains('SelectSuccessor(record)')) 'Ordinary elective death is captured by the existing Crown journal.'\nCheck ($crown.Contains('!record.ElectiveElection && !PrepareAbdicationTransfer')) 'Elective abdication cannot trigger hereditary living estate distribution.'\nCheck ($behavior.Contains('old.Source') -and $behavior.Contains('!old.Until.IsPast') -and $behavior.Contains('CampaignTime.Now + CampaignTime.Days(BellumCivileOptions.CourtTermDays)')) 'Personal promises have captured expiry dates and survive renewal while valid.'\nCheck ($behavior.Contains('record.Frozen ? previous.FirstOrDefault') -and $behavior.Contains('RetallyFrozen(record)')) 'Final prompt changes votes without repricing captured clan weights.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "SuccessionPlayer.Tests.ps1",
+    "message": "Hierarchy menu contains one challenge action with room for its additional row.",
+    "assertion_line": 37,
+    "assertion": "    $loyalty.Contains('BC_Loyalty_PlayerReasons') -and $loyalty.Contains('IsPlayerHeir ? (double?)null')) 'Player loyalty has no numeric score or state color.'\n[xml]$panel = Read 'GUI/Prefabs/KingdomManagement/Hierarchy/BellumHierarchyPanel.xml'\nCheck ($panel.SelectNodes('//*[@Command.Click=\"ExecuteChallenge\"]').Count -eq 1 -and\n    $vm.Contains('ActionMenuHeight => IsChallengeVisible ? 322 : 288')) 'Hierarchy menu contains one challenge action with room for its additional row.'",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  },
+  {
+    "test": "SuccessionWar.Tests.ps1",
+    "message": "Restored successor creation has a deterministic identity and resumable initialization receipts.",
+    "assertion_line": 36,
+    "assertion": "Check ($resolution.IndexOf('savedRewards.Add(clan)') -lt $resolution.IndexOf('CampaignEventDispatcher.Instance.OnClanInfluenceChanged(clan, reward)') -and\n    $resolution.Contains('HasPendingWarOutcome(collapsedParent)')) 'Rewards record before event callbacks; pending collapse outcomes cannot create another successor realm.'\nCheck ($resolution.Contains('challenge.OutcomeRealm = restoredKingdom') -and\n    $resolution.Contains('challenge.RestoredRealmInitialized = true') -and",
+    "classification": "SEMANTIC_REVIEW_REQUIRED",
+    "evidence_or_next_check": "Preserve assertion. Trace current implementation, version history and callers before classifying as obsolete or changing production."
+  }
+]

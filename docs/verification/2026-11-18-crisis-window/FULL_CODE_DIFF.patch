@@ -1,0 +1,288 @@
+--- S25A/Properties/AssemblyInfo.cs
++++ S25B/Properties/AssemblyInfo.cs
+@@ -30,5 +30,5 @@
+ //      Revision
+ //
+ [assembly: AssemblyVersion("1.0.0.0")]
+-[assembly: AssemblyFileVersion("1.4.12.6")]
+-[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.6")]
++[assembly: AssemblyFileVersion("1.4.12.7")]
++[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.7")]
+--- S25A/_Module/SubModule.xml
++++ S25B/_Module/SubModule.xml
+@@ -3,7 +3,7 @@
+     <Name value="Bellum Civile"/>
+     <Id value="BellumCivile"/>
+     <!-- 1.4.12b CR alpha identity; numeric 4th part for Bannerlord ApplicationVersion. -->
+-    <Version value="v1.4.12.6"/>
++    <Version value="v1.4.12.7"/>
+ 	<DefaultModule value="false"/>
+ 	<ModuleCategory value="Singleplayer"/>
+ 	<Official value="false"/>
+--- S25A/scripts/Build-CrBellumModuleWindows.ps1
++++ S25B/scripts/Build-CrBellumModuleWindows.ps1
+@@ -1,7 +1,7 @@
+ #Requires -Version 7.2
+ # Both BellumCivile.dll and BellumCivile.NavalDLCPatch.dll are mandatory in CR releases.
+ # Force launch from extracted ZIP root (new output folder required):
+-# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14126_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14127_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
+ [CmdletBinding()]
+ param(
+  [Parameter(Mandatory)][string]$OutputRoot,
+--- S25A/scripts/Test-ForeignDiplomacyCheckpoint.ps1
++++ S25B/scripts/Test-ForeignDiplomacyCheckpoint.ps1
+@@ -6,7 +6,7 @@
+ $root=Split-Path $PSScriptRoot -Parent
+ $pwsh=(Get-Process -Id $PID).Path
+ $results=@()
+-foreach($name in @('ForeignCrisisBudget.Tests','ForeignDiplomacyJournal.Tests','ForeignDiplomacyJournal.Schema.Tests','ForeignDiplomacyJournal.Mutations',
++foreach($name in @('ForeignCrisisWindow.Tests','ForeignCrisisBudget.Tests','ForeignDiplomacyJournal.Tests','ForeignDiplomacyJournal.Schema.Tests','ForeignDiplomacyJournal.Mutations',
+  'ForeignDiplomacyAdmission.Tests','ForeignDiplomacyAdmission.Mutations','ExistingPoliticalPressure.Tests','ExistingWarState.Tests',
+  'ExistingClaimState.Tests','ExistingCouncilState.Tests','ExistingRecordedName.Tests','RealmPreparationReceipt.Tests',
+  'CompleteReleaseNaval.Tests','ModuleLocalLogs.Tests')){
+--- /dev/null
++++ S25B/ForeignCrisisWindowPolicy.cs
+@@ -0,0 +1,87 @@
++using System;
++
++namespace BellumCivile
++{
++    internal enum ForeignCrisisReplyState
++    {
++        Pending = 0, ValidTerminalResponse, TechnicalFailure, StaleOrInvalidResponse
++    }
++
++    internal enum ForeignCrisisWindowStatus
++    {
++        Invalid = 0, Paused, WaitCampaignFloor, WaitOpportunity, ReadyForNativeAssessment
++    }
++
++    // Immutable in-memory observation only. No Saveable fields or engine lifecycle registration.
++    internal sealed class ForeignCrisisWindowState
++    {
++        internal readonly double OpeningDay, MinimumCampaignDays, BudgetSeconds;
++        internal readonly double LastObservedDay, SpentActiveSeconds;
++        internal double CampaignFloorDay => OpeningDay + MinimumCampaignDays;
++        internal ForeignCrisisWindowState(double openingDay, double minimumCampaignDays,
++            double budgetSeconds, double lastObservedDay, double spentActiveSeconds)
++        {
++            OpeningDay = openingDay; MinimumCampaignDays = minimumCampaignDays; BudgetSeconds = budgetSeconds;
++            LastObservedDay = lastObservedDay; SpentActiveSeconds = spentActiveSeconds;
++        }
++    }
++
++    internal sealed class ForeignCrisisWindowDecision
++    {
++        internal readonly ForeignCrisisWindowStatus Status;
++        internal readonly ForeignCrisisWindowState Next;
++        internal ForeignCrisisWindowDecision(ForeignCrisisWindowStatus status, ForeignCrisisWindowState next = null)
++        { Status = status; Next = next; }
++    }
++
++    // Pure observation policy: supplied time is trusted adapter data, NEVER model payload.
++    // Does not measure TPS/time, persist progress, validate a ruler/war/draft, or execute a treaty.
++    internal static class ForeignCrisisWindowPolicy
++    {
++        private static bool Finite(double n) => !double.IsNaN(n) && !double.IsInfinity(n);
++        private static bool Nonnegative(double n) => Finite(n) && n >= 0;
++        private static bool Positive(double n) => Finite(n) && n > 0;
++        private static bool ValidState(ForeignCrisisWindowState s) => s != null
++            && Nonnegative(s.OpeningDay) && Positive(s.MinimumCampaignDays) && Positive(s.BudgetSeconds)
++            && Finite(s.CampaignFloorDay) && s.CampaignFloorDay > s.OpeningDay
++            && Nonnegative(s.LastObservedDay) && s.LastObservedDay >= s.OpeningDay
++            && Nonnegative(s.SpentActiveSeconds);
++
++        internal static bool TryOpen(double openingDay, double minimumCampaignDays,
++            ForeignCrisisBudgetResult budget, out ForeignCrisisWindowState state)
++        {
++            state = null;
++            if (budget == null || budget.Status != ForeignCrisisBudgetStatus.Ready)
++                return false;
++            var candidate = new ForeignCrisisWindowState(openingDay, minimumCampaignDays,
++                budget.BudgetSeconds, openingDay, 0);
++            if (!ValidState(candidate)) return false;
++            state = candidate;
++            return true;
++        }
++
++        // totalActiveSeconds is an ABSOLUTE cumulative amount for this window, not a delta.
++        // Future adapter must exclude offline UTC gaps and reconcile unknown interrupted work.
++        // Current valid response is re-supplied per observation; success is intentionally not latched.
++        internal static ForeignCrisisWindowDecision Observe(ForeignCrisisWindowState state,
++            double currentCampaignDay, double totalActiveSeconds, bool campaignPaused,
++            ForeignCrisisReplyState reply)
++        {
++            if (!ValidState(state) || !Nonnegative(currentCampaignDay) || !Nonnegative(totalActiveSeconds)
++                || currentCampaignDay < state.LastObservedDay || totalActiveSeconds < state.SpentActiveSeconds
++                || (reply != ForeignCrisisReplyState.Pending && reply != ForeignCrisisReplyState.ValidTerminalResponse
++                    && reply != ForeignCrisisReplyState.TechnicalFailure && reply != ForeignCrisisReplyState.StaleOrInvalidResponse))
++                return new ForeignCrisisWindowDecision(ForeignCrisisWindowStatus.Invalid);
++
++            var next = new ForeignCrisisWindowState(state.OpeningDay, state.MinimumCampaignDays,
++                state.BudgetSeconds, currentCampaignDay, totalActiveSeconds);
++            if (campaignPaused) return new ForeignCrisisWindowDecision(ForeignCrisisWindowStatus.Paused, next);
++            if (currentCampaignDay < state.CampaignFloorDay)
++                return new ForeignCrisisWindowDecision(ForeignCrisisWindowStatus.WaitCampaignFloor, next);
++            if (reply != ForeignCrisisReplyState.ValidTerminalResponse && totalActiveSeconds < state.BudgetSeconds)
++                return new ForeignCrisisWindowDecision(ForeignCrisisWindowStatus.WaitOpportunity, next);
++            // Only timing eligibility for fresh Native assessment. This is NOT consent or execution permission.
++            return new ForeignCrisisWindowDecision(ForeignCrisisWindowStatus.ReadyForNativeAssessment, next);
++        }
++    }
++}
+--- /dev/null
++++ S25B/README_S25B_UK.md
+@@ -0,0 +1,36 @@
++# Bellum1.4.12.7 — S25B, політика двох годинників
++
++Поточний опис накопичувального ZIP. Інвентар — `S25B_PACKAGE_FILES_SHA256.json`;
++попередні README/аудити збережені як історія.
++
++Додано `ForeignCrisisWindowPolicy.cs`: одночасна перевірка мінімуму ігрових днів
++та наданого LLM бюджету реального часу. Пауза забороняє перехід до оцінки поразки;
++технічна помилка не є фінальною відповіддю; повторні перевірки не скидають і не
++подвоюють час. Повернення годинників назад дає явну відмову.
++
++59 нових перевірок і всі15 накопичувальних наборів PASS. П’ять навмисних помилок
++нової політики також виявлені.
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForeignDiplomacyCheckpoint.ps1
++```
++
++Додаткова перевірка чутливості тестів:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignCrisisWindow.Mutations.ps1
++```
++
++Це лише політика над переданими значеннями часу, без активного ігрового таймера.
++Вона не вимірює час/TPS, не зберігається автоматично в сейві й не виконує мир.
++Результат ReadyForNativeAssessment — дозвіл перевірити актуальний стан засобами
++Bellum, а не згода монархів і не дозвіл застосувати договір.
++
++На ПК зараз нічого робити не потрібно. Windows-білд і game/save-load NOT_RUN.
++Збережений білдер обох DLL та повної структури мода:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14127_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++```
++
++Точні межі й докази: `docs/verification/2026-11-18-crisis-window/`.
+--- /dev/null
++++ S25B/Tests/ForeignCrisisWindow.Mutations.ps1
+@@ -0,0 +1,31 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignCrisisWindow.Mutations.ps1
++$ErrorActionPreference='Stop'
++$PSNativeCommandUseErrorActionPreference=$false
++$root=Split-Path $PSScriptRoot -Parent
++$source=Get-Content -Raw -LiteralPath (Join-Path $root 'ForeignCrisisWindowPolicy.cs')
++$pwsh=(Get-Process -Id $PID).Path
++$cases=@(
++ @('campaign_floor_ignored','currentCampaignDay < state.CampaignFloorDay','currentCampaignDay < state.OpeningDay'),
++ @('opportunity_wait_ignored','&& totalActiveSeconds < state.BudgetSeconds','&& totalActiveSeconds < 0'),
++ @('technical_failure_as_final','if (reply != ForeignCrisisReplyState.ValidTerminalResponse && totalActiveSeconds < state.BudgetSeconds)','if (reply != ForeignCrisisReplyState.ValidTerminalResponse && reply != ForeignCrisisReplyState.TechnicalFailure && totalActiveSeconds < state.BudgetSeconds)'),
++ @('pause_ignored','if (campaignPaused)','if (campaignPaused && totalActiveSeconds < 0)'),
++ @('absolute_counter_double_counted','state.BudgetSeconds, currentCampaignDay, totalActiveSeconds);','state.BudgetSeconds, currentCampaignDay, totalActiveSeconds + state.SpentActiveSeconds);')
++)
++foreach($case in $cases){
++ $name,$before,$after=$case
++ if([regex]::Matches($source,[regex]::Escape($before)).Count -ne 1){throw "Mutation boundary changed: $name"}
++ $temp=Join-Path ([IO.Path]::GetTempPath()) ('window-mutant-'+[guid]::NewGuid().ToString('N'))
++ New-Item -ItemType Directory -Path (Join-Path $temp 'Tests') | Out-Null
++ try{
++  [IO.File]::WriteAllText((Join-Path $temp 'ForeignCrisisWindowPolicy.cs'),$source.Replace($before,$after))
++  Copy-Item -LiteralPath (Join-Path $root 'ForeignCrisisBudgetEstimator.cs') -Destination $temp
++  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ForeignCrisisWindowHarness') -Destination (Join-Path $temp 'Tests') -Recurse
++  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ForeignCrisisWindow.Tests.ps1') -Destination (Join-Path $temp 'Tests')
++  $output=(& $pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $temp 'Tests/ForeignCrisisWindow.Tests.ps1') 2>&1 | Out-String)
++  $code=$LASTEXITCODE
++  if($code -eq 0 -or $output -notmatch 'FAIL' -or $output -notmatch 'Exception calling' -or $output -match 'Add-Type:'){throw "Mutation not rejected by assertion: $name`n$output"}
++  Write-Output ('WINDOW_MUTATION_REJECTED '+$name)
++ }finally{Remove-Item -LiteralPath $temp -Recurse -Force}
++}
++Write-Output 'WINDOW MUTATIONS REJECTED 5'
+--- /dev/null
++++ S25B/Tests/ForeignCrisisWindow.Tests.ps1
+@@ -0,0 +1,11 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignCrisisWindow.Tests.ps1
++$ErrorActionPreference='Stop'
++$root=Split-Path $PSScriptRoot -Parent
++$temp=Join-Path ([IO.Path]::GetTempPath()) ('crisis-window-'+[guid]::NewGuid().ToString('N'))
++New-Item -ItemType Directory -Path $temp | Out-Null
++try{
++ Copy-Item -LiteralPath (Join-Path $root 'Tests/ForeignCrisisWindowHarness/Scenarios.cs.txt') -Destination (Join-Path $temp 'Scenarios.cs')
++ Add-Type -Path @((Join-Path $root 'ForeignCrisisBudgetEstimator.cs'),(Join-Path $root 'ForeignCrisisWindowPolicy.cs'),(Join-Path $temp 'Scenarios.cs')) -CompilerOptions '/langversion:7.3'
++ [ForeignCrisisWindowScenarios]::Run()
++}finally{Remove-Item -LiteralPath $temp -Recurse -Force}
+--- /dev/null
++++ S25B/Tests/ForeignCrisisWindowHarness/Scenarios.cs.txt
+@@ -0,0 +1,65 @@
++using System;
++using BellumCivile;
++public static class ForeignCrisisWindowScenarios
++{
++ static int passed;
++ static void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);passed++;Console.WriteLine("PASS "+name);}
++ static ForeignCrisisBudgetResult Budget(){
++  var profile=new ForeignCrisisLatencyProfile("synthetic-route",false,4096,1024,ForeignCrisisEstimateMode.MeasuredEndToEnd,50,null,null,null);
++  var call=new ForeignCrisisPlannedCall("synthetic-route",1000,1000,1,0,0,false,profile);
++  return ForeignCrisisBudgetEstimator.Estimate(new[]{call},2,10,100);
++ }
++ static ForeignCrisisWindowState Open(){ForeignCrisisWindowState s;if(!ForeignCrisisWindowPolicy.TryOpen(10,3,Budget(),out s))throw new Exception("setup");return s;}
++ static ForeignCrisisWindowDecision At(ForeignCrisisWindowState s,double day,double spent,bool paused=false,ForeignCrisisReplyState reply=ForeignCrisisReplyState.Pending){return ForeignCrisisWindowPolicy.Observe(s,day,spent,paused,reply);}
++ public static void Run(){
++  var s=Open();Check(s.OpeningDay==10&&s.CampaignFloorDay==13&&s.BudgetSeconds==100&&s.SpentActiveSeconds==0,"real_budget_result_opens_frozen_window");
++  Check(At(s,12,100).Status==ForeignCrisisWindowStatus.WaitCampaignFloor,"real_budget_expired_not_enough_campaign_days");
++  Check(At(s,13,99).Status==ForeignCrisisWindowStatus.WaitOpportunity,"campaign_floor_alone_does_not_outrun_slow_llm");
++  Check(At(s,13,100).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"exact_both_boundaries");
++  Check(At(s,14,120).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"both_boundaries_exceeded");
++  Check(At(s,13,0,reply:ForeignCrisisReplyState.ValidTerminalResponse).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"valid_final_reply_closes_opportunity_early");
++  Check(At(s,12,0,reply:ForeignCrisisReplyState.ValidTerminalResponse).Status==ForeignCrisisWindowStatus.WaitCampaignFloor,"valid_final_reply_never_shortens_campaign_floor");
++  foreach(var reply in new[]{ForeignCrisisReplyState.Pending,ForeignCrisisReplyState.TechnicalFailure,ForeignCrisisReplyState.StaleOrInvalidResponse}){
++   Check(At(s,13,99,reply:reply).Status==ForeignCrisisWindowStatus.WaitOpportunity,"nonterminal_before_budget_"+reply);
++   Check(At(s,13,100,reply:reply).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"budget_expiry_after_campaign_floor_"+reply);
++  }
++  foreach(var reply in new[]{ForeignCrisisReplyState.Pending,ForeignCrisisReplyState.ValidTerminalResponse,ForeignCrisisReplyState.TechnicalFailure})
++   Check(At(s,14,120,true,reply).Status==ForeignCrisisWindowStatus.Paused,"paused_never_authorizes_assessment_"+reply);
++  var paused=At(s,12,120,true).Next;
++  Check(paused.SpentActiveSeconds==120&&paused.OpeningDay==10&&paused.CampaignFloorDay==13,"paused_provider_work_retained");
++  Check(At(paused,12,120).Status==ForeignCrisisWindowStatus.WaitCampaignFloor,"unpause_does_not_advance_campaign_time");
++  Check(At(paused,13,120).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"unpause_after_both_clocks_ready");
++  var observation=At(s,11,30);var repeated=At(observation.Next,11,30);
++  Check(repeated.Next.SpentActiveSeconds==30,"repeat_observation_not_double_counted");
++  var retried=At(repeated.Next,12,40,reply:ForeignCrisisReplyState.TechnicalFailure).Next;
++  Check(retried.OpeningDay==10&&retried.MinimumCampaignDays==3&&retried.BudgetSeconds==100&&retried.SpentActiveSeconds==40,"retry_preserves_origin_floor_and_budget");
++  Check(s.SpentActiveSeconds==0&&s.LastObservedDay==10,"original_state_immutable");
++  Check(At(retried,12,39).Status==ForeignCrisisWindowStatus.Invalid,"active_time_rollback_refused");
++  Check(At(retried,11.9,40).Status==ForeignCrisisWindowStatus.Invalid,"campaign_rollback_refused");
++  Check(At(retried,12,0,reply:ForeignCrisisReplyState.TechnicalFailure).Status==ForeignCrisisWindowStatus.Invalid,"failure_cannot_reset_counter");
++  var earlyValid=At(s,12,10,reply:ForeignCrisisReplyState.ValidTerminalResponse).Next;
++  Check(At(earlyValid,13,20,reply:ForeignCrisisReplyState.StaleOrInvalidResponse).Status==ForeignCrisisWindowStatus.WaitOpportunity,"stale_reply_not_latched_as_final_consent");
++  Check(At(s,13,1,reply:(ForeignCrisisReplyState)999).Status==ForeignCrisisWindowStatus.Invalid,"unknown_reply_status_blocked");
++  Check(At(null,13,1).Status==ForeignCrisisWindowStatus.Invalid,"null_state_refused");
++  Check(At(s,9,0).Next==null,"invalid_observation_has_no_next_state");
++  foreach(double bad in new[]{double.NaN,double.PositiveInfinity,double.NegativeInfinity,-1}){
++   Check(At(s,bad,0).Status==ForeignCrisisWindowStatus.Invalid,"invalid_campaign_day_"+bad);
++   Check(At(s,13,bad).Status==ForeignCrisisWindowStatus.Invalid,"invalid_active_counter_"+bad);
++  }
++  ForeignCrisisWindowState rejected;
++  Check(!ForeignCrisisWindowPolicy.TryOpen(10,3,null,out rejected)&&rejected==null,"null_budget_cannot_open");
++  foreach(var status in new[]{ForeignCrisisBudgetStatus.DoesNotFit,ForeignCrisisBudgetStatus.MissingProfile,ForeignCrisisBudgetStatus.InvalidConfiguration})
++   Check(!ForeignCrisisWindowPolicy.TryOpen(10,3,new ForeignCrisisBudgetResult(status,budget:100),out rejected),"failed_budget_cannot_open_"+status);
++  foreach(double bad in new[]{0,-1,double.NaN,double.PositiveInfinity}){
++   Check(!ForeignCrisisWindowPolicy.TryOpen(10,3,new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.Ready,budget:bad),out rejected),"invalid_ready_budget_"+bad);
++   Check(!ForeignCrisisWindowPolicy.TryOpen(10,bad,Budget(),out rejected),"invalid_grace_"+bad);
++  }
++  Check(!ForeignCrisisWindowPolicy.TryOpen(double.MaxValue,double.MaxValue,Budget(),out rejected),"campaign_deadline_overflow_refused");
++  Check(!ForeignCrisisWindowPolicy.TryOpen(double.MaxValue,1,Budget(),out rejected),"campaign_deadline_precision_collapse_refused");
++  var corrupt=new[]{new ForeignCrisisWindowState(-1,3,100,10,0),new ForeignCrisisWindowState(10,0,100,10,0),new ForeignCrisisWindowState(10,3,0,10,0),new ForeignCrisisWindowState(10,3,100,9,0),new ForeignCrisisWindowState(10,3,100,10,-1),new ForeignCrisisWindowState(10,3,100,double.NaN,0)};
++  for(int i=0;i<corrupt.Length;i++)Check(At(corrupt[i],13,100).Status==ForeignCrisisWindowStatus.Invalid,"corrupt_state_"+i);
++  var sameAgain=At(s,13,100);Check(sameAgain.Status==At(s,13,100).Status&&sameAgain.Next.BudgetSeconds==100,"deterministic_policy_no_wall_clock_dependency");
++  Check(default(ForeignCrisisWindowStatus)==ForeignCrisisWindowStatus.Invalid,"default_verdict_not_ready");
++  Console.WriteLine("CRISIS WINDOW PASS "+passed+"; pure policy; active clocks, save-load and Native execution NOT_RUN");
++ }
++}

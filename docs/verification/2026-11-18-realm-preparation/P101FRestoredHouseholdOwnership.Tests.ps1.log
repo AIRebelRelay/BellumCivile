@@ -1,0 +1,25 @@
+P101F_PASS ownership matches active journal, exact source/destination/faction and captured house
+P101F_PASS existing preparation lifetime encompasses synchronous household moves
+P101F_PASS ownership and participating houses captured before transfer
+P101F_PASS single faction kingdom-change listener located
+P101F_PASS only actively owned restoration bypasses faction removal
+P101F_PASS prior P1-01E collapse ownership guard kept
+P101F_PASS broad upstream parent-level suppression intentionally absent
+P101F_PASS neighboring membership callback preserved: TrackPlayerCourtTransfer(clan, oldKingdom, newKingdom);
+P101F_PASS neighboring membership callback preserved: bool preserveQueuedLoyalistResolution =
+P101F_PASS neighboring membership callback preserved: ShouldKeepIdeologyMembership(faction, oldKingdom, newKingdom)
+P101F_PASS neighboring membership callback preserved: QueueSettlementRefresh(clan);
+P101F_PASS neighboring membership callback preserved: RepairReferencedKingdomRulerState(oldKingdom);
+P101F_PASS neighboring membership callback preserved: RepairReferencedKingdomRulerState(newKingdom);
+P101F_PASS pending but inactive journal does not freeze any clan
+P101F_PASS founder is preserved during exact owned migration
+P101F_PASS captured original backer is preserved
+P101F_PASS other clan is free to leave even while restoration is active
+P101F_PASS another faction receives no exemption
+P101F_PASS parent kingdom ordinary transfer receives no exemption
+P101F_PASS foreign defection receives no exemption
+P101F_PASS defection after arrival in successor remains ordinary
+P101F_PASS ready journal cannot shadow a later clan move
+P101F_PASS exception/finally/end removes ownership protection
+P101F_PASS emergency restoration without faction owner does not freeze factions
+P101F_PASS isolated active-transfer predicate; real Campaign.OnClanChangedKingdom, old-save and Bridge tests NOT RUN

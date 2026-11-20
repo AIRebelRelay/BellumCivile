@@ -76,7 +76,7 @@ Check (-not $capture.Contains('AcknowledgeCourt') -and
 Check ($capture.Contains('proof.VoteDay != CampaignTime.Now.ToDays') -and
     $capture.Contains('stale_or_foreign_vote_proof') -and
     $capture.IndexOf('proof.VoteDay != CampaignTime.Now.ToDays') -lt
-    $capture.IndexOf('TryGetRecordedParticipants(decision')) -and
+    $capture.IndexOf('TryGetRecordedParticipants(decision') -and
     $capture.Contains('TryReadVoteProof(agenda.IntegrationId, source, out proof)')) 'never_bind_current_ballot_to_old_resultapplied_agenda_proof'
 Check ($capture.Contains('SnapshotPolicyVoteProofIds()') -and
     $capture.Contains('new HashSet<string>(_courtPolicyVotePublicProvenance.Keys, StringComparer.Ordinal)') -and

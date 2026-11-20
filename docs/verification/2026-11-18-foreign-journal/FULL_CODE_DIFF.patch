@@ -1,0 +1,963 @@
+--- S23A/Behaviors/BellumIntegrationBehavior.cs
++++ S23B/Behaviors/BellumIntegrationBehavior.cs
+@@ -25,6 +25,6 @@
+             CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, TrackVote);
+             CampaignEvents.TickEvent.AddNonSerializedListener(this, DispatchCouncilAppointments);
+         }
+-        public override void SyncData(IDataStore store) { SyncLegitimacy(store); SyncPartitions(store); SyncVotes(store); }
++        public override void SyncData(IDataStore store) { PrepareForeignDiplomacySync(store); SyncLegitimacy(store); SyncPartitions(store); SyncVotes(store); SyncForeignDiplomacy(store); }
+     }
+ }
+--- S23A/BellumCivileSaveDefiner.cs
++++ S23B/BellumCivileSaveDefiner.cs
+@@ -16,6 +16,8 @@
+ 
+         protected override void DefineClassTypes()
+         {
++            AddClassDefinition(typeof(ForeignDiplomacyJournalState), 150);
++            AddClassDefinition(typeof(ForeignDiplomacyIntentRecord), 151);
+             AddClassDefinition(typeof(VoluntaryPactDecision), 148);
+             AddClassDefinition(typeof(VoluntaryPactDecision.PactOutcome), 149);
+             AddClassDefinition(typeof(CourtTermPreparationRecord), 145);
+@@ -175,6 +177,7 @@
+ 
+         protected override void DefineContainerDefinitions()
+         {
++            ConstructContainerDefinition(typeof(List<ForeignDiplomacyIntentRecord>));
+             ConstructContainerDefinition(typeof(List<VoluntaryPactProposalRecord>));
+             ConstructContainerDefinition(typeof(Dictionary<string, CourtTermPreparationRecord>));
+             ConstructContainerDefinition(typeof(Dictionary<string, AsylumVisitRecord>));
+--- S23A/Properties/AssemblyInfo.cs
++++ S23B/Properties/AssemblyInfo.cs
+@@ -30,5 +30,5 @@
+ //      Revision
+ //
+ [assembly: AssemblyVersion("1.0.0.0")]
+-[assembly: AssemblyFileVersion("1.4.12.4")]
+-[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.4")]
++[assembly: AssemblyFileVersion("1.4.12.5")]
++[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.5")]
+--- S23A/Tests/ModuleLocalLogs.Tests.ps1
++++ S23B/Tests/ModuleLocalLogs.Tests.ps1
+@@ -51,7 +51,7 @@
+  $packageStart=$runner.IndexOf('$module=Join-Path')
+  if($packageStart -lt 0){throw 'Package boundary not found'}
+  $source=$root;$out=Join-Path $temp 'build-result';New-Item -ItemType Directory -Path $out | Out-Null
+- $version=[pscustomobject]@{FileVersion='1.4.12.4'}
++ $version=[pscustomobject]@{FileVersion='1.4.12.5'}
+  . ([scriptblock]::Create($runner.Substring($packageStart)))
+  Check ((Test-Path "$module/SubModule.xml") -and (Test-Path "$module/bin/Win64_Shipping_Client/BellumCivile.dll") -and (Test-Path "$module/logs" -PathType Container)) 'actual packaging block creates full module layout using fixture DLL'
+  $expected=@(Get-ChildItem (Join-Path $root 'GUI'),(Join-Path $root 'ModuleData') -Recurse -File)
+@@ -59,7 +59,7 @@
+  foreach($item in $expected){$relative=[IO.Path]::GetRelativePath($root,$item.FullName);$target=Join-Path $module $relative;if(!(Test-Path -LiteralPath $target) -or (Get-FileHash $item.FullName).Hash -ne (Get-FileHash $target).Hash){$equal=$false}}
+  Check ($equal -and (Test-Path "$module/LICENSE.txt")) 'all GUI XML localization and license copied unchanged'
+  [xml]$manifest=Get-Content -Raw "$module/SubModule.xml"
+- Check ($manifest.Module.Version.value -ceq 'v1.4.12.4') 'packaged XML uses new hotfix version'
++ Check ($manifest.Module.Version.value -ceq 'v1.4.12.5') 'packaged XML uses new hotfix version'
+  Write-Output ('BELLUM_MODULE_LOG_PASS '+$count+' named checks; full game build NOT_RUN')
+ } finally {
+  if($logger){$logger.GetMethod('CloseLogWriter',[Reflection.BindingFlags]'NonPublic,Static').Invoke($null,@()) | Out-Null}
+--- S23A/_Module/SubModule.xml
++++ S23B/_Module/SubModule.xml
+@@ -3,7 +3,7 @@
+     <Name value="Bellum Civile"/>
+     <Id value="BellumCivile"/>
+     <!-- 1.4.12b CR alpha identity; numeric 4th part for Bannerlord ApplicationVersion. -->
+-    <Version value="v1.4.12.4"/>
++    <Version value="v1.4.12.5"/>
+ 	<DefaultModule value="false"/>
+ 	<ModuleCategory value="Singleplayer"/>
+ 	<Official value="false"/>
+--- S23A/scripts/Build-CrBellumModuleWindows.ps1
++++ S23B/scripts/Build-CrBellumModuleWindows.ps1
+@@ -1,7 +1,7 @@
+ #Requires -Version 7.2
+ # Both BellumCivile.dll and BellumCivile.NavalDLCPatch.dll are mandatory in CR releases.
+ # Force launch from extracted ZIP root (new output folder required):
+-# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14124_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14125_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
+ [CmdletBinding()]
+ param(
+  [Parameter(Mandatory)][string]$OutputRoot,
+--- /dev/null
++++ S23B/Behaviors/IntegrationForeignDiplomacy.cs
+@@ -0,0 +1,56 @@
++using System;
++using System.Collections.Generic;
++using TaleWorlds.CampaignSystem;
++
++namespace BellumCivile.Behaviors
++{
++    public sealed partial class BellumIntegrationBehavior
++    {
++        private ForeignDiplomacyJournalState _foreignDiplomacyState = ForeignDiplomacyJournal.CreateState();
++        // Never serialized. Reload invalidates all previously issued session tokens.
++        private ForeignDiplomacyJournal _foreignDiplomacyJournal;
++
++        private void PrepareForeignDiplomacySync(IDataStore store)
++        {
++            if (store.IsLoading)
++            {
++                // Invalidate before accessing the store: a failed load cannot retain a live old token.
++                _foreignDiplomacyJournal = null;
++                _foreignDiplomacyState = null;
++            }
++        }
++
++        private void SyncForeignDiplomacy(IDataStore store)
++        {
++            bool found = store.SyncData("BC_Integration_ForeignDiplomacyJournal_v1", ref _foreignDiplomacyState);
++            if (store.IsLoading && !found)
++                _foreignDiplomacyState = ForeignDiplomacyJournal.CreateState();
++            // Present-null, future and corrupt payloads remain saved evidence and become unavailable.
++        }
++
++        private ForeignDiplomacyJournal GetForeignDiplomacyJournal()
++        {
++            RequireCampaignThread();
++            if (!ReferenceEquals(Current, this))
++                throw new InvalidOperationException("Foreign diplomacy journal belongs to another campaign behavior.");
++            return _foreignDiplomacyJournal ?? (_foreignDiplomacyJournal = new ForeignDiplomacyJournal(_foreignDiplomacyState));
++        }
++
++        internal ForeignDiplomacyJournalSession GetForeignDiplomacyJournalSession() => GetForeignDiplomacyJournal().Session;
++
++        internal ForeignDiplomacyJournalResult BeginForeignDiplomacyIntent(ForeignDiplomacyJournalSession session,
++            ForeignDiplomacyIntentRequest request, double day, out ForeignDiplomacyIntentSnapshot snapshot) =>
++            GetForeignDiplomacyJournal().Begin(session, request, day, out snapshot);
++
++        internal ForeignDiplomacyJournalResult GetForeignDiplomacyIntentForRevalidation(ForeignDiplomacyJournalSession session,
++            string requestKey, string ownerId, out ForeignDiplomacyIntentSnapshot snapshot) =>
++            GetForeignDiplomacyJournal().GetForRevalidation(session, requestKey, ownerId, out snapshot);
++
++        internal ForeignDiplomacyJournalResult ListForeignDiplomacyIntentsForRevalidation(ForeignDiplomacyJournalSession session,
++            string ownerId, out IReadOnlyList<ForeignDiplomacyIntentSnapshot> snapshots) =>
++            GetForeignDiplomacyJournal().ListPendingForRevalidation(session, ownerId, out snapshots);
++
++        internal ForeignDiplomacyJournalResult CancelForeignDiplomacyIntent(ForeignDiplomacyJournalSession session,
++            ForeignDiplomacyIntentRequest request) => GetForeignDiplomacyJournal().Cancel(session, request);
++    }
++}
+--- /dev/null
++++ S23B/ForeignDiplomacyJournal.cs
+@@ -0,0 +1,187 @@
++using System;
++using System.Collections.Generic;
++using System.Linq;
++
++namespace BellumCivile
++{
++    internal enum ForeignDiplomacyJournalResult
++    {
++        Unavailable = 0, Added, Existing, Conflict, StaleSession, InvalidRequest,
++        Capacity, Found, Cancelled, AlreadyCancelled, NotFound
++    }
++
++    internal sealed class ForeignDiplomacyJournalSession
++    {
++        internal readonly string CampaignId;
++        internal readonly string SessionId;
++        internal ForeignDiplomacyJournalSession(string campaignId, string sessionId)
++        { CampaignId = campaignId; SessionId = sessionId; }
++    }
++
++    internal sealed class ForeignDiplomacyIntentRequest
++    {
++        internal readonly string RequestKey, OwnerId, OriginId, FirstKingdomId, SecondKingdomId;
++        internal readonly string FirstRulerId, SecondRulerId, ConflictEpoch, DraftFingerprint;
++        internal readonly ForeignDiplomacySource Source;
++        internal ForeignDiplomacyIntentRequest(string requestKey, string ownerId, string originId,
++            string firstKingdomId, string secondKingdomId, string firstRulerId, string secondRulerId,
++            string conflictEpoch, string draftFingerprint, ForeignDiplomacySource source)
++        {
++            RequestKey = requestKey; OwnerId = ownerId; OriginId = originId;
++            FirstKingdomId = firstKingdomId; SecondKingdomId = secondKingdomId;
++            FirstRulerId = firstRulerId; SecondRulerId = secondRulerId;
++            ConflictEpoch = conflictEpoch; DraftFingerprint = draftFingerprint; Source = source;
++        }
++    }
++
++    internal sealed class ForeignDiplomacyIntentSnapshot
++    {
++        internal readonly string CampaignId, OperationId;
++        internal readonly ForeignDiplomacyIntentRequest Request;
++        internal readonly double CreatedDay;
++        internal readonly bool Cancelled;
++        // Reading historical evidence never revalidates the world or reinstates consent.
++        internal bool RequiresWorldRevalidation => true;
++        internal ForeignDiplomacyIntentSnapshot(string campaignId, ForeignDiplomacyIntentRecord record)
++        {
++            CampaignId = campaignId; OperationId = record.OperationId;
++            Request = ForeignDiplomacyJournal.RequestFrom(record);
++            CreatedDay = record.CreatedDay; Cancelled = record.Cancelled;
++        }
++    }
++
++    // Internal metadata journal only. Does not claim a kingdom pair or call any game action.
++    internal sealed class ForeignDiplomacyJournal
++    {
++        internal const int Capacity = 128;
++        private readonly ForeignDiplomacyJournalState _state;
++        private readonly string _sessionId = Guid.NewGuid().ToString("N");
++        private readonly bool _available;
++
++        internal ForeignDiplomacyJournal(ForeignDiplomacyJournalState state)
++        { _state = state; _available = ValidState(state); }
++        internal ForeignDiplomacyJournalSession Session =>
++            new ForeignDiplomacyJournalSession(_state?.CampaignId, _sessionId);
++
++        internal static ForeignDiplomacyJournalState CreateState() => new ForeignDiplomacyJournalState
++        {
++            SchemaVersion = 1, CampaignId = Guid.NewGuid().ToString("N"),
++            Entries = new List<ForeignDiplomacyIntentRecord>()
++        };
++
++        private bool MatchesSession(ForeignDiplomacyJournalSession session) => session != null
++            && session.SessionId == _sessionId && session.CampaignId == _state?.CampaignId;
++        private static bool ValidDay(double value) => !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0;
++        private static bool ValidText(string value, int limit) => !string.IsNullOrWhiteSpace(value)
++            && value.Length <= limit && value == value.Trim() && !value.Any(char.IsControl);
++        private static bool ValidGuid(string value)
++        { Guid id; return Guid.TryParseExact(value, "N", out id) && id != Guid.Empty && id.ToString("N") == value; }
++        private static bool ValidRequest(ForeignDiplomacyIntentRequest r) => r != null
++            && ValidText(r.RequestKey, 128) && ValidText(r.OwnerId, 96) && ValidText(r.OriginId, 256)
++            && ValidText(r.FirstKingdomId, 128) && ValidText(r.SecondKingdomId, 128)
++            && r.FirstKingdomId != r.SecondKingdomId
++            && ValidText(r.FirstRulerId, 128) && ValidText(r.SecondRulerId, 128)
++            && r.FirstRulerId != r.SecondRulerId
++            && ValidText(r.ConflictEpoch, 256) && ValidText(r.DraftFingerprint, 256)
++            && (r.Source == ForeignDiplomacySource.AutomaticForeignWar
++                || r.Source == ForeignDiplomacySource.AutomaticForeignPeace
++                || r.Source == ForeignDiplomacySource.AutomaticForeignParley);
++
++        internal static ForeignDiplomacyIntentRequest RequestFrom(ForeignDiplomacyIntentRecord r) =>
++            new ForeignDiplomacyIntentRequest(r.RequestKey, r.OwnerId, r.OriginId, r.FirstKingdomId,
++                r.SecondKingdomId, r.FirstRulerId, r.SecondRulerId, r.ConflictEpoch,
++                r.DraftFingerprint, (ForeignDiplomacySource)r.Source);
++
++        private static bool ValidState(ForeignDiplomacyJournalState state)
++        {
++            if (state == null || state.SchemaVersion != 1 || !ValidGuid(state.CampaignId)
++                || state.Entries == null || state.Entries.Count > Capacity) return false;
++            var keys = new HashSet<string>(StringComparer.Ordinal);
++            var origins = new HashSet<string>(StringComparer.Ordinal);
++            var ids = new HashSet<string>(StringComparer.Ordinal);
++            foreach (var r in state.Entries)
++            {
++                if (r == null || !ValidGuid(r.OperationId) || !ValidRequest(RequestFrom(r))
++                    || !ValidDay(r.CreatedDay) || !keys.Add(r.RequestKey)
++                    || !origins.Add(r.OriginId) || !ids.Add(r.OperationId)) return false;
++            }
++            return true;
++        }
++
++        private static bool SameRequest(ForeignDiplomacyIntentRecord r, ForeignDiplomacyIntentRequest q) =>
++            r.RequestKey == q.RequestKey && r.OwnerId == q.OwnerId && r.OriginId == q.OriginId
++            && r.FirstKingdomId == q.FirstKingdomId && r.SecondKingdomId == q.SecondKingdomId
++            && r.FirstRulerId == q.FirstRulerId && r.SecondRulerId == q.SecondRulerId
++            && r.ConflictEpoch == q.ConflictEpoch && r.DraftFingerprint == q.DraftFingerprint
++            && r.Source == (int)q.Source;
++
++        internal ForeignDiplomacyJournalResult Begin(ForeignDiplomacyJournalSession session,
++            ForeignDiplomacyIntentRequest request, double day, out ForeignDiplomacyIntentSnapshot snapshot)
++        {
++            snapshot = null;
++            if (!MatchesSession(session)) return ForeignDiplomacyJournalResult.StaleSession;
++            if (!_available) return ForeignDiplomacyJournalResult.Unavailable;
++            if (!ValidRequest(request) || !ValidDay(day)) return ForeignDiplomacyJournalResult.InvalidRequest;
++            var prior = _state.Entries.FirstOrDefault(r => r.RequestKey == request.RequestKey || r.OriginId == request.OriginId);
++            if (prior != null)
++            {
++                if (!SameRequest(prior, request)) return ForeignDiplomacyJournalResult.Conflict;
++                snapshot = new ForeignDiplomacyIntentSnapshot(_state.CampaignId, prior);
++                return ForeignDiplomacyJournalResult.Existing;
++            }
++            if (_state.Entries.Count >= Capacity) return ForeignDiplomacyJournalResult.Capacity;
++            var record = new ForeignDiplomacyIntentRecord
++            {
++                OperationId = Guid.NewGuid().ToString("N"), RequestKey = request.RequestKey,
++                OwnerId = request.OwnerId, OriginId = request.OriginId,
++                FirstKingdomId = request.FirstKingdomId, SecondKingdomId = request.SecondKingdomId,
++                FirstRulerId = request.FirstRulerId, SecondRulerId = request.SecondRulerId,
++                ConflictEpoch = request.ConflictEpoch, DraftFingerprint = request.DraftFingerprint,
++                Source = (int)request.Source, CreatedDay = day, Cancelled = false
++            };
++            _state.Entries.Add(record);
++            snapshot = new ForeignDiplomacyIntentSnapshot(_state.CampaignId, record);
++            return ForeignDiplomacyJournalResult.Added;
++        }
++
++        internal ForeignDiplomacyJournalResult GetForRevalidation(ForeignDiplomacyJournalSession session,
++            string requestKey, string ownerId, out ForeignDiplomacyIntentSnapshot snapshot)
++        {
++            snapshot = null;
++            if (!MatchesSession(session)) return ForeignDiplomacyJournalResult.StaleSession;
++            if (!_available) return ForeignDiplomacyJournalResult.Unavailable;
++            if (!ValidText(requestKey, 128) || !ValidText(ownerId, 96)) return ForeignDiplomacyJournalResult.InvalidRequest;
++            var record = _state.Entries.FirstOrDefault(r => r.RequestKey == requestKey);
++            if (record == null) return ForeignDiplomacyJournalResult.NotFound;
++            if (record.OwnerId != ownerId) return ForeignDiplomacyJournalResult.Conflict;
++            snapshot = new ForeignDiplomacyIntentSnapshot(_state.CampaignId, record);
++            return ForeignDiplomacyJournalResult.Found;
++        }
++
++        internal ForeignDiplomacyJournalResult ListPendingForRevalidation(ForeignDiplomacyJournalSession session,
++            string ownerId, out IReadOnlyList<ForeignDiplomacyIntentSnapshot> snapshots)
++        {
++            snapshots = null;
++            if (!MatchesSession(session)) return ForeignDiplomacyJournalResult.StaleSession;
++            if (!_available) return ForeignDiplomacyJournalResult.Unavailable;
++            if (!ValidText(ownerId, 96)) return ForeignDiplomacyJournalResult.InvalidRequest;
++            snapshots = _state.Entries.Where(r => !r.Cancelled && r.OwnerId == ownerId)
++                .Select(r => new ForeignDiplomacyIntentSnapshot(_state.CampaignId, r)).ToList().AsReadOnly();
++            return ForeignDiplomacyJournalResult.Found;
++        }
++
++        internal ForeignDiplomacyJournalResult Cancel(ForeignDiplomacyJournalSession session,
++            ForeignDiplomacyIntentRequest request)
++        {
++            if (!MatchesSession(session)) return ForeignDiplomacyJournalResult.StaleSession;
++            if (!_available) return ForeignDiplomacyJournalResult.Unavailable;
++            if (!ValidRequest(request)) return ForeignDiplomacyJournalResult.InvalidRequest;
++            var record = _state.Entries.FirstOrDefault(r => r.RequestKey == request.RequestKey);
++            if (record == null) return ForeignDiplomacyJournalResult.NotFound;
++            if (!SameRequest(record, request)) return ForeignDiplomacyJournalResult.Conflict;
++            if (record.Cancelled) return ForeignDiplomacyJournalResult.AlreadyCancelled;
++            record.Cancelled = true;
++            return ForeignDiplomacyJournalResult.Cancelled;
++        }
++    }
++}
+--- /dev/null
++++ S23B/ForeignDiplomacyJournalRecords.cs
+@@ -0,0 +1,30 @@
++using System.Collections.Generic;
++using TaleWorlds.SaveSystem;
++
++namespace BellumCivile
++{
++    // Separate additive schema. No Native treaty, consent, execution receipt or live actor reference.
++    public sealed class ForeignDiplomacyJournalState
++    {
++        [SaveableField(1)] public int SchemaVersion;
++        [SaveableField(2)] public string CampaignId;
++        [SaveableField(3)] public List<ForeignDiplomacyIntentRecord> Entries;
++    }
++
++    public sealed class ForeignDiplomacyIntentRecord
++    {
++        [SaveableField(1)] public string OperationId;
++        [SaveableField(2)] public string RequestKey;
++        [SaveableField(3)] public string OwnerId;
++        [SaveableField(4)] public string OriginId;
++        [SaveableField(5)] public string FirstKingdomId;
++        [SaveableField(6)] public string SecondKingdomId;
++        [SaveableField(7)] public string FirstRulerId;
++        [SaveableField(8)] public string SecondRulerId;
++        [SaveableField(9)] public string ConflictEpoch;
++        [SaveableField(10)] public string DraftFingerprint;
++        [SaveableField(11)] public int Source;
++        [SaveableField(12)] public double CreatedDay;
++        [SaveableField(13)] public bool Cancelled;
++    }
++}
+--- /dev/null
++++ S23B/README_S23B_UK.md
+@@ -0,0 +1,36 @@
++# Bellum 1.4.12.5 — S23B, збережений журнал дипломатичних намірів
++
++Актуальний опис цього ZIP. Попередні S23A документи й хеші залишені як історія;
++інвентар цього пакета — `S23B_PACKAGE_FILES_SHA256.json`.
++
++Додано журнал із власником та стабільним ID операції, прив’язкою до держав,
++правителів, походження запиту й умов. Після load старі сесії відхиляються,
++а незавершені записи доступні лише для повторної перевірки актуального світу.
++Повторний запит не створює другого ID; скасований намір не відновлюється.
++
++Підключено лише незалежне збереження журналу. Ігрових джерел запитів,
++виконання договорів та ввімкненого LLM-режиму ще немає. Встановлювати в гру
++зараз нічого не потрібно. Справжня серіалізація Bannerlord/save-load не перевірені.
++
++Один накопичувальний запуск перевірок із кореня сорсів:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForeignDiplomacyCheckpoint.ps1
++```
++
++104 перевірки нового журналу, 8 перевірок схеми, 5 навмисних спотворень,
++попередні 65 перевірок політики та сусідні фікстури пройшли тут окремо.
++Накопичувальний запуск також включає відомий старий тест пакування
++`ModuleLocalLogs`, що падає через відсутню Naval-фікстуру; повністю зеленим
++цей checkpoint не оголошуємо.
++
++Windows-білдер формує обидві DLL та повну структуру `Modules\BellumCivile`:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14125_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++```
++
++Цей білд із реальними DLL гри тут не виконаний. Журнал обмежений 128 записами
++разом зі скасованими; старі ID не видаляються. Очищення/архівація та активне
++керування дипломатією — ще відкриті задачі. Межі патча, докази й статуси:
++`docs/verification/2026-11-18-foreign-journal/STAGE.md`.
+--- /dev/null
++++ S23B/Tests/ForeignDiplomacyJournal.Mutations.ps1
+@@ -0,0 +1,34 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignDiplomacyJournal.Mutations.ps1
++$ErrorActionPreference='Stop'
++$PSNativeCommandUseErrorActionPreference=$false
++$root=Split-Path $PSScriptRoot -Parent
++$pwsh=(Get-Process -Id $PID).Path
++$cases=@(
++ @('stale_begin_allowed','ForeignDiplomacyJournal.cs','if (!MatchesSession(session)) return ForeignDiplomacyJournalResult.StaleSession;','if (session == null) return ForeignDiplomacyJournalResult.StaleSession;'),
++ @('ruler_binding_removed','ForeignDiplomacyJournal.cs','r.FirstRulerId == q.FirstRulerId && r.SecondRulerId == q.SecondRulerId','true'),
++ @('retry_replaces_operation_id','ForeignDiplomacyJournal.cs','snapshot = new ForeignDiplomacyIntentSnapshot(_state.CampaignId, prior);','prior.OperationId = Guid.NewGuid().ToString("N"); snapshot = new ForeignDiplomacyIntentSnapshot(_state.CampaignId, prior);'),
++ @('cancelled_intent_resurrected','ForeignDiplomacyJournal.cs','snapshot = new ForeignDiplomacyIntentSnapshot(_state.CampaignId, prior);','prior.Cancelled = false; snapshot = new ForeignDiplomacyIntentSnapshot(_state.CampaignId, prior);'),
++ @('load_keeps_old_session','Behaviors/IntegrationForeignDiplomacy.cs','_foreignDiplomacyJournal = null;','// mutation: old journal retained')
++)
++foreach($case in $cases){
++ $name,$relative,$before,$after=$case
++ $source=(Get-Content -Raw -LiteralPath (Join-Path $root $relative)).Replace("`r`n","`n")
++ $start=$source.IndexOf($before,[StringComparison]::Ordinal)
++ if($start -lt 0){throw "Mutation boundary changed: $name"}
++ $mutant=$source.Substring(0,$start)+$after+$source.Substring($start+$before.Length)
++ $temp=Join-Path ([IO.Path]::GetTempPath()) ('journal-mutant-'+[guid]::NewGuid().ToString('N'))
++ New-Item -ItemType Directory -Path (Join-Path $temp 'Behaviors'),(Join-Path $temp 'Tests') | Out-Null
++ try{
++  foreach($path in @('ForeignDiplomacyAdmissionPolicy.cs','ForeignDiplomacyJournalRecords.cs','ForeignDiplomacyJournal.cs','Behaviors/IntegrationForeignDiplomacy.cs','Behaviors/BellumIntegrationBehavior.cs','Tests/ForeignDiplomacyJournal.Tests.ps1')){
++   Copy-Item -LiteralPath (Join-Path $root $path) -Destination (Join-Path $temp $path)
++  }
++  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ForeignDiplomacyJournalHarness') -Destination (Join-Path $temp 'Tests') -Recurse
++  [IO.File]::WriteAllText((Join-Path $temp $relative),$mutant)
++  $output=(& $pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $temp 'Tests/ForeignDiplomacyJournal.Tests.ps1') 2>&1 | Out-String)
++  $code=$LASTEXITCODE
++  if($code -eq 0 -or $output -notmatch 'FAIL' -or $output -notmatch 'Exception calling' -or $output -match 'Add-Type:'){throw "Mutation not rejected by assertion: $name`n$output"}
++  Write-Output ('JOURNAL_MUTATION_REJECTED '+$name)
++ }finally{Remove-Item -LiteralPath $temp -Recurse -Force}
++}
++Write-Output 'JOURNAL MUTATIONS REJECTED 5'
+--- /dev/null
++++ S23B/Tests/ForeignDiplomacyJournal.Schema.Tests.ps1
+@@ -0,0 +1,20 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignDiplomacyJournal.Schema.Tests.ps1
++$ErrorActionPreference='Stop'
++$root=Split-Path $PSScriptRoot -Parent
++$source=Get-Content -Raw -LiteralPath (Join-Path $root 'BellumCivileSaveDefiner.cs')
++$baseline=Get-Content -Raw -LiteralPath (Join-Path $root 'Tests/ForeignDiplomacyJournalHarness/SaveSchemaBaseline.json') | ConvertFrom-Json
++$definitions=@([regex]::Matches($source,'Add(?:Class|Enum)Definition\(typeof\(.+?\),\s*\d+\);') | ForEach-Object Value)
++$containers=@([regex]::Matches($source,'ConstructContainerDefinition\(typeof\(.+?\)\);') | ForEach-Object Value)
++$new=@('AddClassDefinition(typeof(ForeignDiplomacyJournalState), 150);','AddClassDefinition(typeof(ForeignDiplomacyIntentRecord), 151);')
++$newContainer='ConstructContainerDefinition(typeof(List<ForeignDiplomacyIntentRecord>));'
++function Check([bool]$ok,[string]$name){if(!$ok){throw "SCHEMA_FAIL $name"};Write-Output ('SCHEMA_PASS '+$name)}
++Check ((($definitions | Where-Object {$_ -cnotin $new}) -join "`n") -ceq ($baseline.definitions -join "`n")) 'all_existing_type_definitions_and_order_preserved'
++Check ((($containers | Where-Object {$_ -cne $newContainer}) -join "`n") -ceq ($baseline.containers -join "`n")) 'all_existing_container_definitions_and_order_preserved'
++foreach($entry in $new){Check (@($definitions | Where-Object {$_ -ceq $entry}).Count -eq 1) $entry}
++Check (@($containers | Where-Object {$_ -ceq $newContainer}).Count -eq 1) 'new_list_registered_once'
++$ids=@($definitions | ForEach-Object {[int]([regex]::Match($_,',\s*(\d+)\);').Groups[1].Value)})
++Check (@($ids | Sort-Object -Unique).Count -eq $ids.Count) 'global_class_enum_ids_unique'
++Check ($definitions.Count -eq $baseline.definitions.Count+2 -and $containers.Count -eq $baseline.containers.Count+1) 'only_two_types_one_container_added'
++Check ($source.Contains('public const int SaveBaseId = 8456123;')) 'save_base_id_unchanged'
++Write-Output 'SCHEMA TOTAL PASS 8; Native registry startup NOT_RUN'
+--- /dev/null
++++ S23B/Tests/ForeignDiplomacyJournal.Tests.ps1
+@@ -0,0 +1,16 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignDiplomacyJournal.Tests.ps1
++$ErrorActionPreference='Stop'
++$root=Split-Path $PSScriptRoot -Parent
++$temp=Join-Path ([IO.Path]::GetTempPath()) ('foreign-journal-'+[guid]::NewGuid().ToString('N'))
++New-Item -ItemType Directory -Path $temp | Out-Null
++try {
++ foreach($name in @('Fixtures','Scenarios')) {
++  Copy-Item -LiteralPath (Join-Path $root "Tests/ForeignDiplomacyJournalHarness/$name.cs.txt") -Destination (Join-Path $temp "$name.cs")
++ }
++ $paths=@('ForeignDiplomacyAdmissionPolicy.cs','ForeignDiplomacyJournalRecords.cs','ForeignDiplomacyJournal.cs',
++ 'Behaviors/IntegrationForeignDiplomacy.cs','Behaviors/BellumIntegrationBehavior.cs') | ForEach-Object {Join-Path $root $_}
++ $paths+=@(Get-ChildItem -LiteralPath $temp -Filter *.cs | ForEach-Object FullName)
++ Add-Type -Path $paths -CompilerOptions '/langversion:7.3'
++ [ForeignDiplomacyJournalScenarios]::Run()
++} finally {Remove-Item -LiteralPath $temp -Recurse -Force}
+--- /dev/null
++++ S23B/Tests/ForeignDiplomacyJournalHarness/Fixtures.cs.txt
+@@ -0,0 +1,71 @@
++using System;
++using System.Collections;
++using System.Collections.Generic;
++using System.Reflection;
++namespace TaleWorlds.SaveSystem {
++ [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute:Attribute {
++  public int Id; public SaveableFieldAttribute(int id){Id=id;}
++ }
++}
++namespace TaleWorlds.CampaignSystem {
++ public interface IDataStore {bool IsLoading{get;} bool SyncData<T>(string key,ref T value);}
++ public abstract class CampaignBehaviorBase {public abstract void RegisterEvents(); public abstract void SyncData(IDataStore store);}
++ public sealed class CampaignGameStarter {}
++ public sealed class Campaign {
++  public static Campaign Current; public Manager CampaignBehaviorManager=new Manager();
++ }
++ public sealed class Manager {
++  public object Behavior; public T GetBehavior<T>() where T:class {return Behavior as T;}
++ }
++ public sealed class Event<T>{ public void AddNonSerializedListener(object target,Action<T> action){} }
++ public sealed class Event<T,U>{ public void AddNonSerializedListener(object target,Action<T,U> action){} }
++ public static class CampaignEvents {
++  public static Event<CampaignGameStarter> OnSessionLaunchedEvent=new Event<CampaignGameStarter>();
++  public static Event<float> TickEvent=new Event<float>();
++  public static Event<object,bool> KingdomDecisionAdded=new Event<object,bool>();
++ }
++}
++namespace BellumCivile.Behaviors {
++ public sealed partial class BellumIntegrationBehavior {
++  public bool FailLegacySync;
++  public readonly List<string> LegacyCalls=new List<string>();
++  private void SyncLegitimacy(TaleWorlds.CampaignSystem.IDataStore s){LegacyCalls.Add("legitimacy");if(FailLegacySync)throw new InvalidOperationException("legacy store failed");}
++  private void SyncPartitions(TaleWorlds.CampaignSystem.IDataStore s){LegacyCalls.Add("partitions");}
++  private void SyncVotes(TaleWorlds.CampaignSystem.IDataStore s){LegacyCalls.Add("votes");}
++  private void DispatchPartitions(float dt){}
++  private void InitializeVotes(TaleWorlds.CampaignSystem.CampaignGameStarter s){}
++  private void TrackVote(object decision,bool involved){}
++  private void DispatchCouncilAppointments(float dt){}
++ }
++}
++// Copies annotated fields only. This deliberately excludes service/session runtime state.
++// NOT the TaleWorlds serializer; validates the IDataStore lifecycle and declared payload.
++public sealed class JournalStore:TaleWorlds.CampaignSystem.IDataStore {
++ public bool IsLoading{get;set;}
++ public Dictionary<string,object> Saved=new Dictionary<string,object>();
++ public List<string> Keys=new List<string>();
++ public bool ThrowOnSync;
++ public bool SyncData<T>(string key,ref T value){
++  Keys.Add(key); if(ThrowOnSync)throw new InvalidOperationException("store failed");
++  if(IsLoading){object item;if(!Saved.TryGetValue(key,out item))return false;value=(T)Clone(item);return true;}
++  Saved[key]=Clone(value);return true;
++ }
++ public static bool SameSaved(object a,object b){
++  if(a==null||b==null)return a==b;if(a.GetType()!=b.GetType())return false;
++  Type t=a.GetType();if(t.IsPrimitive||t==typeof(string)||t.IsEnum)return a.Equals(b);
++  var left=a as IList;var right=b as IList;
++  if(left!=null){if(left.Count!=right.Count)return false;for(int i=0;i<left.Count;i++)if(!SameSaved(left[i],right[i]))return false;return true;}
++  foreach(var f in t.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic))
++   if(f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null&&!SameSaved(f.GetValue(a),f.GetValue(b)))return false;
++  return true;
++ }
++ public static object Clone(object value){
++  if(value==null)return null;
++  Type t=value.GetType();if(t.IsPrimitive||t==typeof(string)||t.IsEnum)return value;
++  var list=value as IList;if(list!=null){var copy=(IList)Activator.CreateInstance(t);foreach(var item in list)copy.Add(Clone(item));return copy;}
++  var result=Activator.CreateInstance(t);
++  foreach(var field in t.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic))
++   if(field.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null)field.SetValue(result,Clone(field.GetValue(value)));
++  return result;
++ }
++}
+--- /dev/null
++++ S23B/Tests/ForeignDiplomacyJournalHarness/SaveSchemaBaseline.json
+@@ -0,0 +1,263 @@
++{
++  "definitions": [
++    "AddClassDefinition(typeof(VoluntaryPactDecision), 148);",
++    "AddClassDefinition(typeof(VoluntaryPactDecision.PactOutcome), 149);",
++    "AddClassDefinition(typeof(CourtTermPreparationRecord), 145);",
++    "AddClassDefinition(typeof(RetainerIndentureRecord), 144);",
++    "AddClassDefinition(typeof(LordshipCommandTransferRecord), 143);",
++    "AddClassDefinition(typeof(AsylumVisitRecord), 142);",
++    "AddClassDefinition(typeof(PersonalLordshipRecord), 138);",
++    "AddClassDefinition(typeof(LordshipAppointmentRecord), 139);",
++    "AddClassDefinition(typeof(LordshipIncomeCredit), 140);",
++    "AddClassDefinition(typeof(TitleAcquiredMapNotification), 141);",
++    "AddClassDefinition(typeof(RestoredRealmCreationRecord), 137);",
++    "AddClassDefinition(typeof(CivilWarGraceRecord), 136);",
++    "AddClassDefinition(typeof(RoyalPeaceDecreeRecord), 135);",
++    "AddClassDefinition(typeof(IntegrationVoteRecord), 133);",
++    "AddClassDefinition(typeof(CouncilAppointmentResultRecord), 134);",
++    "AddClassDefinition(typeof(CivilWarMercenarySettlementRecord), 132);",
++    "AddClassDefinition(typeof(CadetNameRecord), 131);",
++    "AddClassDefinition(typeof(PartitionCompletionRecord), 129);",
++    "AddClassDefinition(typeof(PartitionRecipientRecord), 130);",
++    "AddClassDefinition(typeof(PlayerMarriageAgreement), 128);",
++    "AddClassDefinition(typeof(CrownEstateDeliveryRecord), 126);",
++    "AddClassDefinition(typeof(CrownPartitionBatchRecord), 127);",
++    "AddClassDefinition(typeof(CrownPartitionPromotionRecord), 124);",
++    "AddClassDefinition(typeof(CrownPartitionHouseRecord), 125);",
++    "AddClassDefinition(typeof(RealmUnionRecord), 121);",
++    "AddClassDefinition(typeof(RealmUnionClanRecord), 122);",
++    "AddClassDefinition(typeof(RealmUnionTitleRecord), 123);",
++    "AddClassDefinition(typeof(PendingMarriageProspect), 120);",
++    "AddClassDefinition(typeof(FactionObject), 1);",
++    "AddClassDefinition(typeof(PendingCadetMarriageRecord), 3);",
++    "AddClassDefinition(typeof(PendingPartitionSuccessionRecord), 4);",
++    "AddClassDefinition(typeof(DynamicRelationRecord), 5);",
++    "AddClassDefinition(typeof(DynasticSuccessionStateRecord), 6);",
++    "AddClassDefinition(typeof(FeudalTitleRecord), 7);",
++    "AddClassDefinition(typeof(FeudalClaimRecord), 8);",
++    "AddClassDefinition(typeof(FeudalUsurpationCandidateRecord), 11);",
++    "AddClassDefinition(typeof(FeudalClaimFabricationRecord), 12);",
++    "AddClassDefinition(typeof(ActiveForeignWarRecord), 14);",
++    "AddClassDefinition(typeof(FeudalDeJureDriftRecord), 17);",
++    "AddClassDefinition(typeof(ClaimFeudRecord), 19);",
++    "AddClassDefinition(typeof(ClaimFeudWarRecord), 24);",
++    "AddClassDefinition(typeof(FeudalServiceRecord), 27);",
++    "AddClassDefinition(typeof(WarWillPressureRecord), 30);",
++    "AddClassDefinition(typeof(WarScoreRecord), 31);",
++    "AddClassDefinition(typeof(WarScoreFiefSnapshotRecord), 32);",
++    "AddClassDefinition(typeof(WarScoreEventRecord), 33);",
++    "AddClassDefinition(typeof(TreatyTermRecord), 34);",
++    "AddClassDefinition(typeof(TreatyProposalRecord), 35);",
++    "AddClassDefinition(typeof(ActiveTreatyTributeRecord), 36);",
++    "AddClassDefinition(typeof(ClientKingdomRecord), 40);",
++    "AddClassDefinition(typeof(PendingTreatyRebelResolutionRecord), 41);",
++    "AddClassDefinition(typeof(PrivyCouncilOfficeRecord), 42);",
++    "AddClassDefinition(typeof(PrivyCouncilAppointmentDecision), 44);",
++    "AddClassDefinition(typeof(PrivyCouncilAppointmentDecision.PrivyCouncilAppointmentOutcome), 45);",
++    "AddClassDefinition(typeof(RelationMemoryRecord), 46);",
++    "AddClassDefinition(typeof(RealmLawSelectionRecord), 48);",
++    "AddClassDefinition(typeof(PendingGenderLineEscheatRecord), 51);",
++    "AddClassDefinition(typeof(DynamicMercenaryBandRecord), 52);",
++    "AddClassDefinition(typeof(DynamicMercenaryDepartureIntent), 53);",
++    "AddClassDefinition(typeof(RegencyRecord), 54);",
++    "AddClassDefinition(typeof(Behaviors.FeudalClaimFabricationBehavior.PendingFabricationOutcome), 55);",
++    "AddClassDefinition(typeof(CourtAgendaRecord), 56);",
++    "AddClassDefinition(typeof(CourtObjectiveRecord), 58);",
++    "AddClassDefinition(typeof(CourtDecreeCase), 61);",
++    "AddClassDefinition(typeof(CrownAccessionRecord), 62);",
++    "AddClassDefinition(typeof(CrossClanEstateRecord), 63);",
++    "AddClassDefinition(typeof(CrossClanEstateShare), 64);",
++    "AddClassDefinition(typeof(ElectiveSuccessionRecord), 65);",
++    "AddClassDefinition(typeof(ElectiveCommitment), 66);",
++    "AddClassDefinition(typeof(ElectivePreference), 67);",
++    "AddClassDefinition(typeof(HereditaryLoyaltyMemory), 68);",
++    "AddClassDefinition(typeof(SuccessionChallengeRecord), 69);",
++    "AddClassDefinition(typeof(SuccessionPledgeRecord), 72);",
++    "AddClassDefinition(typeof(ElectiveContestRecord), 75);",
++    "AddClassDefinition(typeof(ElectiveContestCandidate), 76);",
++    "AddClassDefinition(typeof(ElectiveContestVote), 77);",
++    "AddClassDefinition(typeof(ElectiveContestPledge), 79);",
++    "AddClassDefinition(typeof(ElectiveContestPreference), 80);",
++    "AddClassDefinition(typeof(CivilWarConflictRecord), 81);",
++    "AddClassDefinition(typeof(CivilWarSideRecord), 82);",
++    "AddClassDefinition(typeof(CivilWarPairRecord), 83);",
++    "AddClassDefinition(typeof(CivilWarCrownTransferRecord), 84);",
++    "AddClassDefinition(typeof(CivilWarPairTransferRecord), 85);",
++    "AddClassDefinition(typeof(CivilWarCollapseRecord), 86);",
++    "AddClassDefinition(typeof(CivilWarRivalDefeatRecord), 87);",
++    "AddClassDefinition(typeof(CivilWarRivalPromotionRecord), 88);",
++    "AddClassDefinition(typeof(ConflictOutcomeNotice), 89);",
++    "AddClassDefinition(typeof(CourtActivityRecord), 90);",
++    "AddClassDefinition(typeof(CourtActivityTarget), 91);",
++    "AddClassDefinition(typeof(CourtAppeasementRecord), 92);",
++    "AddClassDefinition(typeof(CourtPeaceRecord), 93);",
++    "AddClassDefinition(typeof(CourtCampaignRecord), 94);",
++    "AddClassDefinition(typeof(CourtSubjugationRecord), 95);",
++    "AddClassDefinition(typeof(CourtClaimRecord), 96);",
++    "AddClassDefinition(typeof(CourtDynasticRecord), 97);",
++    "AddClassDefinition(typeof(CourtTradeRecord), 101);",
++    "AddClassDefinition(typeof(CourtTitleGrantRecord), 102);",
++    "AddClassDefinition(typeof(CourtClientGrantRecord), 113);",
++    "AddClassDefinition(typeof(CouncilSalaryCredit), 114);",
++    "AddClassDefinition(typeof(HostagePactRecord), 115);",
++    "AddClassDefinition(typeof(TreatyHostageRecord), 116);",
++    "AddClassDefinition(typeof(VoluntaryPactProposalRecord), 146);",
++    "AddClassDefinition(typeof(CourtRallyRecord), 104);",
++    "AddClassDefinition(typeof(CourtMandateRecord), 105);",
++    "AddClassDefinition(typeof(CourtMandatePledge), 106);",
++    "AddClassDefinition(typeof(MandateReformDecision), 107);",
++    "AddClassDefinition(typeof(MandateReformDecision.ReformOutcome), 108);",
++    "AddClassDefinition(typeof(CourtRoyalPeaceCase), 109);",
++    "AddClassDefinition(typeof(CourtLiberationRecord), 110);",
++    "AddClassDefinition(typeof(CourtTribunalReactionRecord), 111);",
++    "AddClassDefinition(typeof(CourtTribunalMemberReaction), 112);",
++    "AddClassDefinition(typeof(CourtProtectionRecord), 99);",
++    "AddEnumDefinition(typeof(CourtDynasticResponse), 98);",
++    "AddEnumDefinition(typeof(CourtProtectionPhase), 100);",
++    "AddEnumDefinition(typeof(CourtTitleResponse), 103);",
++    "AddEnumDefinition(typeof(SuccessionChallengePhase), 70);",
++    "AddEnumDefinition(typeof(SuccessionChallengeDemand), 71);",
++    "AddEnumDefinition(typeof(SuccessionPledgeChoice), 73);",
++    "AddEnumDefinition(typeof(SuccessionChallengeOutcome), 74);",
++    "AddEnumDefinition(typeof(ElectiveContestDecision), 78);",
++    "AddEnumDefinition(typeof(FactionType), 2);",
++    "AddEnumDefinition(typeof(FeudalTitleType), 9);",
++    "AddEnumDefinition(typeof(FeudalClaimStrength), 10);",
++    "AddEnumDefinition(typeof(FeudalClaimFabricationTrack), 13);",
++    "AddEnumDefinition(typeof(ForeignPolicyMotive), 15);",
++    "AddEnumDefinition(typeof(ForeignPolicyActionType), 16);",
++    "AddEnumDefinition(typeof(FeudalDeJureDriftState), 18);",
++    "AddEnumDefinition(typeof(ClaimFeudState), 20);",
++    "AddEnumDefinition(typeof(CrownAuthorityLevel), 21);",
++    "AddEnumDefinition(typeof(ClaimFeudJudgment), 22);",
++    "AddEnumDefinition(typeof(ClaimFeudResponse), 23);",
++    "AddEnumDefinition(typeof(ClaimFeudWarOutcome), 25);",
++    "AddEnumDefinition(typeof(FeudalServiceLevel), 26);",
++    "AddEnumDefinition(typeof(WarWillReasonType), 28);",
++    "AddEnumDefinition(typeof(WarScoreEventType), 29);",
++    "AddEnumDefinition(typeof(WarScoreConflictType), 37);",
++    "AddEnumDefinition(typeof(TreatyTermType), 38);",
++    "AddEnumDefinition(typeof(TreatyProposalState), 39);",
++    "AddEnumDefinition(typeof(PrivyCouncilOffice), 43);",
++    "AddEnumDefinition(typeof(RelationMemoryScope), 47);",
++    "AddEnumDefinition(typeof(GenderSuccessionLaw), 49);",
++    "AddEnumDefinition(typeof(HouseSuccessionLaw), 50);",
++    "AddEnumDefinition(typeof(CourtAgendaState), 57);",
++    "AddEnumDefinition(typeof(CourtObjectiveState), 59);",
++    "AddEnumDefinition(typeof(CourtObjectiveCredit), 60);",
++    "AddEnumDefinition(typeof(HostagePactPhase), 117);",
++    "AddEnumDefinition(typeof(HostagePactEndReason), 118);",
++    "AddEnumDefinition(typeof(HostageCustodyOutcome), 119);",
++    "AddEnumDefinition(typeof(VoluntaryPactProposalPhase), 147);"
++  ],
++  "containers": [
++    "ConstructContainerDefinition(typeof(List<VoluntaryPactProposalRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, CourtTermPreparationRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, AsylumVisitRecord>));",
++    "ConstructContainerDefinition(typeof(List<TitleAcquiredMapNotification>));",
++    "ConstructContainerDefinition(typeof(List<PersonalLordshipRecord>));",
++    "ConstructContainerDefinition(typeof(List<LordshipAppointmentRecord>));",
++    "ConstructContainerDefinition(typeof(List<LordshipCommandTransferRecord>));",
++    "ConstructContainerDefinition(typeof(List<RetainerIndentureRecord>));",
++    "ConstructContainerDefinition(typeof(List<LordshipIncomeCredit>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarGraceRecord>));",
++    "ConstructContainerDefinition(typeof(List<RestoredRealmCreationRecord>));",
++    "ConstructContainerDefinition(typeof(List<RoyalPeaceDecreeRecord>));",
++    "ConstructContainerDefinition(typeof(List<IntegrationVoteRecord>));",
++    "ConstructContainerDefinition(typeof(List<CouncilAppointmentResultRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarMercenarySettlementRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, CadetNameRecord>));",
++    "ConstructContainerDefinition(typeof(List<TaleWorlds.Localization.TextObject>));",
++    "ConstructContainerDefinition(typeof(List<PartitionCompletionRecord>));",
++    "ConstructContainerDefinition(typeof(List<PartitionRecipientRecord>));",
++    "ConstructContainerDefinition(typeof(List<PlayerMarriageAgreement>));",
++    "ConstructContainerDefinition(typeof(Dictionary<FactionType, Clan>));",
++    "ConstructContainerDefinition(typeof(List<CourtTribunalReactionRecord>));",
++    "ConstructContainerDefinition(typeof(List<CourtTribunalMemberReaction>));",
++    "ConstructContainerDefinition(typeof(List<CourtMandatePledge>));",
++    "ConstructContainerDefinition(typeof(List<CourtActivityTarget>));",
++    "ConstructContainerDefinition(typeof(List<ConflictOutcomeNotice>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarConflictRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarSideRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarPairRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarCrownTransferRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarPairTransferRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarCollapseRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarRivalDefeatRecord>));",
++    "ConstructContainerDefinition(typeof(List<CivilWarRivalPromotionRecord>));",
++    "ConstructContainerDefinition(typeof(List<FactionObject>));",
++    "ConstructContainerDefinition(typeof(List<PendingCadetMarriageRecord>));",
++    "ConstructContainerDefinition(typeof(List<PendingPartitionSuccessionRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, DynamicRelationRecord>));",
++    "ConstructContainerDefinition(typeof(List<RelationMemoryRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, DynasticSuccessionStateRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, FeudalTitleRecord>));",
++    "ConstructContainerDefinition(typeof(List<FeudalClaimRecord>));",
++    "ConstructContainerDefinition(typeof(List<FeudalUsurpationCandidateRecord>));",
++    "ConstructContainerDefinition(typeof(List<FeudalClaimFabricationRecord>));",
++    "ConstructContainerDefinition(typeof(List<Behaviors.FeudalClaimFabricationBehavior.PendingFabricationOutcome>));",
++    "ConstructContainerDefinition(typeof(List<ActiveForeignWarRecord>));",
++    "ConstructContainerDefinition(typeof(List<FeudalDeJureDriftRecord>));",
++    "ConstructContainerDefinition(typeof(List<ClaimFeudRecord>));",
++    "ConstructContainerDefinition(typeof(List<ClaimFeudWarRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, FeudalServiceRecord>));",
++    "ConstructContainerDefinition(typeof(List<WarWillPressureRecord>));",
++    "ConstructContainerDefinition(typeof(List<WarScoreRecord>));",
++    "ConstructContainerDefinition(typeof(List<WarScoreFiefSnapshotRecord>));",
++    "ConstructContainerDefinition(typeof(List<WarScoreEventRecord>));",
++    "ConstructContainerDefinition(typeof(List<TreatyTermRecord>));",
++    "ConstructContainerDefinition(typeof(List<TreatyProposalRecord>));",
++    "ConstructContainerDefinition(typeof(List<ActiveTreatyTributeRecord>));",
++    "ConstructContainerDefinition(typeof(List<ClientKingdomRecord>));",
++    "ConstructContainerDefinition(typeof(List<CourtProtectionRecord>));",
++    "ConstructContainerDefinition(typeof(List<CourtTitleGrantRecord>));",
++    "ConstructContainerDefinition(typeof(List<PendingTreatyRebelResolutionRecord>));",
++    "ConstructContainerDefinition(typeof(List<PrivyCouncilOfficeRecord>));",
++    "ConstructContainerDefinition(typeof(List<CouncilSalaryCredit>));",
++    "ConstructContainerDefinition(typeof(List<HostagePactRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<Kingdom, CampaignTime>));",
++    "ConstructContainerDefinition(typeof(Dictionary<Clan, CampaignTime>));",
++    "ConstructContainerDefinition(typeof(List<Clan>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, CampaignTime>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, int>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, float>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, bool>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, Hero>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, string>));",
++    "ConstructContainerDefinition(typeof(Dictionary<Kingdom, int>));",
++    "ConstructContainerDefinition(typeof(List<string>));",
++    "ConstructContainerDefinition(typeof(List<float>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, RealmLawSelectionRecord>));",
++    "ConstructContainerDefinition(typeof(List<PendingGenderLineEscheatRecord>));",
++    "ConstructContainerDefinition(typeof(List<DynamicMercenaryBandRecord>));",
++    "ConstructContainerDefinition(typeof(List<DynamicMercenaryDepartureIntent>));",
++    "ConstructContainerDefinition(typeof(List<RegencyRecord>));",
++    "ConstructContainerDefinition(typeof(List<CourtAgendaRecord>));",
++    "ConstructContainerDefinition(typeof(List<CourtDecreeCase>));",
++    "ConstructContainerDefinition(typeof(List<CourtRoyalPeaceCase>));",
++    "ConstructContainerDefinition(typeof(List<CrownAccessionRecord>));",
++    "ConstructContainerDefinition(typeof(List<CrossClanEstateRecord>));",
++    "ConstructContainerDefinition(typeof(List<CrossClanEstateShare>));",
++    "ConstructContainerDefinition(typeof(List<ElectiveSuccessionRecord>));",
++    "ConstructContainerDefinition(typeof(List<ElectiveCommitment>));",
++    "ConstructContainerDefinition(typeof(List<ElectivePreference>));",
++    "ConstructContainerDefinition(typeof(List<HereditaryLoyaltyMemory>));",
++    "ConstructContainerDefinition(typeof(List<SuccessionChallengeRecord>));",
++    "ConstructContainerDefinition(typeof(List<SuccessionPledgeRecord>));",
++    "ConstructContainerDefinition(typeof(List<ElectiveContestRecord>));",
++    "ConstructContainerDefinition(typeof(List<ElectiveContestCandidate>));",
++    "ConstructContainerDefinition(typeof(List<ElectiveContestVote>));",
++    "ConstructContainerDefinition(typeof(List<ElectiveContestPledge>));",
++    "ConstructContainerDefinition(typeof(List<ElectiveContestPreference>));",
++    "ConstructContainerDefinition(typeof(Dictionary<Clan, float>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, TaleWorlds.CampaignSystem.Election.KingdomDecision>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, double>));",
++    "ConstructContainerDefinition(typeof(List<PendingMarriageProspect>));",
++    "ConstructContainerDefinition(typeof(List<RealmUnionClanRecord>));",
++    "ConstructContainerDefinition(typeof(List<RealmUnionTitleRecord>));",
++    "ConstructContainerDefinition(typeof(List<CrownPartitionPromotionRecord>));",
++    "ConstructContainerDefinition(typeof(List<CrownPartitionHouseRecord>));",
++    "ConstructContainerDefinition(typeof(List<CrownEstateDeliveryRecord>));",
++    "ConstructContainerDefinition(typeof(Dictionary<string, List<string>>));"
++  ]
++}--- /dev/null
++++ S23B/Tests/ForeignDiplomacyJournalHarness/Scenarios.cs.txt
+@@ -0,0 +1,119 @@
++using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Reflection;
++using System.Threading;
++using BellumCivile;
++using BellumCivile.Behaviors;
++using TaleWorlds.CampaignSystem;
++using TaleWorlds.SaveSystem;
++public static class ForeignDiplomacyJournalScenarios {
++ static int passed;
++ static void Check(bool value,string name){if(!value)throw new Exception("FAIL "+name);passed++;Console.WriteLine("PASS "+name);}
++ static ForeignDiplomacyIntentRequest Request(string key="req",string owner="bridge",string origin="origin",
++  string a="realm_a",string b="realm_b",string rulerA="king_a",string rulerB="king_b",
++  string epoch="war_1",string draft="sha256:terms_1",ForeignDiplomacySource source=ForeignDiplomacySource.AutomaticForeignPeace){
++  return new ForeignDiplomacyIntentRequest(key,owner,origin,a,b,rulerA,rulerB,epoch,draft,source);
++ }
++ static BellumIntegrationBehavior Install(){var b=new BellumIntegrationBehavior();Campaign.Current=new Campaign();Campaign.Current.CampaignBehaviorManager.Behavior=b;return b;}
++ static bool Throws(Action action){try{action();return false;}catch(InvalidOperationException){return true;}}
++ static ForeignDiplomacyJournalState State(JournalStore s){return (ForeignDiplomacyJournalState)s.Saved["BC_Integration_ForeignDiplomacyJournal_v1"];}
++ public static void Run(){
++  var behavior=Install();var session=behavior.GetForeignDiplomacyJournalSession();ForeignDiplomacyIntentSnapshot first,again;
++  Check(behavior.BeginForeignDiplomacyIntent(session,Request(),5,out first)==ForeignDiplomacyJournalResult.Added,"new_operation_added");
++  Check(behavior.BeginForeignDiplomacyIntent(session,Request(),6,out again)==ForeignDiplomacyJournalResult.Existing&&first.OperationId==again.OperationId,"retry_same_id_and_creation_day");
++  Check(again.CreatedDay==5,"retry_preserves_original_day");
++  var altered=new[]{Request(owner:"other"),Request(origin:"other"),Request(a:"other"),Request(b:"other"),Request(rulerA:"new_king"),Request(rulerB:"new_king"),Request(epoch:"war_2"),Request(draft:"new_terms"),Request(source:ForeignDiplomacySource.AutomaticForeignWar),Request(key:"different_key")};
++  for(int i=0;i<altered.Length;i++)Check(behavior.BeginForeignDiplomacyIntent(session,altered[i],6,out again)==ForeignDiplomacyJournalResult.Conflict,"identity_conflict_"+i);
++  Check(behavior.BeginForeignDiplomacyIntent(session,null,6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"null_request_refused");
++  Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",a:"realm_b"),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"same_realm_refused");
++  Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",owner:"  "),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"blank_owner_refused");
++  Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",draft:"x\ny"),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"control_character_refused");
++  foreach(var source in new[]{ForeignDiplomacySource.Unknown,ForeignDiplomacySource.VoluntaryPact,ForeignDiplomacySource.HostageChoice,ForeignDiplomacySource.InternalConflict,ForeignDiplomacySource.TerminalForeignWar,ForeignDiplomacySource.PendingForeignRatification})
++   Check(behavior.BeginForeignDiplomacyIntent(session,Request(key:"bad",origin:"bad",source:source),6,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"out_of_scope_source_"+source);
++  foreach(double day in new[]{double.NaN,double.PositiveInfinity,-1})Check(behavior.BeginForeignDiplomacyIntent(session,Request(),day,out again)==ForeignDiplomacyJournalResult.InvalidRequest,"invalid_creation_day_"+day);
++  Check(behavior.BeginForeignDiplomacyIntent(null,Request(),6,out again)==ForeignDiplomacyJournalResult.StaleSession,"missing_session_refused");
++  var saved=new JournalStore();behavior.SyncData(saved);
++  Check(string.Join(",",behavior.LegacyCalls)=="legitimacy,partitions,votes","existing_sync_order_preserved");
++  Check(saved.Keys.SequenceEqual(new[]{"BC_Integration_ForeignDiplomacyJournal_v1"}),"isolated_new_save_key");
++  Check(behavior.GetForeignDiplomacyJournalSession().SessionId==session.SessionId,"saving_keeps_live_session");
++  Check(State(saved).Entries.Count==1&&State(saved).Entries[0].OperationId==first.OperationId,"save_captures_original_operation");
++  saved.IsLoading=true;behavior.SyncData(saved);var loaded=behavior.GetForeignDiplomacyJournalSession();
++  Check(loaded.CampaignId==session.CampaignId&&loaded.SessionId!=session.SessionId,"load_keeps_campaign_rotates_session");
++  Check(behavior.BeginForeignDiplomacyIntent(session,Request(),7,out again)==ForeignDiplomacyJournalResult.StaleSession,"late_preload_reply_refused");
++  Check(behavior.CancelForeignDiplomacyIntent(session,Request())==ForeignDiplomacyJournalResult.StaleSession,"late_preload_cancel_refused");
++  Check(behavior.GetForeignDiplomacyIntentForRevalidation(session,"req","bridge",out again)==ForeignDiplomacyJournalResult.StaleSession,"late_preload_read_refused");
++  Check(behavior.BeginForeignDiplomacyIntent(loaded,Request(),7,out again)==ForeignDiplomacyJournalResult.Existing&&again.OperationId==first.OperationId,"load_retry_does_not_duplicate");
++  Check(behavior.GetForeignDiplomacyIntentForRevalidation(loaded,"req","bridge",out again)==ForeignDiplomacyJournalResult.Found&&again.RequiresWorldRevalidation,"recovery_requires_world_revalidation");
++  IReadOnlyList<ForeignDiplomacyIntentSnapshot> pending;
++  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(loaded,"bridge",out pending)==ForeignDiplomacyJournalResult.Found&&pending.Count==1&&pending[0].RequiresWorldRevalidation,"pending_recovery_inventory");
++  Check(((IList<ForeignDiplomacyIntentSnapshot>)pending).IsReadOnly,"pending_projection_read_only");
++  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(loaded,"other",out pending)==ForeignDiplomacyJournalResult.Found&&pending.Count==0,"pending_inventory_owner_filtered");
++  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(session,"bridge",out pending)==ForeignDiplomacyJournalResult.StaleSession,"old_inventory_session_rejected");
++  Check(again.Request.FirstRulerId=="king_a"&&again.Request.DraftFingerprint=="sha256:terms_1"&&again.Request.ConflictEpoch=="war_1","historical_identity_preserved");
++  Check(behavior.GetForeignDiplomacyIntentForRevalidation(loaded,"req","intruder",out again)==ForeignDiplomacyJournalResult.Conflict,"other_owner_cannot_read");
++  Check(behavior.GetForeignDiplomacyIntentForRevalidation(loaded,"absent","bridge",out again)==ForeignDiplomacyJournalResult.NotFound,"missing_operation_explicit");
++  Check(behavior.CancelForeignDiplomacyIntent(loaded,Request(draft:"new_terms"))==ForeignDiplomacyJournalResult.Conflict,"changed_draft_cannot_cancel");
++  Check(behavior.CancelForeignDiplomacyIntent(loaded,Request())==ForeignDiplomacyJournalResult.Cancelled,"cancellation_recorded");
++  Check(behavior.CancelForeignDiplomacyIntent(loaded,Request())==ForeignDiplomacyJournalResult.AlreadyCancelled,"cancel_retry_idempotent");
++  Check(behavior.BeginForeignDiplomacyIntent(loaded,Request(),8,out again)==ForeignDiplomacyJournalResult.Existing&&again.Cancelled&&again.OperationId==first.OperationId,"cancelled_intent_never_resurrected");
++  Check(!first.Cancelled,"earlier_snapshot_detached_from_cancellation");
++  Check(behavior.ListForeignDiplomacyIntentsForRevalidation(loaded,"bridge",out pending)==ForeignDiplomacyJournalResult.Found&&pending.Count==0,"cancelled_not_in_pending_inventory");
++  var tombstoneSave=new JournalStore();behavior.SyncData(tombstoneSave);tombstoneSave.IsLoading=true;
++  var replacement=Install();replacement.SyncData(tombstoneSave);var replacementSession=replacement.GetForeignDiplomacyJournalSession();
++  Check(replacementSession.CampaignId==session.CampaignId,"fresh_behavior_loads_same_campaign");
++  Check(replacement.BeginForeignDiplomacyIntent(replacementSession,Request(),9,out again)==ForeignDiplomacyJournalResult.Existing&&again.Cancelled,"tombstone_survives_field_copy");
++  Check(Throws(()=>behavior.GetForeignDiplomacyJournalSession()),"old_behavior_rejected_after_campaign_switch");
++  Check(replacement.BeginForeignDiplomacyIntent(loaded,Request(),9,out again)==ForeignDiplomacyJournalResult.StaleSession,"other_behavior_session_rejected");
++  bool denied=false;var thread=new Thread(()=>{denied=Throws(()=>replacement.GetForeignDiplomacyJournalSession());});thread.Start();thread.Join();Check(denied,"actual_guard_rejects_worker_thread");
++  var other=Install();var otherSession=other.GetForeignDiplomacyJournalSession();
++  Check(otherSession.CampaignId!=session.CampaignId,"new_campaign_distinct_identity");
++  Check(other.BeginForeignDiplomacyIntent(replacementSession,Request(),9,out again)==ForeignDiplomacyJournalResult.StaleSession,"cross_campaign_session_rejected");
++  var oldSave=new JournalStore{IsLoading=true};other.SyncData(oldSave);var initialized=other.GetForeignDiplomacyJournalSession();
++  Check(other.BeginForeignDiplomacyIntent(initialized,Request(),1,out again)==ForeignDiplomacyJournalResult.Added,"old_save_without_key_initializes_empty_journal");
++  // Every corrupt payload must be quarantined, not silently normalized or replaced.
++  var corruptions=new Action<ForeignDiplomacyJournalState>[] {
++   s=>s.SchemaVersion=2,s=>s.CampaignId="bad",s=>s.Entries=null,
++   s=>s.Entries.Add(null),s=>s.Entries.Add(s.Entries[0]),
++   s=>s.Entries[0].OwnerId="",s=>s.Entries[0].Source=999,
++   s=>s.Entries[0].OperationId="bad",s=>s.Entries[0].CreatedDay=double.NaN,
++   s=>s.Entries[0].FirstKingdomId=s.Entries[0].SecondKingdomId,
++   s=>s.Entries[0].FirstRulerId="",s=>s.Entries[0].ConflictEpoch="",
++   s=>s.Entries[0].DraftFingerprint="",s=>s.Entries[0].RequestKey=new string('x',129),
++   s=>s.CampaignId="ABCDEF0123456789ABCDEF0123456789",s=>s.Entries[0].OperationId=new string('0',32)
++  };
++  for(int i=0;i<corruptions.Length;i++){
++   var state=(ForeignDiplomacyJournalState)JournalStore.Clone(State(saved));corruptions[i](state);
++   var store=new JournalStore{IsLoading=true};store.Saved["BC_Integration_ForeignDiplomacyJournal_v1"]=state;
++   var b=Install();b.SyncData(store);var token=b.GetForeignDiplomacyJournalSession();
++   Check(b.BeginForeignDiplomacyIntent(token,Request(),9,out again)==ForeignDiplomacyJournalResult.Unavailable,"corrupt_quarantined_"+i);
++   store.IsLoading=false;b.SyncData(store);Check(JournalStore.SameSaved(State(store),state),"corrupt_payload_not_replaced_"+i);
++  }
++  var presentNull=new JournalStore{IsLoading=true};presentNull.Saved["BC_Integration_ForeignDiplomacyJournal_v1"]=null;
++  var nullB=Install();nullB.SyncData(presentNull);Check(nullB.BeginForeignDiplomacyIntent(nullB.GetForeignDiplomacyJournalSession(),Request(),1,out again)==ForeignDiplomacyJournalResult.Unavailable,"present_null_not_old_save");
++  var full=Install();var fullSession=full.GetForeignDiplomacyJournalSession();
++  for(int i=0;i<ForeignDiplomacyJournal.Capacity;i++)if(full.BeginForeignDiplomacyIntent(fullSession,Request(key:"k"+i,origin:"o"+i),i,out again)!=ForeignDiplomacyJournalResult.Added)throw new Exception("capacity setup");
++  Check(full.BeginForeignDiplomacyIntent(fullSession,Request(key:"overflow",origin:"overflow"),5,out again)==ForeignDiplomacyJournalResult.Capacity,"full_journal_refuses_without_eviction");
++  Check(full.BeginForeignDiplomacyIntent(fullSession,Request(key:"k0",origin:"o0"),5,out again)==ForeignDiplomacyJournalResult.Existing,"full_journal_keeps_idempotency");
++  var oversized=new JournalStore();full.SyncData(oversized);State(oversized).Entries.Add((ForeignDiplomacyIntentRecord)JournalStore.Clone(State(oversized).Entries[0]));oversized.IsLoading=true;
++  full.SyncData(oversized);Check(full.BeginForeignDiplomacyIntent(full.GetForeignDiplomacyJournalSession(),Request(),5,out again)==ForeignDiplomacyJournalResult.Unavailable,"oversize_load_quarantined");
++  var fail=Install();var beforeFail=fail.GetForeignDiplomacyJournalSession();
++  Check(Throws(()=>fail.SyncData(new JournalStore{IsLoading=true,ThrowOnSync=true})),"datastore_exception_propagates");
++  Check(fail.BeginForeignDiplomacyIntent(beforeFail,Request(),5,out again)==ForeignDiplomacyJournalResult.StaleSession,"failed_load_still_invalidates_old_session");
++  var early=Install();var earlySession=early.GetForeignDiplomacyJournalSession();early.FailLegacySync=true;
++  Check(Throws(()=>early.SyncData(new JournalStore{IsLoading=true})),"earlier_legacy_load_failure_propagates");
++  Check(early.BeginForeignDiplomacyIntent(earlySession,Request(),5,out again)==ForeignDiplomacyJournalResult.StaleSession,"earlier_legacy_load_failure_invalidates_session");
++  Check(early.BeginForeignDiplomacyIntent(early.GetForeignDiplomacyJournalSession(),Request(),5,out again)==ForeignDiplomacyJournalResult.Unavailable,"failed_load_never_reopens_old_state");
++  Campaign.Current=null;Check(Throws(()=>fail.GetForeignDiplomacyJournalSession()),"missing_campaign_denied");
++  foreach(var type in new[]{typeof(ForeignDiplomacyJournalState),typeof(ForeignDiplomacyIntentRecord)}){
++   var fields=type.GetFields(BindingFlags.Public|BindingFlags.Instance);var ids=fields.Select(f=>f.GetCustomAttribute<SaveableFieldAttribute>()).ToArray();
++   Check(ids.All(a=>a!=null)&&ids.Select(a=>a.Id).Distinct().Count()==fields.Length,"all_fields_unique_save_ids_"+type.Name);
++  }
++  var stateSchema=typeof(ForeignDiplomacyJournalState).GetFields().Select(f=>f.Name+":"+f.FieldType.FullName+":"+f.GetCustomAttribute<SaveableFieldAttribute>().Id).ToArray();
++  Check(stateSchema.SequenceEqual(new[]{"SchemaVersion:System.Int32:1","CampaignId:System.String:2","Entries:"+typeof(List<ForeignDiplomacyIntentRecord>).FullName+":3"}),"state_exact_field_schema");
++  string[] names={"OperationId","RequestKey","OwnerId","OriginId","FirstKingdomId","SecondKingdomId","FirstRulerId","SecondRulerId","ConflictEpoch","DraftFingerprint","Source","CreatedDay","Cancelled"};
++  var recordFields=typeof(ForeignDiplomacyIntentRecord).GetFields();
++  Check(recordFields.Length==13&&recordFields.Select((f,i)=>f.Name==names[i]&&f.GetCustomAttribute<SaveableFieldAttribute>().Id==i+1&&f.FieldType==(i<10?typeof(string):i==10?typeof(int):i==11?typeof(double):typeof(bool))).All(x=>x),"intent_exact_field_schema");
++  Console.WriteLine("JOURNAL TOTAL PASS "+passed+"; engine_serializer_game=NOT_RUN");
++ }
++}
+--- /dev/null
++++ S23B/scripts/Test-ForeignDiplomacyCheckpoint.ps1
+@@ -0,0 +1,18 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForeignDiplomacyCheckpoint.ps1
++# Does not build/deploy. Known ModuleLocalLogs fixture failure is reported as FAILURE.
++$ErrorActionPreference='Stop'
++$PSNativeCommandUseErrorActionPreference=$false
++$root=Split-Path $PSScriptRoot -Parent
++$pwsh=(Get-Process -Id $PID).Path
++$results=@()
++foreach($name in @('ForeignDiplomacyJournal.Tests','ForeignDiplomacyJournal.Schema.Tests','ForeignDiplomacyJournal.Mutations',
++ 'ForeignDiplomacyAdmission.Tests','ForeignDiplomacyAdmission.Mutations','ExistingPoliticalPressure.Tests','ExistingWarState.Tests',
++ 'ExistingClaimState.Tests','ExistingCouncilState.Tests','ExistingRecordedName.Tests','RealmPreparationReceipt.Tests',
++ 'CompleteReleaseNaval.Tests','ModuleLocalLogs.Tests')){
++ & $pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "Tests/$name.ps1")
++ $results+=[pscustomobject]@{Test=$name;ExitCode=$LASTEXITCODE}
++}
++$results | ConvertTo-Json
++if(@($results | Where-Object {$_.ExitCode -ne 0}).Count -ne 0){throw 'CHECKPOINT_NOT_GREEN: inspect failing suites; known Naval fixture remains open.'}
++Write-Output 'CHECKPOINT_FIXTURES_PASS; actual Windows build and game/save-load NOT_RUN'

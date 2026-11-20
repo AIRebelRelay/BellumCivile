@@ -1,0 +1,627 @@
+{
+  "schemaVersion": 1,
+  "scope": "OFFER_PEACE preview only. Contract fixtures; NOT Native Bellum runtime evidence.",
+  "baselineFacts": {
+    "campaignLoaded": true,
+    "campaignIdKnown": true,
+    "actorAlive": true,
+    "actorRulesSource": true,
+    "actorControlledByPlayer": false,
+    "sourceValidPermanent": true,
+    "targetValidPermanent": true,
+    "sameRealm": false,
+    "foreignConflict": true,
+    "atWar": true,
+    "storyProtection": "clear",
+    "clientPeaceAuthority": "clear",
+    "targetControlledByPlayer": false,
+    "trackedWarExists": false,
+    "trackedConflictKind": null,
+    "nativeGatewayAvailable": false,
+    "revampEnabled": false,
+    "warWill": 95,
+    "terms": null,
+    "nativeDraftValidation": "not_requested",
+    "normalizedTermsMateriallyChanged": false,
+    "usedWarScore": null,
+    "warScoreBudget": null
+  },
+  "cases": [
+    {
+      "id": "current_revamp_off_foreign_war_untracked",
+      "facts": {},
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "native_gateway_unavailable",
+          "foreign_war_untracked"
+        ]
+      }
+    },
+    {
+      "id": "future_gateway_tracked_foreign_war_revamp_off",
+      "facts": {
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": []
+      }
+    },
+    {
+      "id": "native_gateway_missing_even_with_tracking",
+      "facts": {
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "native_gateway_unavailable"
+        ]
+      }
+    },
+    {
+      "id": "revamp_on_alone_does_not_create_gateway",
+      "facts": {
+        "revampEnabled": true
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "native_gateway_unavailable"
+        ]
+      }
+    },
+    {
+      "id": "nonhostile_pair",
+      "facts": {
+        "atWar": false
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "not_at_war"
+        ]
+      }
+    },
+    {
+      "id": "same_kingdom",
+      "facts": {
+        "sameRealm": true
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "same_realm"
+        ]
+      }
+    },
+    {
+      "id": "temporary_or_rebel_target",
+      "facts": {
+        "targetValidPermanent": false
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "target_not_permanent"
+        ]
+      }
+    },
+    {
+      "id": "invalid_source_realm",
+      "facts": {
+        "sourceValidPermanent": false
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "source_not_permanent"
+        ]
+      }
+    },
+    {
+      "id": "civil_war_or_claim_feud_is_not_foreign_peace",
+      "facts": {
+        "foreignConflict": false
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "not_ordinary_foreign_conflict"
+        ]
+      }
+    },
+    {
+      "id": "storyline_peace_protected",
+      "facts": {
+        "storyProtection": "blocked"
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "storyline_peace_blocked"
+        ]
+      }
+    },
+    {
+      "id": "client_only_suzerain_can_sign",
+      "facts": {
+        "clientPeaceAuthority": "blocked"
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "suzerain_authority_required"
+        ]
+      }
+    },
+    {
+      "id": "dethroned_actor",
+      "facts": {
+        "actorRulesSource": false
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "actor_not_ruler"
+        ]
+      }
+    },
+    {
+      "id": "dead_actor",
+      "facts": {
+        "actorAlive": false
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "actor_not_alive"
+        ]
+      }
+    },
+    {
+      "id": "player_cannot_be_impersonated_by_llm",
+      "facts": {
+        "actorControlledByPlayer": true
+      },
+      "expected": {
+        "legality": "blocked",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "actor_is_player"
+        ]
+      }
+    },
+    {
+      "id": "player_target_requires_human_answer",
+      "facts": {
+        "targetControlledByPlayer": true,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "player",
+        "reasonIncludes": []
+      }
+    },
+    {
+      "id": "quest_state_cannot_be_verified",
+      "facts": {
+        "storyProtection": "unknown",
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "unknown",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "storyline_state_unknown"
+        ]
+      }
+    },
+    {
+      "id": "client_state_cannot_be_verified",
+      "facts": {
+        "clientPeaceAuthority": "unknown"
+      },
+      "expected": {
+        "legality": "unknown",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "client_authority_unknown"
+        ]
+      }
+    },
+    {
+      "id": "campaign_not_loaded",
+      "facts": {
+        "campaignLoaded": false
+      },
+      "expected": {
+        "legality": "unknown",
+        "executionReadiness": "unknown",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "campaign_unavailable"
+        ]
+      }
+    },
+    {
+      "id": "cross_save_identity_unverified",
+      "facts": {
+        "campaignIdKnown": false
+      },
+      "expected": {
+        "legality": "unknown",
+        "executionReadiness": "unknown",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "save_identity_unknown"
+        ]
+      }
+    },
+    {
+      "id": "missing_actor_fact_is_unknown_not_allowed",
+      "facts": {
+        "actorRulesSource": null
+      },
+      "expected": {
+        "legality": "unknown",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "actor_rulership_unknown"
+        ]
+      }
+    },
+    {
+      "id": "explicit_empty_terms_never_become_white_peace",
+      "facts": {
+        "terms": [],
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "invalid",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "empty_terms_not_white_peace"
+        ]
+      }
+    },
+    {
+      "id": "explicit_white_peace_only",
+      "facts": {
+        "terms": [
+          {
+            "type": "WhitePeace"
+          }
+        ],
+        "nativeDraftValidation": "valid",
+        "usedWarScore": 0,
+        "warWill": 99,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "valid",
+        "responseAuthority": "npc",
+        "reasonIncludes": []
+      }
+    },
+    {
+      "id": "white_peace_cannot_mix_with_demands",
+      "facts": {
+        "terms": [
+          {
+            "type": "WhitePeace"
+          },
+          {
+            "type": "Reparations"
+          }
+        ],
+        "nativeDraftValidation": "valid",
+        "usedWarScore": 1,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "invalid",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "mixed_white_peace_terms"
+        ]
+      }
+    },
+    {
+      "id": "stale_fief_native_validator_denies",
+      "facts": {
+        "terms": [
+          {
+            "type": "TransferFief",
+            "settlementId": "town_stale"
+          }
+        ],
+        "nativeDraftValidation": "invalid",
+        "usedWarScore": 10,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "invalid",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "native_draft_invalid"
+        ]
+      }
+    },
+    {
+      "id": "stale_terms_must_not_auto_repair",
+      "facts": {
+        "terms": [
+          {
+            "type": "ReleasePrisoner",
+            "heroId": "npc_stale"
+          }
+        ],
+        "nativeDraftValidation": "valid",
+        "normalizedTermsMateriallyChanged": true,
+        "usedWarScore": 8,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "invalid",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "material_terms_changed"
+        ]
+      }
+    },
+    {
+      "id": "war_score_budget_overrun",
+      "facts": {
+        "terms": [
+          {
+            "type": "Reparations",
+            "goldAmount": 7000
+          }
+        ],
+        "nativeDraftValidation": "valid",
+        "usedWarScore": 18,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 12
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "invalid",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "war_score_over_budget"
+        ]
+      }
+    },
+    {
+      "id": "missing_score_budget_never_invented",
+      "facts": {
+        "terms": [
+          {
+            "type": "Reparations",
+            "goldAmount": 7000
+          }
+        ],
+        "nativeDraftValidation": "valid",
+        "usedWarScore": 18,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": null
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "unknown",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "war_score_budget_unknown"
+        ]
+      }
+    },
+    {
+      "id": "untracked_war_cannot_validate_terms",
+      "facts": {
+        "terms": [
+          {
+            "type": "WhitePeace"
+          }
+        ],
+        "nativeDraftValidation": "valid",
+        "usedWarScore": 0,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": false,
+        "trackedConflictKind": null,
+        "warScoreBudget": null
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "not_ready",
+        "draftReview": "unknown",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "foreign_war_untracked",
+          "draft_requires_tracked_war"
+        ]
+      }
+    },
+    {
+      "id": "tracked_internal_conflict_not_ordinary_foreign",
+      "facts": {
+        "trackedWarExists": true,
+        "trackedConflictKind": "CivilWar",
+        "nativeGatewayAvailable": true
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "wrong_tracked_conflict_kind"
+        ]
+      }
+    },
+    {
+      "id": "native_draft_check_not_available_is_unknown",
+      "facts": {
+        "terms": [
+          {
+            "type": "WhitePeace"
+          }
+        ],
+        "nativeDraftValidation": "unknown",
+        "usedWarScore": 0,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 12
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "unknown",
+        "responseAuthority": "npc",
+        "reasonIncludes": [
+          "native_draft_validation_unknown"
+        ]
+      }
+    },
+    {
+      "id": "positive_legal_draft_does_not_apply_peace",
+      "facts": {
+        "terms": [
+          {
+            "type": "Reparations",
+            "goldAmount": 3000
+          }
+        ],
+        "nativeDraftValidation": "valid",
+        "usedWarScore": 8,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "allowed_to_propose",
+        "executionReadiness": "ready",
+        "draftReview": "valid",
+        "responseAuthority": "npc",
+        "reasonIncludes": []
+      }
+    },
+    {
+      "id": "target_response_authority_unknown",
+      "facts": {
+        "targetControlledByPlayer": null,
+        "nativeGatewayAvailable": true,
+        "trackedWarExists": true,
+        "trackedConflictKind": "ForeignWar",
+        "warScoreBudget": 32
+      },
+      "expected": {
+        "legality": "unknown",
+        "executionReadiness": "not_ready",
+        "draftReview": "not_requested",
+        "responseAuthority": "unknown",
+        "reasonIncludes": [
+          "target_response_authority_unknown",
+          "target_player_status_unknown"
+        ]
+      }
+    }
+  ]
+}

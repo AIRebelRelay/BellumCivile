@@ -1,0 +1,9 @@
+SCHEMA_PASS all_existing_type_definitions_and_order_preserved
+SCHEMA_PASS all_existing_container_definitions_and_order_preserved
+SCHEMA_PASS AddClassDefinition(typeof(ForeignDiplomacyJournalState), 150);
+SCHEMA_PASS AddClassDefinition(typeof(ForeignDiplomacyIntentRecord), 151);
+SCHEMA_PASS new_list_registered_once
+SCHEMA_PASS global_class_enum_ids_unique
+SCHEMA_PASS only_two_types_one_container_added
+SCHEMA_PASS save_base_id_unchanged
+SCHEMA TOTAL PASS 8; Native registry startup NOT_RUN

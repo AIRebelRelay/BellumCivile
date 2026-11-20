@@ -1,0 +1,354 @@
+--- baseline/Properties/AssemblyInfo.cs
++++ candidate/Properties/AssemblyInfo.cs
+@@ -30,5 +30,5 @@
+ //      Revision
+ //
+ [assembly: AssemblyVersion("1.0.0.0")]
+-[assembly: AssemblyFileVersion("1.4.12.3")]
+-[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.3")]
++[assembly: AssemblyFileVersion("1.4.12.4")]
++[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.4")]
+--- baseline/Tests/ModuleLocalLogs.Tests.ps1
++++ candidate/Tests/ModuleLocalLogs.Tests.ps1
+@@ -51,7 +51,7 @@
+  $packageStart=$runner.IndexOf('$module=Join-Path')
+  if($packageStart -lt 0){throw 'Package boundary not found'}
+  $source=$root;$out=Join-Path $temp 'build-result';New-Item -ItemType Directory -Path $out | Out-Null
+- $version=[pscustomobject]@{FileVersion='1.4.12.3'}
++ $version=[pscustomobject]@{FileVersion='1.4.12.4'}
+  . ([scriptblock]::Create($runner.Substring($packageStart)))
+  Check ((Test-Path "$module/SubModule.xml") -and (Test-Path "$module/bin/Win64_Shipping_Client/BellumCivile.dll") -and (Test-Path "$module/logs" -PathType Container)) 'actual packaging block creates full module layout using fixture DLL'
+  $expected=@(Get-ChildItem (Join-Path $root 'GUI'),(Join-Path $root 'ModuleData') -Recurse -File)
+@@ -59,7 +59,7 @@
+  foreach($item in $expected){$relative=[IO.Path]::GetRelativePath($root,$item.FullName);$target=Join-Path $module $relative;if(!(Test-Path -LiteralPath $target) -or (Get-FileHash $item.FullName).Hash -ne (Get-FileHash $target).Hash){$equal=$false}}
+  Check ($equal -and (Test-Path "$module/LICENSE.txt")) 'all GUI XML localization and license copied unchanged'
+  [xml]$manifest=Get-Content -Raw "$module/SubModule.xml"
+- Check ($manifest.Module.Version.value -ceq 'v1.4.12.3') 'packaged XML uses new hotfix version'
++ Check ($manifest.Module.Version.value -ceq 'v1.4.12.4') 'packaged XML uses new hotfix version'
+  Write-Output ('BELLUM_MODULE_LOG_PASS '+$count+' named checks; full game build NOT_RUN')
+ } finally {
+  if($logger){$logger.GetMethod('CloseLogWriter',[Reflection.BindingFlags]'NonPublic,Static').Invoke($null,@()) | Out-Null}
+--- baseline/_Module/SubModule.xml
++++ candidate/_Module/SubModule.xml
+@@ -3,7 +3,7 @@
+     <Name value="Bellum Civile"/>
+     <Id value="BellumCivile"/>
+     <!-- 1.4.12b CR alpha identity; numeric 4th part for Bannerlord ApplicationVersion. -->
+-    <Version value="v1.4.12.3"/>
++    <Version value="v1.4.12.4"/>
+ 	<DefaultModule value="false"/>
+ 	<ModuleCategory value="Singleplayer"/>
+ 	<Official value="false"/>
+--- baseline/scripts/Build-CrBellumModuleWindows.ps1
++++ candidate/scripts/Build-CrBellumModuleWindows.ps1
+@@ -1,7 +1,7 @@
+ #Requires -Version 7.2
+ # Both BellumCivile.dll and BellumCivile.NavalDLCPatch.dll are mandatory in CR releases.
+ # Force launch from extracted ZIP root (new output folder required):
+-# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14123_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14124_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
+ [CmdletBinding()]
+ param(
+  [Parameter(Mandatory)][string]$OutputRoot,
+--- /dev/null
++++ candidate/ForeignDiplomacyAdmissionPolicy.cs
+@@ -0,0 +1,133 @@
++namespace BellumCivile
++{
++    // Explicit provenance supplied by a future, audited runtime adapter.
++    // Unknown must not become an executable foreign action by default.
++    internal enum ForeignDiplomacySource
++    {
++        Unknown = 0,
++        AutomaticForeignWar,
++        AutomaticForeignPeace,
++        AutomaticForeignParley,
++        PendingForeignRatification,
++        TerminalForeignWar,
++        PlayerAction,
++        InternalConflict,
++        ClientObligation,
++        ExistingTreatyObligation,
++        VoluntaryPact,
++        HostageChoice
++    }
++
++    internal enum ForeignDiplomacyAdmission
++    {
++        Hold = 0,
++        Legacy,
++        RequestLlmIntent,
++        ContinueNativeValidation,
++        RequestCrisisResolution
++    }
++
++    internal enum ForeignDiplomacyActivation
++    {
++        MissingReadiness = 0,
++        RevampDisabled,
++        MissingCampaignScope,
++        MissingDurableOwner,
++        MissingDurableQueue,
++        MissingSaveRecovery,
++        MissingNativeGateway,
++        MissingDraftConsentVerifier,
++        MissingBoundedCrisisHandler,
++        PendingOrUnknownLegacyWork,
++        Ready
++    }
++
++    // Capability facts, not configuration switches. No engine calls or mutable registry.
++    // Runtime construction and verification are deliberately outside this stage.
++    internal sealed class ForeignDiplomacyReadiness
++    {
++        internal readonly bool RevampEnabled;
++        internal readonly bool CampaignScopeBound;
++        internal readonly bool DurableOwnerReady;
++        internal readonly bool DurableQueueReady;
++        internal readonly bool SaveRecoveryReady;
++        internal readonly bool NativeGatewayReady;
++        internal readonly bool DraftConsentVerifierReady;
++        internal readonly bool BoundedCrisisHandlerReady;
++        internal readonly int LegacyPendingCount;
++
++        internal ForeignDiplomacyReadiness(bool revampEnabled = false, bool campaignScopeBound = false,
++            bool durableOwnerReady = false, bool durableQueueReady = false, bool saveRecoveryReady = false,
++            bool nativeGatewayReady = false, bool draftConsentVerifierReady = false,
++            bool boundedCrisisHandlerReady = false, int legacyPendingCount = -1)
++        {
++            RevampEnabled = revampEnabled;
++            CampaignScopeBound = campaignScopeBound;
++            DurableOwnerReady = durableOwnerReady;
++            DurableQueueReady = durableQueueReady;
++            SaveRecoveryReady = saveRecoveryReady;
++            NativeGatewayReady = nativeGatewayReady;
++            DraftConsentVerifierReady = draftConsentVerifierReady;
++            BoundedCrisisHandlerReady = boundedCrisisHandlerReady;
++            LegacyPendingCount = legacyPendingCount;
++        }
++    }
++
++    /// <summary>
++    /// Pure admission rules only. No current game caller activates or consumes this policy.
++    /// Legacy means retain the existing owner's rules, never unconditional execution.
++    /// Hold is an admission result, not a durable pending record or crisis timeout policy.
++    /// </summary>
++    internal static class ForeignDiplomacyAdmissionPolicy
++    {
++        internal static ForeignDiplomacyActivation CheckActivation(ForeignDiplomacyReadiness readiness)
++        {
++            if (readiness == null) return ForeignDiplomacyActivation.MissingReadiness;
++            if (!readiness.RevampEnabled) return ForeignDiplomacyActivation.RevampDisabled;
++            if (!readiness.CampaignScopeBound) return ForeignDiplomacyActivation.MissingCampaignScope;
++            if (!readiness.DurableOwnerReady) return ForeignDiplomacyActivation.MissingDurableOwner;
++            if (!readiness.DurableQueueReady) return ForeignDiplomacyActivation.MissingDurableQueue;
++            if (!readiness.SaveRecoveryReady) return ForeignDiplomacyActivation.MissingSaveRecovery;
++            if (!readiness.NativeGatewayReady) return ForeignDiplomacyActivation.MissingNativeGateway;
++            if (!readiness.DraftConsentVerifierReady) return ForeignDiplomacyActivation.MissingDraftConsentVerifier;
++            if (!readiness.BoundedCrisisHandlerReady) return ForeignDiplomacyActivation.MissingBoundedCrisisHandler;
++            if (readiness.LegacyPendingCount != 0) return ForeignDiplomacyActivation.PendingOrUnknownLegacyWork;
++            return ForeignDiplomacyActivation.Ready;
++        }
++
++        // Inputs must come from an audited adapter, not the LLM or user-provided JSON.
++        // ownerReady includes the active capability checks above and campaign/ruler/scope revalidation.
++        // exactDraftConsent includes both current rulers, war incarnation and draft revision.
++        internal static ForeignDiplomacyAdmission Evaluate(bool controlledMode, bool inOwnedScope,
++            bool ownerReady, ForeignDiplomacySource source, bool exactDraftConsent)
++        {
++            if (!controlledMode || !inOwnedScope) return ForeignDiplomacyAdmission.Legacy;
++            switch (source)
++            {
++                case ForeignDiplomacySource.PlayerAction:
++                case ForeignDiplomacySource.InternalConflict:
++                case ForeignDiplomacySource.ClientObligation:
++                case ForeignDiplomacySource.ExistingTreatyObligation:
++                case ForeignDiplomacySource.VoluntaryPact:
++                case ForeignDiplomacySource.HostageChoice:
++                    return ForeignDiplomacyAdmission.Legacy;
++            }
++            if (!ownerReady) return ForeignDiplomacyAdmission.Hold;
++            switch (source)
++            {
++                case ForeignDiplomacySource.AutomaticForeignWar:
++                case ForeignDiplomacySource.AutomaticForeignPeace:
++                case ForeignDiplomacySource.AutomaticForeignParley:
++                    return ForeignDiplomacyAdmission.RequestLlmIntent;
++                case ForeignDiplomacySource.PendingForeignRatification:
++                    return exactDraftConsent
++                        ? ForeignDiplomacyAdmission.ContinueNativeValidation
++                        : ForeignDiplomacyAdmission.Hold;
++                case ForeignDiplomacySource.TerminalForeignWar:
++                    return ForeignDiplomacyAdmission.RequestCrisisResolution;
++                default:
++                    return ForeignDiplomacyAdmission.Hold;
++            }
++        }
++    }
++}
+--- /dev/null
++++ candidate/README_S23A_UK.md
+@@ -0,0 +1,35 @@
++# Bellum 1.4.12.4 — S23A, правила допуску зовнішньої дипломатії
++
++Повні сорси на базі перевіреного кандидата 1.4.12.3 / HEAD 903f6772.
++Додано незалежний C# модуль правил і виконувані регресії. Модуль поки не
++підключений до ігрових викликів: LLM-керування дипломатією ще НЕ ввімкнене.
++Пакти, заручники, внутрішня політика, гравецькі рішення та облік не змінені.
++
++Перевірка лише нового модуля з кореня розпакованих сорсів:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignDiplomacyAdmission.Tests.ps1
++```
++
++Очікувано: `TOTAL PASS 65`.
++
++Перевірка чутливості тестів до п’яти помилкових змін (лише тимчасові копії):
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignDiplomacyAdmission.Mutations.ps1
++```
++
++Очікувано: `TOTAL MUTATIONS REJECTED 5`.
++
++Повний Windows-білдер з формуванням обох DLL і структури `Modules\BellumCivile`
++збережений. Команда для окремого нового каталогу результату:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14124_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++```
++
++Компіляція з реальними DLL гри та ігрові перевірки не виконані. Встановлювати
++цей кандидат у гру зараз не потрібно. Тест ModuleLocalLogs має підтверджену
++стару помилку Naval-фікстури; вона не виправлена в цьому етапі. Повний статус,
++межі змін, журнали тестів і незакриті перевірки — у
++`docs/verification/2026-11-18-foreign-admission/STAGE.md`.
+--- /dev/null
++++ candidate/Tests/ForeignDiplomacyAdmission.Mutations.ps1
+@@ -0,0 +1,36 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignDiplomacyAdmission.Mutations.ps1
++$ErrorActionPreference = 'Stop'
++$PSNativeCommandUseErrorActionPreference = $false
++$root = Split-Path $PSScriptRoot -Parent
++$source = Get-Content -Raw -LiteralPath (Join-Path $root 'ForeignDiplomacyAdmissionPolicy.cs')
++$pwsh = (Get-Process -Id $PID).Path
++$cases = @(
++    @('owner_fault_falls_through', 'if (!ownerReady) return ForeignDiplomacyAdmission.Hold;', 'if (!ownerReady) return ForeignDiplomacyAdmission.Legacy;'),
++    @('terminal_becomes_ordinary_intent', 'return ForeignDiplomacyAdmission.RequestCrisisResolution;', 'return ForeignDiplomacyAdmission.RequestLlmIntent;'),
++    @('ratification_accepts_without_consent', 'return exactDraftConsent', 'return true'),
++    @('pending_activation_allowed', 'if (readiness.LegacyPendingCount != 0)', 'if (readiness.LegacyPendingCount == int.MinValue)'),
++    @('default_unknown_permitted', "default:`n                    return ForeignDiplomacyAdmission.Hold;", "default:`n                    return ForeignDiplomacyAdmission.Legacy;")
++)
++# Normalize only the temporary mutation input; preserve original production bytes.
++$source = $source.Replace("`r`n", "`n")
++foreach ($case in $cases) {
++    $name, $before, $after = $case
++    if ([regex]::Matches($source, [regex]::Escape($before)).Count -ne 1) { throw "Mutation boundary changed: $name" }
++    $temp = Join-Path ([IO.Path]::GetTempPath()) ('foreign-mutant-' + [Guid]::NewGuid().ToString('N'))
++    $tests = Join-Path $temp 'Tests'
++    New-Item -ItemType Directory -Path $tests | Out-Null
++    try {
++        [IO.File]::WriteAllText((Join-Path $temp 'ForeignDiplomacyAdmissionPolicy.cs'), $source.Replace($before, $after))
++        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ForeignDiplomacyAdmissionHarness') -Destination $tests -Recurse
++        $runner = Join-Path $tests 'ForeignDiplomacyAdmission.Tests.ps1'
++        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ForeignDiplomacyAdmission.Tests.ps1') -Destination $runner
++        $output = (& $pwsh -NoProfile -ExecutionPolicy Bypass -File $runner 2>&1 | Out-String)
++        $code = $LASTEXITCODE
++        if ($code -eq 0 -or $output -notmatch 'FAIL' -or $output -notmatch 'Exception calling' -or $output -match 'Add-Type:') {
++            throw "Mutation not rejected by behavioral assertion: $name`n$output"
++        }
++        Write-Output ('MUTATION_REJECTED ' + $name)
++    } finally { Remove-Item -LiteralPath $temp -Recurse -Force }
++}
++Write-Output 'TOTAL MUTATIONS REJECTED 5'
+--- /dev/null
++++ candidate/Tests/ForeignDiplomacyAdmission.Tests.ps1
+@@ -0,0 +1,12 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\ForeignDiplomacyAdmission.Tests.ps1
++$ErrorActionPreference = 'Stop'
++$root = Split-Path $PSScriptRoot -Parent
++$temp = Join-Path ([IO.Path]::GetTempPath()) ('foreign-admission-' + [Guid]::NewGuid().ToString('N'))
++New-Item -ItemType Directory -Path $temp | Out-Null
++try {
++    Copy-Item -LiteralPath (Join-Path $root 'Tests/ForeignDiplomacyAdmissionHarness/Scenarios.cs.txt') -Destination (Join-Path $temp 'Scenarios.cs')
++    Add-Type -Path @((Join-Path $root 'ForeignDiplomacyAdmissionPolicy.cs'),
++        (Join-Path $temp 'Scenarios.cs')) -CompilerOptions '/langversion:7.3'
++    [ForeignDiplomacyAdmissionScenarios]::Run()
++} finally { Remove-Item -LiteralPath $temp -Recurse -Force }
+--- /dev/null
++++ candidate/Tests/ForeignDiplomacyAdmissionHarness/Scenarios.cs.txt
+@@ -0,0 +1,71 @@
++using System;
++using BellumCivile;
++public static class ForeignDiplomacyAdmissionScenarios
++{
++    private static int passed;
++    private static void Check(bool ok, string name)
++    {
++        if (!ok) throw new Exception("FAIL " + name);
++        passed++; Console.WriteLine("PASS " + name);
++    }
++    private static ForeignDiplomacyReadiness Ready()
++    {
++        return new ForeignDiplomacyReadiness(true, true, true, true, true, true, true, true, 0);
++    }
++    private static ForeignDiplomacyAdmission Evaluate(ForeignDiplomacySource source,
++        bool enabled = true, bool inScope = true, bool ownerReady = true, bool boundConsent = false)
++    {
++        return ForeignDiplomacyAdmissionPolicy.Evaluate(enabled, inScope, ownerReady, source, boundConsent);
++    }
++    public static void Run()
++    {
++        Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(Ready()) == ForeignDiplomacyActivation.Ready, "complete_handshake");
++        Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(null) == ForeignDiplomacyActivation.MissingReadiness, "null_readiness_refused");
++        Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(new ForeignDiplomacyReadiness()) != ForeignDiplomacyActivation.Ready, "default_readiness_refused");
++        ForeignDiplomacyActivation[] reasons = {
++            ForeignDiplomacyActivation.RevampDisabled, ForeignDiplomacyActivation.MissingCampaignScope,
++            ForeignDiplomacyActivation.MissingDurableOwner, ForeignDiplomacyActivation.MissingDurableQueue,
++            ForeignDiplomacyActivation.MissingSaveRecovery, ForeignDiplomacyActivation.MissingNativeGateway,
++            ForeignDiplomacyActivation.MissingDraftConsentVerifier, ForeignDiplomacyActivation.MissingBoundedCrisisHandler };
++        for (int missing = 0; missing < 8; missing++)
++        {
++            bool[] a = { true, true, true, true, true, true, true, true };
++            a[missing] = false;
++            var readiness = new ForeignDiplomacyReadiness(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],0);
++            Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(readiness) == reasons[missing], "missing_capability_" + missing);
++        }
++        foreach (int count in new[] { -1, 1, 17 })
++            Check(ForeignDiplomacyAdmissionPolicy.CheckActivation(new ForeignDiplomacyReadiness(true,true,true,true,true,true,true,true,count)) == ForeignDiplomacyActivation.PendingOrUnknownLegacyWork, "pending_or_unknown_"+count);
++        foreach (ForeignDiplomacySource source in Enum.GetValues(typeof(ForeignDiplomacySource)))
++        {
++            Check(Evaluate(source, enabled:false) == ForeignDiplomacyAdmission.Legacy, "disabled_"+source);
++            Check(Evaluate(source, inScope:false, ownerReady:false) == ForeignDiplomacyAdmission.Legacy, "outside_scope_"+source);
++        }
++        foreach (var source in new[] { ForeignDiplomacySource.PlayerAction, ForeignDiplomacySource.InternalConflict,
++            ForeignDiplomacySource.ClientObligation, ForeignDiplomacySource.ExistingTreatyObligation,
++            ForeignDiplomacySource.VoluntaryPact, ForeignDiplomacySource.HostageChoice })
++        {
++            Check(Evaluate(source, ownerReady:false) == ForeignDiplomacyAdmission.Legacy, "excluded_"+source);
++        }
++        foreach (var source in new[] { ForeignDiplomacySource.AutomaticForeignWar,
++            ForeignDiplomacySource.AutomaticForeignPeace, ForeignDiplomacySource.AutomaticForeignParley })
++        {
++            Check(Evaluate(source) == ForeignDiplomacyAdmission.RequestLlmIntent, "intent_"+source);
++            Check(Evaluate(source, ownerReady:false) == ForeignDiplomacyAdmission.Hold, "owner_lost_"+source);
++            Check(Evaluate(source, boundConsent:true) == ForeignDiplomacyAdmission.RequestLlmIntent, "consent_cannot_bypass_initiative_"+source);
++        }
++        Check(Evaluate(ForeignDiplomacySource.PendingForeignRatification) == ForeignDiplomacyAdmission.Hold, "unbound_ratification_waits");
++        Check(Evaluate(ForeignDiplomacySource.PendingForeignRatification, boundConsent:true) == ForeignDiplomacyAdmission.ContinueNativeValidation, "bound_consent_only_allows_native_validation");
++        Check(Evaluate(ForeignDiplomacySource.PendingForeignRatification, ownerReady:false, boundConsent:true) == ForeignDiplomacyAdmission.Hold, "owner_fault_cannot_ratify");
++        Check(Evaluate(ForeignDiplomacySource.TerminalForeignWar) == ForeignDiplomacyAdmission.RequestCrisisResolution, "terminal_uses_crisis_not_ordinary_parley");
++        Check(Evaluate(ForeignDiplomacySource.TerminalForeignWar, ownerReady:false) == ForeignDiplomacyAdmission.Hold, "terminal_owner_fault_no_legacy_fallback");
++        Check(Evaluate(ForeignDiplomacySource.TerminalForeignWar, boundConsent:true) == ForeignDiplomacyAdmission.RequestCrisisResolution, "consent_cannot_bypass_crisis");
++        Check(Evaluate((ForeignDiplomacySource)999) == ForeignDiplomacyAdmission.Hold, "unknown_source_in_scope_held");
++        Check(Evaluate((ForeignDiplomacySource)999, enabled:false) == ForeignDiplomacyAdmission.Legacy, "unknown_source_legacy_preserved");
++        Check(Evaluate((ForeignDiplomacySource)999, inScope:false) == ForeignDiplomacyAdmission.Legacy, "unknown_source_outside_scope_preserved");
++        Check(Evaluate(default(ForeignDiplomacySource)) == ForeignDiplomacyAdmission.Hold, "default_source_is_unknown");
++        Check(default(ForeignDiplomacyAdmission) == ForeignDiplomacyAdmission.Hold, "default_verdict_is_hold");
++        Check(default(ForeignDiplomacyActivation) != ForeignDiplomacyActivation.Ready, "default_activation_not_ready");
++        Console.WriteLine("TOTAL PASS " + passed);
++    }
++}

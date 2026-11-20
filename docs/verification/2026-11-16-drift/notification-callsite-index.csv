@@ -1,0 +1,1582 @@
+"File","Line","Method","Invocation","Arguments"
+"BellumCivileDebug.cs","26","Trace","BellumCivileNotifications.ShowPersonal","(formattedMessage, BellumNotificationColors.Debug)"
+"BellumCivileNotifications.cs","91","Show","InformationManager.DisplayMessage","(new InformationMessage(rendered, color))"
+"BellumCivileNotifications.cs","132","Show","InformationManager.DisplayMessage","(new InformationMessage(text, color))"
+"BellumCivileNotifications.cs","147","ShowCapturedOutcome","InformationManager.DisplayMessage","(new InformationMessage(text, color))"
+"CivilWarSolidarityHelper.cs","651","TryAddSupporter","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Rebellion,
+                primaryKingdom: rebelFaction.ParentKingdom,
+                primaryClan: supporter,
+                secondaryClan: sponsor)"
+"CivilWarSolidarityHelper.cs","680","ApplyRefusalConsequences","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Warning,
+                primaryKingdom: kingdom,
+                primaryClan: vassal,
+                secondaryClan: liege)"
+"CivilWarSolidarityHelper.cs","725","ApplyOutsiderRefusalConsequences","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Warning,
+                primaryKingdom: rebelFaction?.ParentKingdom,
+                primaryClan: candidate,
+                secondaryClan: assessment.Sponsor)"
+"CourtSessionEvents.cs","242","Report","BellumCivileNotifications.Show","(text, plan.Positive ? BellumNotificationColors.Success : BellumNotificationColors.Danger, primaryKingdom: realm)"
+"FactionObject.cs","772","TriggerUltimatumDetailed","NotificationHelper.ShowUltimatumToPlayer","(
+                    this,
+                    () => CompleteDeferredUltimatum(AcceptDemands(), deferredCompletion),
+                    () => CompleteDeferredUltimatum(
+                        RefuseDemandsAndRebel(playerCallContext, suppressAutomaticPlayerChoice),
+                        deferredCompletion))"
+"FactionObject.cs","1012","AcceptDemands","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Warning, primaryKingdom: ParentKingdom, primaryClan: Leader)"
+"FactionObject.cs","1277","StartOpenRebellion","BellumCivileNotifications.Show","(msg2, BellumNotificationColors.Rebellion, primaryKingdom: ParentKingdom, secondaryKingdom: rebelKingdom, primaryClan: Leader, isMajorEvent: true)"
+"FactionObject.cs","1281","StartOpenRebellion","NotificationHelper.ShowCivilWarSolidarityChoiceToPlayer","(this, playerCall)"
+"FeudalTitlePlayerActionService.cs","484","TryExecuteUsurpation","NotificationHelper.ShowFeudalTitleUsurped","(clan, oldHolder, title)"
+"FeudalTitlePlayerActionService.cs","488","TryExecuteUsurpation","NotificationHelper.ShowSovereignTitleElevated","(
+                    clan,
+                    formerKingdom,
+                    independentKingdom,
+                    title,
+                    elevationChoice == FeudalSovereignElevationChoice.RetainHoldingsAndRebel)"
+"FeudalTitlePlayerActionService.cs","575","TryExecuteGrant","NotificationHelper.ShowFeudalTitleGranted","(grantorClan, recipientClan, title, recipientPreview.CreatesIndependentRealm, recipientPreview.RelationGain)"
+"FeudalTitlePlayerActionService.cs","671","TryExecuteRevocationInternal","NotificationHelper.ShowFeudalTitleRevocationDefied","(revokerClan, holder, title)"
+"FeudalTitlePlayerActionService.cs","687","TryExecuteRevocationInternal","NotificationHelper.ShowFeudalTitleRevoked","(revokerClan, holder, title)"
+"InternalInstabilityPresets.cs","35","ShowUnavailable","InformationManager.DisplayMessage","(new InformationMessage(new TextObject(
+                ""{=BC_MCM_InstabilityPresetUnavailable}Unable to apply the instability preset. Check the Bellum log or adjust the sliders manually."").ToString()))"
+"JoinFactionBarterable.cs","83","Apply","NotificationHelper.ShowClanJoinedFaction","(_targetHero.Clan, _faction)"
+"LeaveFactionBarterable.cs","71","Apply","NotificationHelper.ShowFactionDisbanded","(_faction, new TextObject(""{=BC_Disband_BoughtLeader}the leader was bought off by the crown"").ToString())"
+"LeaveFactionBarterable.cs","76","Apply","NotificationHelper.ShowClanLeftFaction","(_targetVassal.Clan, _faction, new TextObject(""{=BC_Left_BoughtMember}they were bought off by the crown"").ToString())"
+"LordshipPlayerActions.cs","30","ShowGrant","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                T(""BC_Lordship_GrantTitle"", ""Grant {LORDSHIP_TYPE}"", village), description.ToString(), choices, true, 1, 1,
+                T(""BC_Hierarchy_ActionGrant"", ""Grant""), T(""BC_UI_Cancel"", ""Cancel""), selected =>
+                {
+                    Hero hero = selected?.FirstOrDefault()?.Identifier as Hero;
+                    if (hero == null) return;
+                    if (!behavior.TryGrantFromPlayerHouse(village, hero, out var reason)) Failure(reason);
+                    else changed?.Invoke();
+                }, null), true)"
+"LordshipPlayerActions.cs","53","ShowVillageChoice","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                T(""BC_Lordship_GrantTitle"", ""Grant {LORDSHIP_TYPE}""), description.ToString(), choices, true, 1, 1,
+                T(""BC_Hierarchy_ActionGrant"", ""Grant""), T(""BC_UI_Cancel"", ""Cancel""), selected =>
+                {
+                    var village = selected?.FirstOrDefault()?.Identifier as Settlement;
+                    if (village == null) return;
+                    if (!behavior.TryGrant(Clan.PlayerClan, village, hero, out var reason)) Failure(reason);
+                    else changed?.Invoke();
+                }, null), true)"
+"LordshipPlayerActions.cs","70","ShowRevoke","InformationManager.ShowInquiry","(new InquiryData(T(""BC_Lordship_RevokeTitle"", ""Revoke {LORDSHIP_TYPE}"", village), body.ToString(),
+                true, true, T(""BC_Hierarchy_ActionRevoke"", ""Revoke""), T(""BC_UI_Cancel"", ""Cancel""), () =>
+                {
+                    if (LordshipBehavior.Instance?.TryRevoke(Clan.PlayerClan, village, out var reason) == true) changed?.Invoke();
+                    else Failure(LordshipBehavior.Text(""BC_Lordship_Changed"", ""This grant is no longer available.""));
+                }, null), true)"
+"LordshipPlayerActions.cs","86","ShowMigration","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                T(""BC_Lordship_MigrationTitle"", ""Retainers Await Endowment""),
+                T(""BC_Lordship_MigrationChoose"", ""Choose a retainer to receive a village endowment. The holder alone will receive its revenues.""),
+                choices, true, 1, 1, T(""BC_Hierarchy_ActionGrant"", ""Grant""), T(""BC_UI_Cancel"", ""Cancel""),
+                selected => { if (selected?.FirstOrDefault()?.Identifier is Hero hero) ShowVillageChoice(hero); }, null), true)"
+"LordshipPlayerActions.cs","93","Failure","InformationManager.DisplayMessage","(new InformationMessage(reason?.ToString() ?? string.Empty, Colors.Red))"
+"NotificationHelper.cs","26","ShowClanJoinedFaction","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: faction.ParentKingdom, primaryClan: clan)"
+"NotificationHelper.cs","33","ShowClanJoinedFaction","BellumCivileNotifications.Show","(text, FormedColor, primaryKingdom: faction.ParentKingdom, primaryClan: clan)"
+"NotificationHelper.cs","39","ShowFactionFormed","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: faction.ParentKingdom, primaryClan: faction.Leader)"
+"NotificationHelper.cs","46","ShowFactionFormed","BellumCivileNotifications.Show","(text, FormedColor, primaryKingdom: faction.ParentKingdom, primaryClan: faction.Leader)"
+"NotificationHelper.cs","52","ShowClanLeftFaction","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: faction.ParentKingdom, primaryClan: clan)"
+"NotificationHelper.cs","60","ShowClanLeftFaction","BellumCivileNotifications.Show","(text, LeftColor, primaryKingdom: faction.ParentKingdom, primaryClan: clan)"
+"NotificationHelper.cs","66","ShowFactionDisbanded","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: faction.ParentKingdom, primaryClan: faction.Leader)"
+"NotificationHelper.cs","73","ShowFactionDisbanded","BellumCivileNotifications.Show","(text, DisbandedColor, primaryKingdom: faction.ParentKingdom, primaryClan: faction.Leader)"
+"NotificationHelper.cs","84","ShowClanDefectedToRebellion","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: parentKingdom, secondaryKingdom: rebelKingdom, primaryClan: clan)"
+"NotificationHelper.cs","91","ShowClanDefectedToRebellion","BellumCivileNotifications.Show","(text, BellumNotificationColors.Rebellion, primaryKingdom: parentKingdom, secondaryKingdom: rebelKingdom, primaryClan: clan)"
+"NotificationHelper.cs","143","ShowUltimatumToPlayer","InformationManager.ShowInquiry","(inquiry, true)"
+"NotificationHelper.cs","159","ShowLoyalistRealmCollapsed","InformationManager.ShowInquiry","(
+                    new InquiryData(
+                        new TextObject(""{=BC_CivilWar_LoyalistCollapse_Title}The Loyalist Realm Collapses"").ToString(),
+                        description.ToString(),
+                        true,
+                        false,
+                        GameTexts.FindText(""str_done"").ToString(),
+                        string.Empty,
+                        null,
+                        null),
+                    true)"
+"NotificationHelper.cs","173","ShowLoyalistRealmCollapsed","BellumCivileNotifications.Show","(
+                description,
+                BellumNotificationColors.Rebellion,
+                primaryKingdom: parentKingdom,
+                secondaryKingdom: rebelKingdom,
+                primaryClan: faction.Leader,
+                isMajorEvent: true)"
+"NotificationHelper.cs","189","ShowPlayerSuccessionOpportunity","InformationManager.ShowInquiry","(inquiry, true)"
+"NotificationHelper.cs","196","ShowFeudalTitleUsurped","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: usurperClan.Kingdom, secondaryKingdom: oldHolderClan?.Kingdom, primaryClan: usurperClan, secondaryClan: oldHolderClan)"
+"NotificationHelper.cs","210","ShowFeudalTitleUsurped","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: usurperClan.Kingdom,
+                secondaryKingdom: oldHolderClan?.Kingdom,
+                primaryClan: usurperClan,
+                secondaryClan: oldHolderClan)"
+"NotificationHelper.cs","223","ShowFeudalTitleFormed","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: founderClan.Kingdom, primaryClan: founderClan)"
+"NotificationHelper.cs","231","ShowFeudalTitleFormed","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: founderClan.Kingdom,
+                primaryClan: founderClan)"
+"NotificationHelper.cs","242","ShowFeudalTitleGranted","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: grantorClan.Kingdom, secondaryKingdom: recipientClan.Kingdom, primaryClan: grantorClan, secondaryClan: recipientClan)"
+"NotificationHelper.cs","255","ShowFeudalTitleGranted","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: grantorClan.Kingdom,
+                secondaryKingdom: recipientClan.Kingdom,
+                primaryClan: grantorClan,
+                secondaryClan: recipientClan)"
+"NotificationHelper.cs","273","ShowSovereignTitleElevated","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: independentKingdom, secondaryKingdom: formerKingdom, primaryClan: sovereignClan, secondaryClan: formerKingdom.RulingClan)"
+"NotificationHelper.cs","283","ShowSovereignTitleElevated","BellumCivileNotifications.Show","(
+                text,
+                retainedHoldings ? BellumNotificationColors.Rebellion : BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: independentKingdom,
+                secondaryKingdom: formerKingdom,
+                primaryClan: sovereignClan,
+                secondaryClan: formerKingdom.RulingClan)"
+"NotificationHelper.cs","296","ShowFeudalTitleRevoked","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: revokerClan.Kingdom ?? holderClan.Kingdom, primaryClan: revokerClan, secondaryClan: holderClan)"
+"NotificationHelper.cs","305","ShowFeudalTitleRevoked","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: revokerClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: revokerClan,
+                secondaryClan: holderClan)"
+"NotificationHelper.cs","317","ShowFeudalTitleRevocationDefied","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: revokerClan.Kingdom ?? holderClan.Kingdom, primaryClan: revokerClan, secondaryClan: holderClan)"
+"NotificationHelper.cs","326","ShowFeudalTitleRevocationDefied","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Rebellion,
+                primaryKingdom: revokerClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: revokerClan,
+                secondaryClan: holderClan)"
+"NotificationHelper.cs","343","ShowFeudalDeJureDriftCompleted","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: receivingKingdom, secondaryKingdom: formerKingdom)"
+"NotificationHelper.cs","351","ShowFeudalDeJureDriftCompleted","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: receivingKingdom,
+                secondaryKingdom: formerKingdom)"
+"NotificationHelper.cs","362","ShowFeudalClaimFabricationDiscovered","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: claimantClan.Kingdom, secondaryKingdom: legalHolderClan?.Kingdom, primaryClan: claimantClan, secondaryClan: legalHolderClan)"
+"NotificationHelper.cs","379","ShowFeudalClaimFabricationDiscovered","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: claimantClan.Kingdom,
+                secondaryKingdom: legalHolderClan?.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: legalHolderClan)"
+"NotificationHelper.cs","395","ShowPlayerFeudalClaimFabricationStarted","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: claimantClan.Kingdom,
+                primaryClan: claimantClan,
+                isPersonal: true)"
+"NotificationHelper.cs","409","ShowFeudalClaimFabricationCompleted","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: claimantClan.Kingdom, secondaryKingdom: legalHolderClan?.Kingdom, primaryClan: claimantClan, secondaryClan: legalHolderClan)"
+"NotificationHelper.cs","425","ShowFeudalClaimFabricationCompleted","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: claimantClan.Kingdom,
+                secondaryKingdom: legalHolderClan?.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: legalHolderClan)"
+"NotificationHelper.cs","438","ShowClaimFeudStarted","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom, primaryClan: claimantClan, secondaryClan: holderClan)"
+"NotificationHelper.cs","442","ShowClaimFeudStarted","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: holderClan)"
+"NotificationHelper.cs","454","ShowClaimFeudTensionsMount","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom, primaryClan: claimantClan, secondaryClan: holderClan)"
+"NotificationHelper.cs","458","ShowClaimFeudTensionsMount","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: holderClan)"
+"NotificationHelper.cs","470","ShowClaimFeudCallToArms","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom, primaryClan: claimantClan, secondaryClan: holderClan)"
+"NotificationHelper.cs","474","ShowClaimFeudCallToArms","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: holderClan)"
+"NotificationHelper.cs","486","ShowClaimFeudDropped","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom, primaryClan: claimantClan, secondaryClan: holderClan)"
+"NotificationHelper.cs","490","ShowClaimFeudDropped","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: claimantClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: holderClan)"
+"NotificationHelper.cs","510","ShowClaimFeudRuling","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: kingdom, primaryClan: claimantClan, secondaryClan: holderClan)"
+"NotificationHelper.cs","527","ShowClaimFeudRuling","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: holderClan)"
+"NotificationHelper.cs","539","ShowClaimFeudWarStarted","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: kingdom ?? claimantClan.Kingdom ?? holderClan.Kingdom, primaryClan: claimantClan, secondaryClan: holderClan, isMajorEvent: true)"
+"NotificationHelper.cs","543","ShowClaimFeudWarStarted","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Rebellion,
+                primaryKingdom: kingdom ?? claimantClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: holderClan,
+                isMajorEvent: true)"
+"NotificationHelper.cs","556","ShowClaimFeudWarResolved","BellumCivileNotifications.ShouldPrepare","(primaryKingdom: kingdom ?? claimantClan.Kingdom ?? holderClan.Kingdom, primaryClan: claimantClan, secondaryClan: holderClan, isMajorEvent: true)"
+"NotificationHelper.cs","576","ShowClaimFeudWarResolved","BellumCivileNotifications.Show","(
+                text,
+                outcome == ClaimFeudWarOutcome.WhitePeace ? BellumNotificationColors.Success : BellumNotificationColors.InheritanceWarning,
+                primaryKingdom: kingdom ?? claimantClan.Kingdom ?? holderClan.Kingdom,
+                primaryClan: claimantClan,
+                secondaryClan: holderClan,
+                isMajorEvent: true)"
+"NotificationHelper.cs","713","ShowFiefRevocationProposed","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Land, primaryKingdom: kingdom, primaryClan: claimant ?? faction?.Leader, secondaryClan: settlement?.OwnerClan)"
+"NotificationHelper.cs","741","ShowProxyWarDiscovered","BellumCivileNotifications.Show","(text, BellumNotificationColors.CovertAction, primaryKingdom: actingKingdom, secondaryKingdom: targetKingdom, primaryClan: actingRuler?.Clan, secondaryClan: targetRuler?.Clan)"
+"NotificationHelper.cs","796","ShowProxyWarUndetectedImpact","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Warning)"
+"NotificationHelper.cs","883","ShowCoalitionChoiceToPlayer","BellumCivileNotifications.ShowPersonal","(msg, BellumNotificationColors.Danger)"
+"NotificationHelper.cs","906","ShowCoalitionChoiceToPlayer","BellumCivileNotifications.ShowPersonal","(msg, BellumNotificationColors.Success)"
+"NotificationHelper.cs","909","ShowCoalitionChoiceToPlayer","InformationManager.ShowInquiry","(inquiry, true)"
+"NotificationHelper.cs","978","ShowCivilWarSolidarityChoiceToPlayer","InformationManager.ShowInquiry","(
+                new InquiryData(
+                    title.ToString(),
+                    description.ToString(),
+                    true,
+                    true,
+                    joinText.ToString(),
+                    new TextObject(""{=BC_CivilWar_PlayerCall_Crown}Stand with the Crown"").ToString(),
+                    () =>
+                    {
+                        CivilWarSolidarityHelper.JoinPlayerRebellion(rebelFaction, context);
+                        TextObject msg = new TextObject(""{=BC_CivilWar_PlayerCall_JoinedMsg}You answer {LIEGE_NAME}'s summons. Your banners now fly with the rebellion against the crown."");
+                        msg.SetTextVariable(""LIEGE_NAME"", sponsor.Name);
+                        BellumCivileNotifications.ShowPersonal(msg, BellumNotificationColors.Rebellion);
+                    },
+                    () =>
+                    {
+                        CivilWarSolidarityHelper.KeepPlayerLoyal(rebelFaction, context);
+                        TextObject msg = new TextObject(""{=BC_CivilWar_PlayerCall_LoyalMsg}You refuse {LIEGE_NAME}'s summons and stand with the crown. Your choice will not soon be forgotten."");
+                        msg.SetTextVariable(""LIEGE_NAME"", sponsor.Name);
+                        BellumCivileNotifications.ShowPersonal(msg, BellumNotificationColors.Success);
+                    }),
+                true)"
+"NotificationHelper.cs","991","ShowCivilWarSolidarityChoiceToPlayer","BellumCivileNotifications.ShowPersonal","(msg, BellumNotificationColors.Rebellion)"
+"NotificationHelper.cs","998","ShowCivilWarSolidarityChoiceToPlayer","BellumCivileNotifications.ShowPersonal","(msg, BellumNotificationColors.Success)"
+"NotificationHelper.cs","1073","ShowTreasonSolidarityChoiceToPlayer","BellumCivileNotifications.ShowPersonal","(msg, BellumNotificationColors.Danger)"
+"NotificationHelper.cs","1087","ShowTreasonSolidarityChoiceToPlayer","BellumCivileNotifications.ShowPersonal","(msg, BellumNotificationColors.Success)"
+"NotificationHelper.cs","1090","ShowTreasonSolidarityChoiceToPlayer","InformationManager.ShowInquiry","(inquiry, true)"
+"PrivyCouncilAppointmentDecision.cs","461","ShowPoliticalOutcome","BellumCivileNotifications.Show","(
+                message,
+                rulerOverride ? BellumNotificationColors.Warning : BellumNotificationColors.Politics,
+                primaryKingdom: Kingdom,
+                primaryClan: candidate,
+                isPersonal: Kingdom == Clan.PlayerClan?.Kingdom)"
+"PrivyCouncilAppointmentDecision.cs","475","ShowPoliticalOutcome","BellumCivileNotifications.Show","(
+                reaction,
+                BellumNotificationColors.Warning,
+                primaryKingdom: Kingdom,
+                isPersonal: Kingdom == Clan.PlayerClan?.Kingdom)"
+"VoluntaryPactPlayerFlow.cs","38","Open","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_VoluntaryPact_OfferHostageTitle}Offer a Hostage"").ToString(),
+                new TextObject(""{=BC_VoluntaryPact_OfferHostageBody}Choose a relative of your ruling house to offer as a pledge of peace."").ToString(),
+                options, true, 1, 1, new TextObject(""{=BC_VoluntaryPact_Next}Next"").ToString(),
+                new TextObject(""{=BC_VoluntaryPact_Cancel}Cancel"").ToString(), selected =>
+                {
+                    if (selected?.Count == 1 && selected[0].Identifier is Hero hostage)
+                        AskDuration(owner, source, target, hostage, resolve);
+                }, null), true)"
+"VoluntaryPactPlayerFlow.cs","55","AskDuration","InformationManager.ShowTextInquiry","(new TextInquiryData(
+                new TextObject(""{=BC_VoluntaryPact_DurationTitle}Pledge Duration"").ToString(), instructions, true, true,
+                new TextObject(""{=BC_VoluntaryPact_Next}Next"").ToString(), new TextObject(""{=BC_VoluntaryPact_Cancel}Cancel"").ToString(),
+                input => { if (int.TryParse(input, out int days) && HostagePactRules.IsNegotiableDuration(days, baseline))
+                    AskPayment(owner, source, target, hostage, days, resolve); }, null, false,
+                input => Tuple.Create(int.TryParse(input, out int days) && HostagePactRules.IsNegotiableDuration(days, baseline), instructions),
+                """", baseline.ToString()))"
+"VoluntaryPactPlayerFlow.cs","71","AskPayment","InformationManager.ShowTextInquiry","(new TextInquiryData(
+                new TextObject(""{=BC_VoluntaryPact_PaymentTitle}Offer Compensation"").ToString(), instructions, true, true,
+                new TextObject(""{=BC_VoluntaryPact_Next}Next"").ToString(), new TextObject(""{=BC_VoluntaryPact_Cancel}Cancel"").ToString(),
+                input => { if (Valid(input) && int.TryParse(input, out int amount)) Confirm(owner, source, target, hostage, days, amount, resolve); },
+                null, false, input => Tuple.Create(Valid(input), instructions), """", ""0""))"
+"VoluntaryPactPlayerFlow.cs","84","Confirm","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_VoluntaryPact_ConfirmTitle}Propose a Pledge"").ToString(),
+                body.ToString(), true, true, new TextObject(""{=BC_VoluntaryPact_Submit}Propose"").ToString(),
+                new TextObject(""{=BC_VoluntaryPact_Cancel}Cancel"").ToString(), () =>
+                {
+                    if (!owner.CanPropose(source, target, Clan.PlayerClan, out var failure)) { ShowFailure(failure); return; }
+                    if (!owner.TryCreateAndFile(source, target, Clan.PlayerClan, hostage, days, payment, out string id))
+                    { ShowFailure(null); return; }
+                    var decision = owner.Find(id)?.SourceDecision;
+                    if (decision != null && decision.Kingdom?.UnresolvedDecisions?.Contains(decision) == true) resolve?.Invoke(decision);
+                }, null))"
+"VoluntaryPactPlayerFlow.cs","98","ShowFailure","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_VoluntaryPact_UnavailableTitle}Pledge Unavailable"").ToString(),
+                (reason ?? new TextObject(""{=BC_VoluntaryPact_Unavailable}A pledge cannot be proposed under the current circumstances."")).ToString(),
+                true, false, new TextObject(""{=BC_VoluntaryPact_Ok}Done"").ToString(), null, null, null))"
+"VotePledgeService.cs","107","TryCommit","BellumCivileNotifications.ShowPersonal","(reason, BellumNotificationColors.Politics)"
+"VotePledgeService.cs","208","ReportUnfulfilled","BellumCivileNotifications.Show","(notice, BellumNotificationColors.Politics, primaryKingdom: decision.Kingdom,
+                primaryClan: voter, isPersonal: decision.Kingdom == Clan.PlayerClan?.Kingdom)"
+"Patches/BlockCivilWarClanRecruitmentPatch.cs","54","ShowRecruitmentBlocked","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Danger)"
+"Patches/BlockCivilWarClanRecruitmentPatch.cs","124","ApplyPrefix","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Danger)"
+"Patches/ChildhoodEducationAgePatch.cs","66","Prefix","Campaign.Current.CampaignInformationManager.InformationDataExists","(
+                (EducationMapNotification notice) => notice.Child == child)"
+"Patches/DiplomacyRuntimeCompatibilityPatches.cs","58","ShowUnavailable","InformationManager.DisplayMessage","(new InformationMessage(reason.ToString(), BellumNotificationColors.Warning))"
+"Patches/ElectiveAbdicationButtonPatch.cs","22","Prefix","InformationManager.ShowInquiry","(new InquiryData(GameTexts.FindText(""str_abdicate_leadership"").ToString(),
+                new TextObject(""{=BC_Election_Abdicate}Relinquish the Crown? The nobles will settle the succession through their standing commitments. You remain head of your house, but cannot stand in this election."").ToString(),
+                true, true, GameTexts.FindText(""str_yes"").ToString(), GameTexts.FindText(""str_no"").ToString(),
+                () => { if (CrownAccessionBehavior.Instance.BeginElectiveAbdication(realm))
+                    AccessTools.Method(typeof(KingdomManagementVM), ""ExecuteClose"").Invoke(__instance, null); }, null), true)"
+"Patches/EncyclopediaFactionPagePatch.cs","122","BuildFallbackKingdomList","InformationManager.ShowTooltip","(typeof(Kingdom), tooltipKingdom)"
+"Patches/ExileRecruitmentPatch.cs","66","ShowRefusal","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Warning)"
+"Patches/ExpelClanDecisionPatch.cs","149","ApplyExpulsionAftermath","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Danger)"
+"Patches/ExpulsionDeliberationMenuPatch.cs","66","Prefix","BellumCivileNotifications.ShowPersonal","(explanation, BellumNotificationColors.Politics)"
+"Patches/ExpulsionVoteAIPatch.cs","156","Postfix","BellumCivileNotifications.ShowPersonal","(
+                        $""[BellumCivile] ExpulsionVoteAIPatch: Could not locate expel field on '{type.Name}'. Ideological expulsion voting disabled.\nAvailable bool members:\n{boolMembers}"",
+                        BellumNotificationColors.Debug)"
+"Patches/FiefVoteAIPatch.cs","90","GetCandidateClan","BellumCivileNotifications.ShowPersonal","(
+                        $""[BellumCivile] FiefVoteAIPatch: Could not locate candidate clan on '{type.Name}'. Ideological fief voting disabled.\nAvailable Clan members:\n{clanMembers}"",
+                        BellumNotificationColors.Debug)"
+"Patches/FiefVoteResolutionPatch.cs","167","Postfix","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: kingdom, primaryClan: dispossessed)"
+"Patches/FiefVoteResolutionPatch.cs","188","Postfix","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: kingdom, primaryClan: kingdom.RulingClan)"
+"Patches/FiefVoteResolutionPatch.cs","219","Postfix","BellumCivileNotifications.Show","(text, BellumNotificationColors.Land, primaryKingdom: kingdom, primaryClan: winner)"
+"Patches/FiefVoteResolutionPatch.cs","238","Postfix","BellumCivileNotifications.Show","(text, BellumNotificationColors.Neutral, primaryKingdom: kingdom, primaryClan: faction.Leader)"
+"Patches/FiefVoteResolutionPatch.cs","247","Postfix","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: kingdom, primaryClan: faction.Leader)"
+"Patches/FiefVoteResolutionPatch.cs","296","Postfix","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Success)"
+"Patches/FiefVoteResolutionPatch.cs","310","Postfix","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Danger)"
+"Patches/HereditaryAbdicationButtonPatch.cs","24","Prefix","BellumCivileNotifications.ShowPersonal","(reason, BellumNotificationColors.Warning)"
+"Patches/HereditaryAbdicationButtonPatch.cs","27","Prefix","InformationManager.ShowInquiry","(new InquiryData(
+                GameTexts.FindText(""str_abdicate_leadership"").ToString(), behavior.DescribeAbdication(preview).ToString(),
+                true, true, GameTexts.FindText(""str_yes"").ToString(), GameTexts.FindText(""str_no"").ToString(),
+                () =>
+                {
+                    if (!behavior.ConfirmAbdication(preview, out var result))
+                    {
+                        BellumCivileNotifications.ShowPersonal(result, BellumNotificationColors.Warning);
+                        __instance.OnRefresh();
+                        return;
+                    }
+                    if (!preview.Completed && !preview.Emergency)
+                        BellumCivileNotifications.ShowPersonal(result, BellumNotificationColors.Warning);
+                    // Do not force an unrelated filed motion or native abdication vote.
+                    AccessTools.Method(typeof(KingdomManagementVM), ""ExecuteClose"").Invoke(__instance, null);
+                }, null), true)"
+"Patches/HereditaryAbdicationButtonPatch.cs","34","Prefix","BellumCivileNotifications.ShowPersonal","(result, BellumNotificationColors.Warning)"
+"Patches/HereditaryAbdicationButtonPatch.cs","39","Prefix","BellumCivileNotifications.ShowPersonal","(result, BellumNotificationColors.Warning)"
+"Patches/KingdomDecisionUIPatch.cs","112","Prefix","InformationManager.ShowTooltip","(typeof(List<TooltipProperty>), new object[] { properties })"
+"Patches/KingSelectionAIPatch.cs","249","DetermineInitialCandidatesPrefix","BellumCivileNotifications.ShowPersonal","(""[BellumCivile] Error: Could not resolve KingSelectionDecisionOutcome type!"", BellumNotificationColors.Danger)"
+"Patches/KingSelectionAIPatch.cs","270","DetermineInitialCandidatesPrefix","BellumCivileNotifications.ShowPersonal","($""[BellumCivile] Error instantiating election candidate: {ex.Message}"", BellumNotificationColors.Danger)"
+"Patches/KingSelectionAIPatch.cs","1121","EnsureCandidateReflectionInitialized","BellumCivileNotifications.ShowPersonal","(
+                    $""[BellumCivile] KingSelectionAIPatch: Could not locate candidate hero/clan on '{type.Name}'.\nAvailable members:\n{clanMembers}"",
+                    BellumNotificationColors.Debug)"
+"Patches/LordshipAppointmentPatches.cs","212","BeforeGovernor","InformationManager.DisplayMessage","(new InformationMessage(LordshipEligibility.Reason(true).ToString(), Colors.Red))"
+"Patches/LordshipAppointmentPatches.cs","219","PlayerCommand","InformationManager.DisplayMessage","(new InformationMessage(LordshipEligibility.Reason(false).ToString(), Colors.Red))"
+"Patches/PeaceParleyEntryPointPatches.cs","52","Prefix","InformationManager.DisplayMessage","(new InformationMessage(storylineReason.ToString(), BellumNotificationColors.Warning))"
+"Patches/PeaceParleyEntryPointPatches.cs","119","Prefix","InformationManager.DisplayMessage","(new InformationMessage(storylineReason.ToString(), BellumNotificationColors.Warning))"
+"Patches/PeaceParleyEntryPointPatches.cs","184","Prefix","InformationManager.DisplayMessage","(new InformationMessage(allianceReason.ToString(), BellumNotificationColors.Warning))"
+"Patches/PeaceParleyEntryPointPatches.cs","191","Prefix","InformationManager.DisplayMessage","(new InformationMessage(storylineReason.ToString(), BellumNotificationColors.Warning))"
+"Patches/PlayerHeirSelectionLawPatch.cs","118","ShowLegalHeirEnforcedMessage","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.InheritanceWarning)"
+"Patches/PlayerHeirSelectionLawPatch.cs","210","Prefix","InformationManager.ShowInquiry","(
+                    new InquiryData(
+                        new TextObject(""{=BC_PlayerRegency_ConfirmTitle}Regency"").ToString(),
+                        regencyDescription.ToString(),
+                        true,
+                        true,
+                        new TextObject(""{=BC_PlayerRegency_Confirm}Confirm"").ToString(),
+                        new TextObject(""{=BC_PlayerSuccession_Cancel}Cancel"").ToString(),
+                        () =>
+                        {
+                            if (!regency.TryApprovePreparedPlayerSuccessor(successorToFinalize))
+                                return;
+
+                            try
+                            {
+                                FinalizeMethod.Invoke(__instance, new object[] { successorToFinalize });
+                            }
+                            catch (Exception ex)
+                            {
+                                regency.CancelPreparedPlayerSuccessorApproval(successorToFinalize);
+                                BellumCivileLogger.Log(
+                                    $""Could not finalize player regency selection; successor={successorToFinalize.StringId}; error={ex.GetType().Name}:{ex.Message}."");
+                            }
+                        },
+                        null),
+                    true)"
+"Patches/PlayerHeirSelectionLawPatch.cs","276","Prefix","InformationManager.ShowInquiry","(inquiry, true)"
+"Patches/PlayerLandedSecessionPatch.cs","30","Prefix","BellumCivileNotifications.ShowPersonal","(block, BellumNotificationColors.Warning)"
+"Patches/PolicyDeliberationMenuPatch.cs","67","Prefix","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_CourtAgenda_InvalidPolicyMandate}You do not hold a valid court mandate to propose this policy motion.""), BellumNotificationColors.Politics)"
+"Patches/PolicyDeliberationMenuPatch.cs","74","Prefix","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_NominationNotFiled}The proposal could not be placed before the court. If your mandate remains valid, you may choose another proposal before its deadline.""), BellumNotificationColors.Warning)"
+"Patches/PolicyVoteAIPatch.cs","119","Postfix","BellumCivileNotifications.ShowPersonal","(
+                        $""[BellumCivile] PolicyVoteAIPatch: Could not locate enact field on '{type.Name}'. Ideological policy voting disabled.\nAvailable bool members:\n{boolMembers}"",
+                        BellumNotificationColors.Debug)"
+"Patches/PolicyVoteResolutionPatch.cs","97","Postfix","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: kingdom, primaryClan: voter)"
+"Patches/RecruitmentRankPatch.cs","51","ShowRefusal","BellumCivileNotifications.ShowPersonal","(Refusal(peer), BellumNotificationColors.Warning)"
+"Behaviors/CivilWarCoalitionSuccession.cs","155","ProcessCoalitionSuccessions","BellumCivileNotifications.Show","(text, BellumNotificationColors.Rebellion,
+                        primaryKingdom: faction.ParentKingdom, secondaryKingdom: realm, isMajorEvent: true)"
+"Behaviors/CivilWarCoalitionSuccession.cs","176","CompleteCoalitionSuccession","BellumCivileNotifications.Show","(text, BellumNotificationColors.Rebellion,
+                primaryKingdom: faction.ParentKingdom, secondaryKingdom: realm, primaryClan: winner, isMajorEvent: true)"
+"Behaviors/CivilWarForeignClosure.cs","40","CloseReunifiedRebelForeignWars","BellumCivileNotifications.Show","(text, BellumNotificationColors.Success,
+                    primaryKingdom: destination, secondaryKingdom: enemy, isMajorEvent: true)"
+"Behaviors/CivilWarResolutionBehavior.cs","1207","ProcessPendingTribunals","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/CivilWarResolutionBehavior.cs","1401","ShowTribunalInquiry","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"Behaviors/CivilWarResolutionBehavior.cs","1535","OnHeroKilled","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Rebellion, primaryKingdom: activeFaction.ParentKingdom, secondaryKingdom: rebelKingdom, primaryClan: activeFaction.Leader, secondaryClan: newRebelLeader)"
+"Behaviors/CivilWarResolutionBehavior.cs","1540","OnHeroKilled","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Success, primaryKingdom: activeFaction.ParentKingdom, secondaryKingdom: rebelKingdom, primaryClan: activeFaction.Leader, isMajorEvent: true)"
+"Behaviors/CivilWarResolutionBehavior.cs","2632","ApplyPostWarPardon","BellumCivileNotifications.Show","(pardonText, BellumNotificationColors.Success, primaryKingdom: destinationKingdom, primaryClan: winnerRuler?.Clan, secondaryClan: losingClan)"
+"Behaviors/CivilWarResolutionBehavior.cs","2673","ApplyPostWarPunishment","BellumCivileNotifications.Show","(confiscateText, BellumNotificationColors.Land, primaryKingdom: rewardKingdom, primaryClan: winnerRuler?.Clan, secondaryClan: losingClan)"
+"Behaviors/CivilWarResolutionBehavior.cs","2856","ApplyPostWarExecutionEffects","BellumCivileNotifications.Show","(execText, BellumNotificationColors.Danger, primaryKingdom: rewardKingdom, primaryClan: winnerRuler?.Clan, secondaryClan: losingClan)"
+"Behaviors/CivilWarResolutionBehavior.cs","2923","ApplyPostWarExileOrSubmission","BellumCivileNotifications.Show","(expelText, BellumNotificationColors.Danger, primaryClan: losingClan, isPersonal: true)"
+"Behaviors/CivilWarResolutionBehavior.cs","2937","ApplyPostWarExileOrSubmission","BellumCivileNotifications.Show","(exileText, BellumNotificationColors.Danger, primaryKingdom: destinationKingdom, secondaryKingdom: losingClan.Kingdom, primaryClan: losingClan)"
+"Behaviors/CivilWarResolutionBehavior.cs","2943","ApplyPostWarExileOrSubmission","BellumCivileNotifications.Show","(pendingText, BellumNotificationColors.Danger, primaryKingdom: destinationKingdom, primaryClan: losingClan)"
+"Behaviors/CivilWarResolutionBehavior.cs","2952","ApplyPostWarExileOrSubmission","BellumCivileNotifications.Show","(strippedText, BellumNotificationColors.Danger, primaryKingdom: destinationKingdom, primaryClan: losingClan)"
+"Behaviors/ClaimFeudBehavior.cs","1115","HandleFeudMilestones","NotificationHelper.ShowClaimFeudTensionsMount","(claimant, holder, title)"
+"Behaviors/ClaimFeudBehavior.cs","1156","HandleFeudMilestones","NotificationHelper.ShowClaimFeudCallToArms","(claimant, holder, title)"
+"Behaviors/ClaimFeudBehavior.cs","1283","ResolvePetition","NotificationHelper.ShowClaimFeudRuling","(kingdom, ruler, claimant, holder, title, judgment, claimantResponse, holderResponse)"
+"Behaviors/ClaimFeudBehavior.cs","1711","ShowPlayerRulerJudgmentInquiry","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"Behaviors/ClaimFeudBehavior.cs","1882","ResolvePlayerRulerJudgment","NotificationHelper.ShowClaimFeudRuling","(kingdom, ruler, claimant, holder, title, judgment, claimantResponse, holderResponse)"
+"Behaviors/ClaimFeudBehavior.cs","1914","ShowPlayerRulingInquiry","InformationManager.ShowInquiry","(new InquiryData(
+                header.ToString(),
+                description.ToString(),
+                true,
+                canRefuse,
+                new TextObject(""{=BC_ClaimFeud_PlayerRuling_Accept}Accept Judgment"").ToString(),
+                canRefuse ? new TextObject(""{=BC_ClaimFeud_PlayerRuling_Refuse}Refuse & Fight"").ToString() : string.Empty,
+                () => ResolvePlayerRulingResponse(record.RecordId, defy: false),
+                canRefuse ? (Action)(() => ResolvePlayerRulingResponse(record.RecordId, defy: true)) : null), true)"
+"Behaviors/ClaimFeudBehavior.cs","2026","ResolvePlayerRulingResponse","NotificationHelper.ShowClaimFeudRuling","(kingdom, ruler, claimant, holder, title, record.Judgment, claimantResponse, holderResponse)"
+"Behaviors/ClaimFeudBehavior.cs","2091","ShowPlayerRevocationDemandInquiry","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"Behaviors/ClaimFeudBehavior.cs","2135","ResolvePlayerRevocationDemand","InformationManager.DisplayMessage","(new InformationMessage(fail.ToString(), Colors.Red))"
+"Behaviors/ClaimFeudBehavior.cs","2548","ShowFeudCallOutcome","BellumCivileNotifications.Show","(
+                text,
+                accepted ? BellumNotificationColors.Rebellion : BellumNotificationColors.Warning,
+                primaryKingdom: kingdom,
+                primaryClan: supporter,
+                secondaryClan: sideLeader)"
+"Behaviors/ClaimFeudBehavior.cs","2668","TryShowPlayerSupportInvitation","InformationManager.ShowInquiry","(new InquiryData(
+                titleText.ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_ClaimFeud_PlayerSupport_Accept}Pledge Support"").ToString(),
+                new TextObject(""{=BC_ClaimFeud_PlayerSupport_Refuse}Refuse"").ToString(),
+                () => ResolvePlayerSupportInvitation(record.RecordId, supportClaimant, accepted: true),
+                () => ResolvePlayerSupportInvitation(record.RecordId, supportClaimant, accepted: false)), true)"
+"Behaviors/ClaimFeudBehavior.cs","3233","StartFeud","NotificationHelper.ShowClaimFeudStarted","(candidate.Claimant, candidate.Holder, candidate.Title)"
+"Behaviors/ClaimFeudBehavior.cs","3255","StartFeud","NotificationHelper.ShowClaimFeudStarted","(candidate.Claimant, candidate.Holder, candidate.Title)"
+"Behaviors/ClaimFeudWarBehavior.cs","462","TryStartFeudWar","NotificationHelper.ShowClaimFeudWarStarted","(parent, claimant, holder, title)"
+"Behaviors/ClientKingdomBehavior.cs","263","ShowClientageNotification","BellumCivileNotifications.Show","(message, BellumNotificationColors.Warning,
+                primaryKingdom: suzerain, secondaryKingdom: client, isMajorEvent: true)"
+"Behaviors/ClientKingdomBehavior.cs","811","ShowIndependenceAfterSuzerainCollapse","BellumCivileNotifications.Show","(
+                message,
+                BellumNotificationColors.Success,
+                primaryKingdom: client,
+                secondaryKingdom: formerSuzerain,
+                isMajorEvent: true)"
+"Behaviors/CompanionSubinfeudationBehavior.cs","378","OpenGrantConfirmation","InformationManager.ShowInquiry","(inquiry)"
+"Behaviors/CompanionSubinfeudationBehavior.cs","396","OpenClanNameInquiry","InformationManager.ShowTextInquiry","(new TextInquiryData(
+                title.ToString(),
+                string.Empty,
+                true,
+                true,
+                GameTexts.FindText(""str_done"").ToString(),
+                GameTexts.FindText(""str_cancel"").ToString(),
+                CompleteGrant,
+                CancelClanNameInquiry,
+                false,
+                FactionHelper.IsClanNameApplicable))"
+"Behaviors/CompanionSubinfeudationBehavior.cs","420","CompleteGrant","BellumCivileNotifications.ShowPersonal","(failure, BellumNotificationColors.Warning)"
+"Behaviors/CompanionSubinfeudationBehavior.cs","426","CompleteGrant","BellumCivileNotifications.ShowPersonal","(
+                    new TextObject(""{=BC_Subinfeudation_UnexpectedFailure}The new house could not be established because the grant failed unexpectedly.""),
+                    BellumNotificationColors.Warning)"
+"Behaviors/CompanionSubinfeudationBehavior.cs","524","ShowFailureAndContinue","BellumCivileNotifications.ShowPersonal","(
+                failure ?? new TextObject(""{=BC_Subinfeudation_GrantChanged}The proposed grant has changed and must be reconsidered.""),
+                BellumNotificationColors.Warning)"
+"Behaviors/ComradesInArmsBehavior.cs","411","Msg","BellumCivileNotifications.ShowPersonal","(text, color)"
+"Behaviors/ConflictCallResponseBehavior.cs","128","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ConflictCallResponseBehavior.cs","136","OnTick","InformationManager.ShowInquiry","(new InquiryData(
+                response.Title,
+                response.Body,
+                true,
+                false,
+                new TextObject(""{=BC_CallResponse_Done}Done"").ToString(),
+                null,
+                () => _isShowingResponse = false,
+                null), true, false)"
+"Behaviors/ConflictOutcomeBehavior.cs","44","Begin","BellumCivileNotifications.ShouldShow","(primaryKingdom: first, secondaryKingdom: second)"
+"Behaviors/ConflictOutcomeBehavior.cs","88","Publish","BellumCivileNotifications.ShowCapturedOutcome","(notice.Chat, BellumNotificationColors.Warning, notice.ChatAllowed)"
+"Behaviors/ConflictOutcomeBehavior.cs","114","Process","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ConflictOutcomeBehavior.cs","123","Process","InformationManager.ShowInquiry","(new InquiryData(notice.Title, notice.Body, true, false,
+                new TextObject(""{=BC_Result_Continue}Continue"").ToString(), """", () =>
+                {
+                    notice.Acknowledged = true;
+                    if (_pending.Count > 0 && _pending.Peek() == notice) _pending.Dequeue();
+                    _active = null;
+                }, null), true)"
+"Behaviors/CouncilAppointmentDeliberationBehavior.cs","238","TryQueueOrStartAppointment","BellumCivileNotifications.Show","(notice, BellumNotificationColors.Politics,
+                primaryKingdom: kingdom, isPersonal: kingdom == Clan.PlayerClan?.Kingdom)"
+"Behaviors/CourtAgendaBehavior.cs","513","OpenTerm","BellumCivileNotifications.Show","(message, BellumNotificationColors.Politics, primaryKingdom: realm)"
+"Behaviors/CourtAgendaBehavior.cs","545","Advance","BellumCivileNotifications.Show","(message, BellumNotificationColors.Danger, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtAgendaBehavior.cs","670","TryWithdrawChangedPolicyAgenda","BellumCivileNotifications.Show","(message, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtAgendaBehavior.cs","703","Conclude","BellumCivileNotifications.Show","(message, obsoleteMandate ? BellumNotificationColors.Politics
+                : passed ? BellumNotificationColors.Success : BellumNotificationColors.Danger, primaryKingdom: realm)"
+"Behaviors/CourtAgendaPlayerFlow.cs","80","ProcessPlayerInquiry","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/CourtAgendaPlayerFlow.cs","118","ApplyPlayerAgendaChoice","BellumCivileNotifications.ShowPersonal","(grace, BellumNotificationColors.Warning)"
+"Behaviors/CourtAgendaPlayerFlow.cs","200","UpdatePlayerAgenda","BellumCivileNotifications.Show","(message, BellumNotificationColors.Danger, primaryKingdom: agenda.Realm, isPersonal: true)"
+"Behaviors/CourtAgendaPlayerFlow.cs","210","UpdatePlayerAgenda","BellumCivileNotifications.Show","(message, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm, isPersonal: true)"
+"Behaviors/CourtAgendaPlayerFlow.cs","237","NotifyAgenda","BellumCivileNotifications.Show","(message, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtAgendaPlayerFlow.cs","250","NotifyNpcCrownAgenda","BellumCivileNotifications.Show","(message, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtAppeasementAgendas.cs","49","AdvanceAppeasement","BellumCivileNotifications.Show","(text, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtCampaignAgendas.cs","69","AdvanceCampaignObjective","BellumCivileNotifications.Show","(text, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtCampaignAgendas.cs","122","FinishCampaignObjective","BellumCivileNotifications.Show","(text, CourtObjectiveReports.Color(result), primaryKingdom: agenda.Realm)"
+"Behaviors/CourtClaimAgendas.cs","188","ReportClaim","BellumCivileNotifications.Show","(text, CourtObjectiveReports.Color(result), primaryKingdom: agenda.Realm)"
+"Behaviors/CourtClientGrantAgendas.cs","87","ReportClientGrant","BellumCivileNotifications.Show","(new TextObject(success
+                    ? ""{=BC_ClientGrantDelivered}{RULER} has granted {FIEF} to {CLIENT}. Its council will decide which house receives the holding through a normal fief distribution vote. The gift strengthens their realm and gives its ruler cause to remember this generosity.""
+                    : ""{=BC_ClientGrantCancelled}The Crown's intended grant of {FIEF} to {CLIENT} could not be completed. No further transfer will be attempted under this authorization."")
+                    .SetTextVariable(""RULER"", p.Ruler?.Name ?? TextObject.GetEmpty()).SetTextVariable(""FIEF"", p.Fief?.Name ?? TextObject.GetEmpty())
+                    .SetTextVariable(""CLIENT"", p.Client?.Name ?? TextObject.GetEmpty()).SetTextVariable(""RECIPIENT"", p.Beneficiary?.Name ?? TextObject.GetEmpty()),
+                    BellumNotificationColors.Land, primaryKingdom: a.Realm, secondaryClan: p.Recipient)"
+"Behaviors/CourtCrownBehavior.cs","211","AnnounceCrownFavor","BellumCivileNotifications.Show","(message, BellumNotificationColors.Politics, primaryKingdom: realm)"
+"Behaviors/CourtDynasticAgendas.cs","135","ReportDynastic","BellumCivileNotifications.Show","(text, CourtObjectiveReports.Color(result), primaryKingdom: a.Realm)"
+"Behaviors/CourtDynasticPlayerFlow.cs","43","ProcessDynasticInquiry","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                    new TextObject(""{=BC_CourtDynasticTitle}A Bond Between Crowns"").ToString(),
+                    DynasticText(a, new TextObject(""{=BC_CourtDynasticApproach}The lords of the {FACTION} urge you to strengthen ties with {TARGET} through a marriage between {FIRST} and {SECOND}. They believe this union would serve both houses and will lend their voices to an alliance with that realm during this term.\n\nThe couple would make their household with {HOUSE}. Shall we approach {RULER} with this proposal?"")).ToString(),
+                    options.ToList(), false, 1, 1, new TextObject(""{=BC_CourtConfirmAgenda}Confirm"").ToString(), null,
+                    selected => {
+                        if (_activePlayerInquiry != a) return;
+                        _activePlayerInquiry = null;
+                        if (!PlayerDynasticAgenda(a) || a.Dynastic != plan || plan.Response != response || selected?.Count != 1) return;
+                        int choice = (int)selected[0].Identifier;
+                        plan.Response = choice == 0 ? CourtDynasticResponse.Approaching : choice == 1 ? CourtDynasticResponse.Deferred : CourtDynasticResponse.Declined;
+                        if (choice == 0) plan.ReplyDay = CampaignTime.Now.ToDays + 1;
+                    }, null), true)"
+"Behaviors/CourtDynasticPlayerFlow.cs","58","ProcessDynasticInquiry","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_CourtDynasticReplyTitle}An Answer to Your Proposal"").ToString(),
+                    DynasticText(a, new TextObject(""{=BC_CourtDynasticReply}{RULER} has answered your approach favorably and is willing to agree to the marriage of {FIRST} and {SECOND}. The couple would join {HOUSE}; no marriage payment is requested in this offer.\n\nYou may review the formal marriage offer before giving your final consent. An alliance between the realms remains a separate decision."")).ToString(),
+                    true, true, new TextObject(""{=BC_CourtDynasticReviewOffer}Review the marriage offer"").ToString(),
+                    new TextObject(""{=BC_CourtDynasticDecline}I will not pursue this match."").ToString(), () => {
+                        if (_activePlayerInquiry != a) return;
+                        _activePlayerInquiry = null;
+                        if (!PlayerDynasticAgenda(a) || a.Dynastic != plan || plan.Response != response) return;
+                        if (!BellumMarriageStrategyHelper.CourtMarriageParticipant(plan.First)
+                            || !BellumMarriageStrategyHelper.CourtMarriageParticipant(plan.Second)) return;
+                        var match = BellumMarriageStrategyHelper.EvaluateCourtMarriage(plan.First, plan.Second, true, plan.Destination);
+                        if (match == null)
+                        {
+                            plan.Response = CourtDynasticResponse.ForeignRefused;
+                            ReportDynastic(a, new TextObject(""{=BC_CourtDynasticRefused}{RULER} has declined the proposed match between {FIRST} and {SECOND}. The hoped-for union has not been agreed.""));
+                            return;
+                        }
+                        // Seal before the native offer publishes notifications or callbacks.
+                        plan.Response = CourtDynasticResponse.OfferIssued;
+                        if (service?.TrySendCourtMarriageOffer(match) != true) plan.Response = CourtDynasticResponse.ReplyReady;
+                    }, () => {
+                        if (_activePlayerInquiry != a) return;
+                        _activePlayerInquiry = null;
+                        if (PlayerDynasticAgenda(a) && a.Dynastic == plan && plan.Response == response) plan.Response = CourtDynasticResponse.Declined;
+                    }), true)"
+"Behaviors/CourtExecutiveAgendas.cs","84","AnnounceDeferredDecree","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: entry.Realm, secondaryClan: entry.Accused)"
+"Behaviors/CourtExecutiveAgendas.cs","114","AssignDecree","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: agenda.Realm, secondaryClan: entry.Accused)"
+"Behaviors/CourtExecutiveAgendas.cs","225","AdvanceExecutive","BellumCivileNotifications.Show","(text, BellumNotificationColors.Land, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtMandateAgendas.cs","117","AdvanceMandate","BellumCivileNotifications.Show","(new TextObject(""{=BC_MandateDeliberation}The {FACTION} has placed {LAW} before the court of {REALM}. The houses will deliberate until {DATE}; the present ruler's mandate will not be altered."")
+                    .SetTextVariable(""FACTION"", a.Faction.GetDisplayName()).SetTextVariable(""LAW"", RealmLawRegistry.Instance.Find(a.Mandate.NewLaw).Name)
+                    .SetTextVariable(""REALM"", a.Realm.Name).SetTextVariable(""DATE"", a.VoteDate.ToString()), BellumNotificationColors.Politics, primaryKingdom: a.Realm)"
+"Behaviors/CourtMandateAgendas.cs","150","ConcludeMandate","BellumCivileNotifications.Show","(new TextObject(enacted
+                ? ""{=BC_MandateApproval}The {FACTION} welcomes the court's adoption of {LAW}. Its members applaud this settlement of the realm's future succession. Approval +10.""
+                : ""{=BC_MandateReprisal}The court has rejected the {FACTION}'s proposal for {LAW}. Its members resent the defeat of their reform. Approval -10."")
+                .SetTextVariable(""FACTION"", a.Faction.GetDisplayName()).SetTextVariable(""LAW"", RealmLawRegistry.Instance.Find(a.Mandate.NewLaw).Name),
+                BellumNotificationColors.Politics, primaryKingdom: a.Realm)"
+"Behaviors/CourtNominationMandates.cs","30","ShowNominationMandateConfirmation","InformationManager.ShowInquiry","(new InquiryData(NominationLabel(kind).ToString(), body.ToString(), true, true,
+                new TextObject(""{=BC_CourtConfirmAgenda}Confirm"").ToString(), new TextObject(""{=BC_CourtPickerBack}Back"").ToString(), () =>
+                {
+                    if (_activePlayerInquiry != agenda) return;
+                    _activePlayerInquiry = null;
+                    if (!CanChooseTermBusiness(agenda) || agenda.ObjectiveData != identity || agenda.State != state
+                        || crisis != agenda.CrisisInterventionPending || price != ReplacementCost(agenda, crisis)
+                        || !deadline.IsFuture || !AvailablePlayerMotions(agenda, kind).Any()) return;
+                    if (price > 0 && !NpcInfluenceBudgetService.TrySpend(Clan.PlayerClan, price,
+                        crisis ? NpcInfluenceExpenseKind.CrownEmergency : NpcInfluenceExpenseKind.Discretionary, ""court_term_substitute"")) return;
+                    bool overruledCrisis = crisis && CourtChallengeGraceBlock(agenda) == null;
+                    // A fresh record releases all previous objective-specific reservations and effects.
+                    var mandate = new CourtAgendaRecord { Realm = agenda.Realm, Faction = agenda.Faction, Sponsor = Clan.PlayerClan,
+                        State = CourtAgendaState.AwaitingNomination, NominationKind = kind, NominationDeadline = deadline,
+                        NominationWindowDays = agenda.NominationWindowDays, SessionDate = agenda.SessionDate, VoteDate = agenda.VoteDate,
+                        HasScheduleSnapshot = agenda.HasScheduleSnapshot, TermDays = agenda.TermDays, PlayerSelectionConfirmed = true,
+                        SubstitutionInfluencePaid = price, OrdinaryCrisisRestrained = agenda.OrdinaryCrisisRestrained || overruledCrisis,
+                        ObjectiveData = new CourtObjectiveRecord { Kind = ""policy"" } };
+                    if (identity.HasTermSnapshot) mandate.ObjectiveData.FreezeTerm(identity.SelectedDay, identity.DeadlineDay);
+                    _agendas[_agendas.IndexOf(agenda)] = mandate;
+                    if (overruledCrisis) ApplyMemberMemory(mandate, BellumCivileConstants.CourtAgendaDeclineRelationPenalty,
+                        RelationMemorySources.OverruledMyFaction, 7f);
+                    NotifyAgenda(mandate);
+                    BellumCivileNotifications.ShowPersonal(new TextObject(""{=BC_NominationGranted}The {FACTION} entrusts you with a mandate: {MOTION}. Your peers expect a proposal before {DATE}."")
+                        .SetTextVariable(""FACTION"", AgendaOwnerName(mandate)).SetTextVariable(""MOTION"", NominationLabel(kind))
+                        .SetTextVariable(""DATE"", deadline.ToString()), BellumNotificationColors.Politics);
+                }, () => ReturnFromMotionPicker(agenda, identity, state, crisis, category)), true)"
+"Behaviors/CourtNominationMandates.cs","53","ShowNominationMandateConfirmation","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_NominationGranted}The {FACTION} entrusts you with a mandate: {MOTION}. Your peers expect a proposal before {DATE}."")
+                        .SetTextVariable(""FACTION"", AgendaOwnerName(mandate)).SetTextVariable(""MOTION"", NominationLabel(kind))
+                        .SetTextVariable(""DATE"", deadline.ToString()), BellumNotificationColors.Politics)"
+"Behaviors/CourtNominationMandates.cs","76","TryCouncilMandateNomination","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(NominationLabel(CourtCouncilObjectiveSource.CouncilKind).ToString(),
+                reason.ToString(), choices, true, 1, 1,
+                new TextObject(""{=BC_CourtConfirmAgenda}Confirm"").ToString(), new TextObject(""{=BC_CourtAgenda_SubCancel}Cancel"").ToString(),
+                selected =>
+                {
+                    if (selected?.Count == 1 && !FileMandateMotion(mandate, (PlayerMotion)selected[0].Identifier))
+                        BellumCivileNotifications.ShowPersonal(new TextObject(""{=BC_NominationNotFiled}The proposal could not be placed before the court. If your mandate remains valid, you may choose another proposal before its deadline.""), BellumNotificationColors.Warning);
+                    refresh?.Invoke();
+                }, _ => refresh?.Invoke()), true)"
+"Behaviors/CourtNominationMandates.cs","82","TryCouncilMandateNomination","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_NominationNotFiled}The proposal could not be placed before the court. If your mandate remains valid, you may choose another proposal before its deadline.""), BellumNotificationColors.Warning)"
+"Behaviors/CourtPeaceAgendas.cs","80","AdvancePeaceObjective","BellumCivileNotifications.Show","(text, BellumNotificationColors.Politics, primaryKingdom: agenda.Realm)"
+"Behaviors/CourtPeaceAgendas.cs","131","FinishPeaceObjective","BellumCivileNotifications.Show","(text, CourtObjectiveReports.Color(result), primaryKingdom: agenda.Realm)"
+"Behaviors/CourtPlayerCrownActions.cs","95","ShowCrownActions","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_CrownActions}Crown Actions"").ToString(), CrownActionsHint(realm).ToString(), choices,
+                true, 1, 1, new TextObject(""{=BC_CrownActionSelect}Select"").ToString(), new TextObject(""{=BC_CourtAgenda_SubCancel}Cancel"").ToString(),
+                selected => { if (selected?.Count == 1 && CanUseCrownActions(realm))
+                    if ((string)selected[0].Identifier == CourtRoyalPeaceRules.Kind) ShowPlayerRoyalPeace(realm, refresh);
+                    else if ((string)selected[0].Identifier == CourtClientGrantRules.Kind) ShowClientGrantFiefs(realm, refresh);
+                    else ShowPlayerCrownTargets(realm, (string)selected[0].Identifier, null, refresh); }, null), true)"
+"Behaviors/CourtPlayerCrownActions.cs","111","ShowClientGrantFiefs","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_CrownActionClientGrant}Grant land to a client state"").ToString(),
+                new TextObject(""{=BC_ClientGrantChooseFief}Which holding will you bestow upon a client realm?"").ToString(), choices,
+                true, 1, 1, new TextObject(""{=BC_CourtPickerContinue}Continue"").ToString(), new TextObject(""{=BC_CourtAgenda_SubCancel}Cancel"").ToString(),
+                selected => { if (selected?.Count != 1 || !CanUseCrownActions(realm)) return;
+                    string id = (string)selected[0].Identifier;
+                    if (id == ""back"") ShowCrownActions(realm, refresh);
+                    else ShowPlayerCrownTargets(realm, CourtClientGrantRules.Kind, id, refresh); }, null), true)"
+"Behaviors/CourtPlayerCrownActions.cs","131","ShowPlayerCrownTargets","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_CrownActions}Crown Actions"").ToString(),
+                new TextObject(""{=BC_CrownActionTarget}Whom will you name in this royal undertaking?"").ToString(), choices,
+                true, 1, 1, new TextObject(""{=BC_CourtPickerReview}Review motion"").ToString(), new TextObject(""{=BC_CourtAgenda_SubCancel}Cancel"").ToString(),
+                selected => { if (selected?.Count != 1) return;
+                    if (kind == CourtClientGrantRules.Kind && selected[0].Identifier is string) ShowClientGrantFiefs(realm, refresh);
+                    else ConfirmPlayerCrownBusiness(realm, (PlayerMotion)selected[0].Identifier, refresh); }, null), true)"
+"Behaviors/CourtPlayerCrownActions.cs","157","ConfirmPlayerCrownBusiness","InformationManager.ShowInquiry","(new InquiryData(motion.Label.ToString(), body.ToString(), true, true,
+                new TextObject(""{=BC_CourtConfirmAgenda}Confirm"").ToString(), new TextObject(motion.Kind == CourtClientGrantRules.Kind
+                    ? ""{=BC_CourtPickerBack}Back"" : ""{=BC_CourtAgenda_SubCancel}Cancel"").ToString(),
+                () => {
+                    if (realm.Leader != ruler || !FilePlayerCrownBusiness(realm, motion))
+                        BellumCivileNotifications.ShowPersonal(new TextObject(""{=BC_CrownActionChanged}This undertaking can no longer proceed. Its conditions or cost have changed.""), BellumNotificationColors.Warning);
+                    refresh?.Invoke();
+                }, motion.Kind == CourtClientGrantRules.Kind
+                    ? (Action)(() => ShowPlayerCrownTargets(realm, motion.Kind, motion.Candidate.TargetId, refresh)) : null), true)"
+"Behaviors/CourtPlayerCrownActions.cs","162","ConfirmPlayerCrownBusiness","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_CrownActionChanged}This undertaking can no longer proceed. Its conditions or cost have changed.""), BellumNotificationColors.Warning)"
+"Behaviors/CourtPlayerMotionPicker.cs","92","ShowTermBusinessInquiry","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(crown ? ""{=BC_CrownName}Crown"" : ""{=BC_CourtAgenda_Title}Faction Council"").ToString(), body.ToString(), choices,
+                false, 1, 1, new TextObject(""{=BC_CourtConfirmAgenda}Confirm"").ToString(), null,
+                selected =>
+                {
+                    if (_activePlayerInquiry != agenda) return;
+                    _activePlayerInquiry = null;
+                    if (!CanChooseTermBusiness(agenda) || agenda.ObjectiveData != identity || agenda.State != originalState
+                        || crisis != agenda.CrisisInterventionPending || ReplacementCost(agenda, crisis) != price || selected?.Count != 1) return;
+                    ApplyPlayerAgendaChoice(agenda, (int)selected[0].Identifier, crisis);
+                }, null), true)"
+"Behaviors/CourtPlayerMotionPicker.cs","229","ShowTermMotionPicker","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(agenda.Faction == null ? ""{=BC_CrownChooseBusiness}Choose Crown business"" : ""{=BC_CourtAgenda_SubTitle}Substitute Motion"").ToString(),
+                new TextObject(motions.Count == 0 ? ""{=BC_CourtAgenda_NoSubstitutes}No valid substitute motions are available.""
+                    : agenda.Faction == null ? ""{=BC_CrownBusinessPrompt}Which business will you pursue in the name of the Crown?""
+                    : ""{=BC_CourtAgenda_SubDesc}Which motion will you force onto the {FACTION_NAME}'s agenda?"")
+                    .SetTextVariable(""FACTION_NAME"", AgendaOwnerName(agenda)).ToString(), choices, true, 1, 1,
+                new TextObject(""{=BC_CourtPickerContinue}Continue"").ToString(), new TextObject(""{=BC_CourtPickerBack}Back"").ToString(),
+                selected =>
+                {
+                    if (_activePlayerInquiry != agenda) return;
+                    if (selected?.Count == 1 && ReferenceEquals(selected[0].Identifier, MotionPickerBack))
+                    { ReturnFromMotionPicker(agenda, identity, state, crisis, null, category == null); return; }
+                    _activePlayerInquiry = null;
+                    if (!CanChooseTermBusiness(agenda) || identity != agenda.ObjectiveData || state != agenda.State
+                        || crisis != agenda.CrisisInterventionPending || selected?.Count != 1) return;
+                    if (categories && selected[0].Identifier is string selectedCategory)
+                    { ShowTermMotionPicker(agenda, crisis, selectedCategory); return; }
+                    ShowPlayerMotionConfirmation(agenda, (PlayerMotion)selected[0].Identifier, crisis, price, category);
+                }, _ => ReturnFromMotionPicker(agenda, identity, state, crisis, null, category == null)), true)"
+"Behaviors/CourtPlayerMotionPicker.cs","268","ShowPlayerMotionConfirmation","BellumCivileNotifications.ShowPersonal","(grace, BellumNotificationColors.Warning)"
+"Behaviors/CourtPlayerMotionPicker.cs","313","ShowPlayerMotionConfirmation","InformationManager.ShowInquiry","(new InquiryData(motion.Label.ToString(), body.ToString(), true, true,
+                new TextObject(""{=BC_CourtConfirmAgenda}Confirm"").ToString(), new TextObject(""{=BC_CourtPickerBack}Back"").ToString(), () =>
+                {
+                    if (_activePlayerInquiry != agenda) return;
+                    _activePlayerInquiry = null;
+                    if (!CanChooseTermBusiness(agenda) || !agenda.SessionDate.IsFuture || agenda.ObjectiveData != identity || agenda.State != state
+                        || agenda.CrisisInterventionPending != crisis || ReplacementCost(agenda, crisis) != price) return;
+                    var currentGrace = PlayerMotionGraceBlock(agenda, motion);
+                    if (currentGrace != null)
+                    {
+                        BellumCivileNotifications.ShowPersonal(currentGrace, BellumNotificationColors.Warning);
+                        return;
+                    }
+                    var current = AvailablePlayerMotions(agenda).FirstOrDefault(m => SamePlayerMotion(m, motion));
+                    if (current == null || current.FilingCost != motion.FilingCost) return;
+                    // Prepare without mutating the live agenda or charging for a cancelled preview.
+                    var prepared = new CourtAgendaRecord { Realm = agenda.Realm, Sponsor = agenda.Sponsor, Faction = agenda.Faction,
+                        SessionDate = agenda.SessionDate, VoteDate = agenda.VoteDate, TermDays = agenda.TermDays, HasScheduleSnapshot = agenda.HasScheduleSnapshot,
+                        ObjectiveData = new CourtObjectiveRecord { Kind = ""policy"" } };
+                    if (identity.HasTermSnapshot) prepared.ObjectiveData.FreezeTerm(identity.SelectedDay, identity.DeadlineDay);
+                    if (motion.Kind != DebateKind)
+                        ((ICourtAgendaObjectiveSource)_objectiveSelector.FindSource(motion.Kind)).ApplySelection(prepared,
+                            new CourtObjectiveChoice(motion.Kind, motion.Candidate, new CourtObjectiveEvaluation(true, true, new CourtObjectiveWeight(1), ""player_selection"")));
+                    if (motion.Kind == CourtActivityRules.Kind && prepared.Activity == null) return;
+                    agenda.PlayerSelectionConfirmed = true;
+                    if (price > 0 && !NpcInfluenceBudgetService.TrySpend(Clan.PlayerClan, price,
+                        crisis ? NpcInfluenceExpenseKind.CrownEmergency : NpcInfluenceExpenseKind.Discretionary, ""court_term_substitute""))
+                    { agenda.PlayerSelectionConfirmed = false; return; }
+                    agenda.SubstitutionInfluencePaid = price;
+                    agenda.ObjectiveData = prepared.ObjectiveData;
+                    agenda.PolicyId = prepared.PolicyId;
+                    agenda.Abolish = prepared.Abolish;
+                    agenda.HasPolicyStanceSnapshot = prepared.HasPolicyStanceSnapshot;
+                    agenda.SelectedPolicyStance = prepared.SelectedPolicyStance;
+                    agenda.Activity = prepared.Activity;
+                    agenda.Appeasement = prepared.Appeasement;
+                    agenda.Peace = prepared.Peace;
+                    agenda.Campaign = prepared.Campaign;
+                    agenda.Subjugation = prepared.Subjugation;
+                    agenda.Claim = prepared.Claim;
+                    agenda.Dynastic = prepared.Dynastic;
+                    agenda.Trade = prepared.Trade;
+                    agenda.TitleGrant = prepared.TitleGrant;
+                    agenda.Rally = prepared.Rally;
+                    agenda.Mandate = prepared.Mandate;
+                    agenda.Liberation = prepared.Liberation;
+                    agenda.Protection = prepared.Protection;
+                    agenda.SessionDate = prepared.SessionDate;
+                    agenda.OriginalHolder = prepared.OriginalHolder;
+                    agenda.PreferredCouncilCandidate = prepared.PreferredCouncilCandidate;
+                    agenda.CouncilMotionId = prepared.CouncilMotionId;
+                    agenda.CrisisInterventionPending = false;
+                    bool overruledCrisis = crisis && CourtChallengeGraceBlock(agenda) == null;
+                    agenda.OrdinaryCrisisRestrained |= overruledCrisis;
+                    agenda.State = motion.Kind == DebateKind ? CourtAgendaState.Crisis : CourtAgendaState.Announced;
+                    if (overruledCrisis) ApplyMemberMemory(agenda, BellumCivileConstants.CourtAgendaDeclineRelationPenalty,
+                        RelationMemorySources.OverruledMyFaction, 7f);
+                    BellumCivileLogger.Log($""Court player selection; realm={agenda.Realm.StringId}; owner={agenda.Faction?.Type.ToString() ?? ""Crown""}; kind={motion.Kind}; target={motion.Candidate.TargetId}; selection_cost={price}; session={agenda.SessionDate.ToDays}."");
+                    NotifyAgenda(agenda);
+                }, () => ReturnFromMotionPicker(agenda, identity, state, crisis, category)), true)"
+"Behaviors/CourtPlayerMotionPicker.cs","323","ShowPlayerMotionConfirmation","BellumCivileNotifications.ShowPersonal","(currentGrace, BellumNotificationColors.Warning)"
+"Behaviors/CourtPlayerRoyalPeace.cs","31","ShowPlayerRoyalPeace","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_RoyalPeace_ConfirmTitle}Enforce Peace"").ToString(),
+                description.ToString(), true, true, new TextObject(""{=BC_RoyalPeaceAnnounce}Announce Decree"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(), () => {
+                    if (!CanUseCrownActions(realm) || realm.Leader != ruler) return;
+                    var current = RoyalExecutor?.GetRealmPreview(realm, Clan.PlayerClan);
+                    string report = null;
+                    if (current?.IsEnabled != true
+                        || !CourtRoyalPeaceRules.QuoteStillValid(preview.Wartime, preview.InfluenceCost, current.Wartime, current.InfluenceCost)
+                        || !TryScheduleRoyalPeace(realm, Clan.PlayerClan, out report))
+                        BellumCivileNotifications.ShowPersonal(new TextObject(""{=BC_CrownActionChanged}This undertaking can no longer proceed. Its conditions or cost have changed.""), BellumNotificationColors.Warning);
+                    refresh?.Invoke();
+                }, null), true)"
+"Behaviors/CourtPlayerRoyalPeace.cs","40","ShowPlayerRoyalPeace","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_CrownActionChanged}This undertaking can no longer proceed. Its conditions or cost have changed.""), BellumNotificationColors.Warning)"
+"Behaviors/CourtProtectionAgendas.cs","157","FinalizeProtection","BellumCivileNotifications.Show","(ProtectionOutcome(p), success ? BellumNotificationColors.Success : BellumNotificationColors.Warning,
+                primaryKingdom: p.Client, secondaryKingdom: p.Protector, isMajorEvent: success)"
+"Behaviors/CourtProtectionPlayerFlow.cs","17","ProcessProtectionInquiry","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_ProtectionTitle}A Crown Under Protection"").ToString(),
+                    ProtectionOutcome(report).ToString(), true, false, new TextObject(""{=BC_ProtectionContinue}Continue"").ToString(), null,
+                    () => { if (_activeProtectionInquiry == report) { report.PopupPending = false; _activeProtectionInquiry = null; } }, null), true)"
+"Behaviors/CourtProtectionPlayerFlow.cs","44","ProcessProtectionInquiry","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_ProtectionTitle}A Crown Under Protection"").ToString(), text.ToString(), true, true,
+                new TextObject(sender ? ""{=BC_ProtectionSend}Send the appeal"" : ""{=BC_ProtectionAccept}Accept their submission and defend them"").ToString(),
+                new TextObject(""{=BC_ProtectionReject}Decline the proposal"").ToString(), () =>
+                {
+                    if (!ValidProtectionCallback(p, phase)) return;
+                    _activeProtectionInquiry = null;
+                    if (sender) SendProtection(p); else AcceptProtection(p);
+                }, () =>
+                {
+                    if (!ValidProtectionCallback(p, phase)) return;
+                    _activeProtectionInquiry = null;
+                    CloseProtection(p, CourtProtectionPhase.Declined, sender ? ""player_withheld_appeal"" : ""player_declined_protection"");
+                }), true)"
+"Behaviors/CourtRallyAgendas.cs","140","ReportRally","BellumCivileNotifications.Show","(text,CourtObjectiveReports.Color(state),primaryKingdom:a.Realm)"
+"Behaviors/CourtSubjugationAgendas.cs","115","ReportSubjugation","BellumCivileNotifications.Show","(text, CourtObjectiveReports.Color(result), primaryKingdom: agenda.Realm)"
+"Behaviors/CourtTitleGrantAgendas.cs","206","FinishTitleAgenda","BellumCivileNotifications.Show","(CourtObjectiveReports.WithMood(text, a.Faction.GetDisplayName(), a.Faction.Mood - before, state), CourtObjectiveReports.Color(state), primaryKingdom: a.Realm)"
+"Behaviors/CourtTitleGrantAgendas.cs","214","ReportTitle","BellumCivileNotifications.Show","(TitleText(p, new TextObject(text)), BellumNotificationColors.Politics, primaryKingdom: p.Realm)"
+"Behaviors/CourtTitleGrantAgendas.cs","220","ReportTitleSuccess","BellumCivileNotifications.Show","(text, CourtObjectiveReports.Color(CourtObjectiveState.Succeeded), primaryKingdom: p.Realm)"
+"Behaviors/CourtTitleGrantPlayerFlow.cs","41","ProcessTitlePetitionInquiry","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(new TextObject(""{=BC_TitleGrantInquiryTitle}A Petition for Royal Favor"").ToString(),
+                body.ToString(), choices, false, 1, 1, new TextObject(""{=BC_TitleGrantConfirm}Confirm response"").ToString(), null, selected =>
+                {
+                    if (_activePlayerInquiry != a) return;
+                    _activePlayerInquiry = null;
+                    if (!_agendas.Contains(a) || !PlayerTitlePetition(a) || a.TitleGrant != p || p.Response != CourtTitleResponse.AwaitingPlayer || !GrantUnchanged(p)) return;
+                    if (selected == null || selected.Count != 1) return;
+                    string answer = selected[0]?.Identifier as string;
+                    if (answer == ""grant"")
+                    {
+                        if (!NpcInfluenceBudgetService.CanAfford(p.Grantor, FeudalTitlePlayerActionService.GrantInfluenceCost, NpcInfluenceExpenseKind.Discretionary)) return;
+                        AcceptTitleGrant(a);
+                    }
+                    else p.Response = answer == ""refuse"" ? CourtTitleResponse.Refused : CourtTitleResponse.Deferred;
+                }, null), true)"
+"Behaviors/CourtTitleGrantRecipientFlow.cs","46","ProcessTitleGrantOfferInquiry","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_TitleGrantOfferTitle}A Royal Honor"").ToString(),
+                TitleOfferText(p).ToString(), true, true,
+                new TextObject(""{=BC_TitleGrantOfferAccept}Accept the honor"").ToString(),
+                new TextObject(""{=BC_TitleGrantOfferRefuse}Refuse"").ToString(),
+                () => AnswerTitleGrantOffer(a, p, true), () => AnswerTitleGrantOffer(a, p, false)), true)"
+"Behaviors/CourtTitleGrantRecipientFlow.cs","60","AnswerTitleGrantOffer","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_TitleGrantOfferUnavailable}The Crown's offer is no longer available. No response has been delivered.""), BellumNotificationColors.Warning)"
+"Behaviors/CourtTitleGrantRecipientFlow.cs","98","AnswerTitleGrantOffer","BellumCivileNotifications.ShowPersonal","(TitleText(p, new TextObject(""{=BC_TitleGrantOfferDeclined}You have declined {RULER}'s offer of {TITLE}. The grant has been withdrawn."")), BellumNotificationColors.Politics)"
+"Behaviors/CourtTradeAgendas.cs","112","ReportTrade","BellumCivileNotifications.Show","(text, CourtObjectiveReports.Color(result), primaryKingdom: a.Realm)"
+"Behaviors/CrownAccessionBehavior.cs","386","Finish","BellumCivileNotifications.ShowPersonal","(message, BellumNotificationColors.Inheritance)"
+"Behaviors/CrownPlayerDeparture.cs","190","ShowCrownDepartureLetter","InformationManager.ShowInquiry","(new InquiryData(
+                    CrownDepartureText(record, ""{=BC_CrownDeparture_LetterTitle}A Crown for {HEIR}"").ToString(),
+                    BuildCrownDepartureLetter(record).ToString(), true, false,
+                    new TextObject(""{=BC_CrownDeparture_LetterAcknowledge}I understand."").ToString(), null,
+                    () => { record.PlayerDepartureExplained = true; _activeCrownDepartureLetter = null; }, null), true, false)"
+"Behaviors/CrownPlayerDeparture.cs","247","CanPresentCrownDeparture","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/CrownRealmUnionCompletion.cs","33","TryFinishRealmUnion","BellumCivileNotifications.Show","(message, BellumNotificationColors.Inheritance,
+                        primaryKingdom: journal.Destination, secondaryKingdom: journal.Source,
+                        primaryClan: journal.SurvivingHouse, secondaryClan: journal.PreviousHouse, isMajorEvent: true)"
+"Behaviors/DiplomacyCompatibilityBehavior.cs","66","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/DiplomacyCompatibilityBehavior.cs","81","OnTick","InformationManager.ShowInquiry","(new InquiryData(
+                title.ToString(),
+                body.ToString(),
+                true,
+                false,
+                understood.ToString(),
+                null,
+                null,
+                null), true, false)"
+"Behaviors/DynamicMercenaryBandBehavior.cs","634","CanPresentPlayerDeparture","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/DynamicMercenaryBandBehavior.cs","838","ShowAwayDepartureLetter","InformationManager.ShowInquiry","(new InquiryData(
+                title.ToString(),
+                body.ToString(),
+                true,
+                false,
+                new TextObject(""{=BC_DynamicMercenaryDeparture_LetterAcknowledge}So be it."").ToString(),
+                null,
+                () => _isShowingDepartureLetter = false,
+                null), true, false)"
+"Behaviors/DynamicMercenaryBandBehavior.cs","1314","ShowCompanyFoundedMessage","BellumCivileNotifications.Show","(
+                message,
+                BellumNotificationColors.Inheritance,
+                primaryKingdom: sourceClan?.Kingdom,
+                primaryClan: sourceClan,
+                secondaryClan: company)"
+"Behaviors/DynamicMercenaryBandBehavior.cs","1328","ShowCompanyJoinedMessage","BellumCivileNotifications.Show","(
+                message,
+                BellumNotificationColors.Inheritance,
+                primaryKingdom: sourceClan?.Kingdom,
+                primaryClan: sourceClan,
+                secondaryClan: company)"
+"Behaviors/DynasticHeirBehavior.cs","1252","ShowDynasticRightsRenouncedMessage","BellumCivileNotifications.Show","(text, BellumNotificationColors.InheritanceWarning, primaryKingdom: originKingdom, primaryClan: brideParentClan, secondaryClan: groomParentClan)"
+"Behaviors/ElectiveContestDispatch.cs","73","ShowRulerUltimata","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ElectiveContestDispatch.cs","93","ShowRulerUltimata","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                ContestText(""{=BC_Contest_Title}A Disputed Election""), string.Join(""\n\n"", lines), choices, false, 1, 1,
+                ContestText(""{=BC_Contest_Answer}Give your answer""), """", selected =>
+                {
+                    _inquiry = null;
+                    var chosen = selected?.FirstOrDefault()?.Identifier as Hero;
+                    if (chosen == null) return;
+                    if (!AnswerUltimata(record, chosen == record.ElectedWinner ? null : chosen))
+                        InformationManager.DisplayMessage(new InformationMessage(ContestText(""{=BC_Contest_ResponseChanged}The circumstances have changed. Your answer could not be delivered."")));
+                }, null), true)"
+"Behaviors/ElectiveContestDispatch.cs","101","ShowRulerUltimata","InformationManager.DisplayMessage","(new InformationMessage(ContestText(""{=BC_Contest_ResponseChanged}The circumstances have changed. Your answer could not be delivered."")))"
+"Behaviors/ElectiveContestInquiries.cs","56","ShowAppealInquiry","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ElectiveContestInquiries.cs","64","ShowAppealInquiry","InformationManager.ShowInquiry","(new InquiryData(ContestText(""{=BC_Contest_Title}A Disputed Election""), text.ToString(), true, true,
+                    ContestText(""{=BC_Contest_Contest}Contest the election""), ContestText(""{=BC_Contest_Accept}Accept the result""),
+                    () => AnswerContest(record, true), () => AnswerContest(record, false)), true)"
+"Behaviors/ElectiveContestInquiries.cs","96","ShowAppealInquiry","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                    ContestText(""{=BC_Contest_Title}A Disputed Election""), promptText, choices, true, 1, 1,
+                    ContestText(""{=BC_Contest_Pledge}Pledge support""), ContestText(""{=BC_Contest_Later}Decide later""),
+                    selected => FinishPledgeInquiry(record, selected.FirstOrDefault()?.Identifier as List<Hero>),
+                    _ => _inquiry = null), true)"
+"Behaviors/ElectiveContestInquiries.cs","106","ShowAppealInquiry","InformationManager.ShowInquiry","(new InquiryData(ContestText(""{=BC_Contest_Title}A Disputed Election""),
+                PlayerBackingReport(record, player), true, true,
+                ContestText(""{=BC_Contest_Send}Issue ultimatum""), ContestText(""{=BC_Contest_Withdraw}Withdraw the challenge""),
+                () => AnswerFinalAppeal(record, true), () => AnswerFinalAppeal(record, false)), true)"
+"Behaviors/ElectiveContestTesting.cs","47","ForceThreeWayTest","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ElectiveContestTesting.cs","146","AdvanceControlledTests","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ElectiveContestTesting.cs","222","SetTestStatus","InformationManager.DisplayMessage","(new InformationMessage(""Election test: "" + status, BellumNotificationColors.Warning))"
+"Behaviors/ElectiveSuccessionBehavior.cs","128","ApplyMandateReform","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Inheritance)"
+"Behaviors/ElectiveSuccessionBehavior.cs","148","CheckMandate","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Inheritance)"
+"Behaviors/ElectiveSuccessionBehavior.cs","332","ProcessInquiry","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ElectiveSuccessionBehavior.cs","339","ProcessInquiry","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_Election_Result}Election Result"").ToString(),
+                    text.ToString(), true, false, new TextObject(""{=BC_Election_Continue}Continue"").ToString(), """",
+                    () => defeat.DefeatNoticePending = false, null), true)"
+"Behaviors/ElectiveSuccessionBehavior.cs","351","ProcessInquiry","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_Election_Title}Choose the Sovereign"").ToString(),
+                summary.ToString() + ""\n\n"" + string.Join(""\n"", record.Finalists.Select(h => h.Name + "": ""
+                    + (record.TotalWeight > 0 ? record.Support(h) * 100 / record.TotalWeight : 0).ToString(""0.0"") + ""%"")),
+                true, true, new TextObject(""{=BC_Election_ConfirmSupport}Confirm support"").ToString(),
+                new TextObject(""{=BC_Election_ChangeSupport}Change support"").ToString(),
+                () => ConfirmInquiry(record, current), () => ShowFinalSelection(record)), true)"
+"Behaviors/ElectiveSuccessionBehavior.cs","363","ShowFinalSelection","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_Election_Title}Choose the Sovereign"").ToString(),
+                new TextObject(""{=BC_Election_FinalChoice}The succession is upon us. Whom does your house support?"").ToString(),
+                options, true, 1, 1, new TextObject(""{=BC_Election_Support}Support"").ToString(),
+                new TextObject(""{=BC_Election_Abstain}Abstain"").ToString(),
+                selected => ConfirmInquiry(record, selected.FirstOrDefault()?.Identifier as Hero),
+                _ => ConfirmInquiry(record, null)), true)"
+"Behaviors/ExileAsylumVisits.cs","77","CanPresentAsylumNotice","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ExileAsylumVisits.cs","149","OnAsylumTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ExileAsylumVisits.cs","198","ProcessAsylumVisits","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_Asylum_VisitExpired}Having received no answer to their petition, the {CLAN} have departed to seek protection elsewhere."")
+                            .SetTextVariable(""CLAN"", visit.Clan.Name), BellumNotificationColors.Warning)"
+"Behaviors/ExileAsylumVisits.cs","269","CompleteAsylumAdmission","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_Asylum_GrantChanged}The {CLAN} have sworn homage, but the promised estate is no longer available. You may endow their house with another vacant village."")
+                        .SetTextVariable(""CLAN"", visit.Clan.Name), BellumNotificationColors.Warning)"
+"Behaviors/ExiledClanRecoveryBehavior.cs","335","TryMoveClanToRefuge","BellumCivileNotifications.Show","(text, BellumNotificationColors.Warning, primaryKingdom: refuge, primaryClan: clan)"
+"Behaviors/ExiledClanRecoveryBehavior.cs","489","ShowPlayerAsylumInquiry","InformationManager.ShowInquiry","(inquiry, true)"
+"Behaviors/ExiledClanRecoveryBehavior.cs","517","DenyPlayerAsylum","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Warning)"
+"Behaviors/ExiledClanRecoveryBehavior.cs","528","DenyPlayerAsylum","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Warning)"
+"Behaviors/ExpulsionDeliberationBehavior.cs","125","QueueExpulsionVote","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Politics, primaryKingdom: kingdom, primaryClan: proposerClan, secondaryClan: targetClan)"
+"Behaviors/FactionManagerBehavior.cs","1403","ApplyKingsFury","BellumCivileNotifications.ShowPersonal","(playerMsg, msgColor)"
+"Behaviors/FactionManagerBehavior.cs","1565","OnHeroKilled","NotificationHelper.GetFactionDisplayName","(faction)"
+"Behaviors/FactionManagerBehavior.cs","1567","OnHeroKilled","BellumCivileNotifications.Show","(msg, BellumNotificationColors.LowPriority, primaryKingdom: faction.ParentKingdom, primaryClan: faction.Leader, secondaryClan: newLeader)"
+"Behaviors/FactionSuccessionSafety.cs","29","ReconcileWarmingCrownFactions","NotificationHelper.ShowFactionDisbanded","(faction, new TextObject(faction.Leader == ruler
+                        ? ""{=BC_FactionManager_DisbandReason_LeaderAscended}their leader ascended to the throne""
+                        : ""{=BC_FactionManager_DisbandReason_OldRuler}the old ruler is no longer in power"").ToString())"
+"Behaviors/FactionSuccessionSafety.cs","36","ReconcileWarmingCrownFactions","NotificationHelper.ShowClanLeftFaction","(ruler, faction,
+                        new TextObject(""{=BC_FactionManager_LeftReason_Ascended}they ascended to the throne"").ToString())"
+"Behaviors/FactionSuccessionSafety.cs","79","ProcessSuccessionOpportunities","NotificationHelper.ShowPlayerSuccessionOpportunity","(() =>
+                        {
+                            if (IsCurrentSuccessionOpportunity(faction, ruler, monarch)) faction.TriggerUltimatum();
+                        })"
+"Behaviors/FactionSuccessionSafety.cs","86","ProcessSuccessionOpportunities","NotificationHelper.GetFactionDisplayName","(faction)"
+"Behaviors/FactionSuccessionSafety.cs","87","ProcessSuccessionOpportunities","BellumCivileNotifications.Show","(text, BellumNotificationColors.Rebellion, primaryKingdom: realm, primaryClan: faction.Leader)"
+"Behaviors/FeudalClaimFabricationBehavior.cs","240","TryStartFabrication","NotificationHelper.ShowPlayerFeudalClaimFabricationStarted","(clan, clan.Leader, targetTitle)"
+"Behaviors/FeudalClaimFabricationBehavior.cs","344","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/FeudalClaimFabricationBehavior.cs","358","OnTick","InformationManager.ShowInquiry","(new InquiryData(
+                outcome.Title,
+                outcome.Body,
+                true,
+                false,
+                new TextObject(""{=BC_Fabrication_Result_Done}Done"").ToString(),
+                null,
+                () => { _pendingPlayerOutcomes.Remove(outcome); _isShowingPlayerOutcome = false; },
+                null), true, false)"
+"Behaviors/FeudalClaimFabricationBehavior.cs","998","HandleFabricationMilestone","NotificationHelper.ShowFeudalClaimFabricationDiscovered","(tier, clan, legalHolder, fabricator, title)"
+"Behaviors/FeudalClaimFabricationBehavior.cs","1129","CompleteFabrication","NotificationHelper.ShowFeudalClaimFabricationCompleted","(clan, ResolveClan(title.DeJureHolderClanId), fabricator, title)"
+"Behaviors/FeudalClaimFabricationSetbacks.cs","98","ShowPlayerSetback","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_Fabrication_SetbackTitle}A Letter from Your Scribe"").ToString(), body.ToString(),
+                choices, false, 1, 1, new TextObject(""{=BC_Fabrication_SetbackConfirm}Send instructions"").ToString(), null,
+                selected => {
+                    _isShowingPlayerOutcome = false;
+                    if (selected?.Count == 1) ResolveSetbackChoice(record, stage, (int)selected[0].Identifier);
+                }, null), true)"
+"Behaviors/FeudalDeJureDriftBehavior.cs","466","CompleteDrift","NotificationHelper.ShowFeudalDeJureDriftCompleted","(
+                    title,
+                    oldParent,
+                    newParent,
+                    ResolveTitleKingdom(oldParent),
+                    ResolveKingdom(record.TargetKingdomId))"
+"Behaviors/FeudalTitleBehavior.cs","1446","TryFormTitle","NotificationHelper.ShowFeudalTitleFormed","(clan, title, candidate.ChildTitleIds.Count)"
+"Behaviors/FeudalTitleBehavior.cs","1450","TryFormTitle","NotificationHelper.ShowSovereignTitleElevated","(
+                    clan,
+                    formerKingdom,
+                    independentKingdom,
+                    title,
+                    elevationChoice == FeudalSovereignElevationChoice.RetainHoldingsAndRebel)"
+"Behaviors/FeudalTitleUsurpationBehavior.cs","110","ProcessPendingCandidates","NotificationHelper.ShowFeudalTitleUsurped","(claimant, oldHolder, title)"
+"Behaviors/FeudalTitleUsurpationBehavior.cs","173","TryRunAutonomousUsurpationEvaluationForClan","NotificationHelper.ShowFeudalTitleUsurped","(claimant, oldHolder, title)"
+"Behaviors/FeudalTitleUsurpationBehavior.cs","365","ResolveNpcSovereignElevation","NotificationHelper.ShowSovereignTitleElevated","(
+                claimant,
+                formerKingdom,
+                independentKingdom,
+                title,
+                retainedHoldings: false)"
+"Behaviors/FiefDeliberationBehavior.cs","752","QueueFiefVote","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Land, primaryKingdom: kingdom, primaryClan: proposerClan, secondaryClan: settlement.OwnerClan)"
+"Behaviors/FiefDeliberationBehavior.cs","824","ShowRightOfConquestAnnouncement","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Politics, primaryKingdom: Clan.PlayerClan?.Kingdom, primaryClan: Clan.PlayerClan, isPersonal: true)"
+"Behaviors/FiefDeliberationBehavior.cs","2671","ApplyNpcSelfNominationEncouragement","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Success)"
+"Behaviors/FiefDeliberationBehavior.cs","2717","OpenFiefCandidateSelectionInquiry","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"Behaviors/FiefDeliberationBehavior.cs","2734","OnFiefCandidateSelected","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.Neutral)"
+"Behaviors/ForeignTreatyBehavior.cs","966","TryShowForcedPlayerParleyInquiry","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ForeignTreatyBehavior.cs","998","TryShowForcedPlayerParleyInquiry","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Parley_ForcedSurrenderTitle}Unconditional Surrender"").ToString(),
+                body.ToString(),
+                true,
+                false,
+                new TextObject(""{=BC_Parley_ReviewTerms}Review Terms"").ToString(),
+                string.Empty,
+                () =>
+                {
+                    // Inquiry callbacks run before their Gauntlet layer is always fully dismissed. Opening
+                    // another overlay here can therefore fail even though the treaty remains valid. Let the
+                    // next safe campaign UI tick perform the handoff instead.
+                    _pendingPlayerParleyOpenProposalId = proposal.ProposalId;
+                    BellumCivileLogger.Log($""Forced player parley queued after envoy inquiry; war={proposal.WarKey}; proposal={proposal.ProposalId}."");
+                },
+                null), true, false)"
+"Behaviors/ForeignTreatyBehavior.cs","1020","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/ForeignTreatyBehavior.cs","2092","ApplyRoyalMarriageTerms","BellumCivileNotifications.Show","(message, BellumNotificationColors.Success,
+                        primaryKingdom: receivingRealm, secondaryKingdom: concedingRealm,
+                        primaryClan: receivingRealm?.RulingClan, secondaryClan: concedingRealm?.RulingClan, isMajorEvent: true)"
+"Behaviors/ForeignTreatyBehavior.cs","2229","ShowTreatyRejectedMessage","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), BellumNotificationColors.Warning))"
+"Behaviors/ForeignTreatyBehavior.cs","2267","ShowTreatyAcceptedMessage","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), BellumNotificationColors.Success))"
+"Behaviors/ForeignTreatyBehavior.cs","2634","ApplyDiplomaticSeveranceTerm","BellumCivileNotifications.Show","(message, BellumNotificationColors.Warning,
+                primaryKingdom: concedingRealm, secondaryKingdom: thirdRealm, isMajorEvent: true)"
+"Behaviors/ForeignTreatyBehavior.cs","2694","ApplyStructuralPoliticalTerms","BellumCivileNotifications.Show","(message, BellumNotificationColors.Success,
+                            primaryKingdom: clientRealm, secondaryKingdom: liberatingRealm,
+                            primaryClan: clientRealm?.RulingClan, isMajorEvent: true)"
+"Behaviors/ForeignTreatyBehavior.cs","2717","ApplyStructuralPoliticalTerms","BellumCivileNotifications.Show","(message, BellumNotificationColors.Warning,
+                            primaryKingdom: sourceRealm, secondaryKingdom: independentRealm, primaryClan: releasedClan, isMajorEvent: true)"
+"Behaviors/ForeignTreatyBehavior.cs","2741","ApplyStructuralPoliticalTerms","BellumCivileNotifications.Show","(message, BellumNotificationColors.Warning,
+                            primaryKingdom: victorRealm, primaryClan: defeatedRuler?.Clan, isMajorEvent: true)"
+"Behaviors/HostagePactDialogues.cs","94","CanResolveHostageJudgment","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/HostagePactMaintenance.cs","172","Release","InformationManager.DisplayMessage","(new InformationMessage(text.ToString()))"
+"Behaviors/HostagePactTermination.cs","82","CancelHostageJudgment","InformationManager.DisplayMessage","(new InformationMessage(new TextObject(
+                ""{=BC_Hostage_JudgmentCancelled}The hostage judgment could not be carried out. No execution or breach of the pledge has been recorded."").ToString()))"
+"Behaviors/HostagePactWar.cs","124","FinishWarDisposition","InformationManager.DisplayMessage","(new InformationMessage(text.ToString()))"
+"Behaviors/HostagePactWar.cs","131","OfferHostageDisposition","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/HostagePactWar.cs","144","OfferHostageDisposition","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_Hostage_DispositionTitle}A Broken Pledge"").ToString(), body.ToString(), elements,
+                true, 1, 1, new TextObject(""{=BC_Hostage_Decide}Confirm judgment"").ToString(),
+                new TextObject(""{=BC_Hostage_Later}Decide later"").ToString(), selected =>
+                {
+                    _hostageInquiryOpen = false;
+                    if (record.ReceivingHouse?.Leader != Hero.MainHero || !InTreatyCustody(record)
+                        || pact.Phase != HostagePactPhase.Resolving || selected?.Count != 1) return;
+                    var choice = (HostageCustodyOutcome)selected[0].Identifier;
+                    if (choice == HostageCustodyOutcome.Execute && (pact.VoluntaryAggressor == null || !ExecutionAllowed(record))) return;
+                    if (record.TryChoose(choice)) record.ClemencyChosen = choice == HostageCustodyOutcome.Release;
+                    MaintainCustody();
+                }, _ => _hostageInquiryOpen = false), true)"
+"Behaviors/HostageTreatyRecovery.cs","47","RecoverTreatyDelivery","InformationManager.DisplayMessage","(new InformationMessage(new TextObject(
+                        ""{=BC_Hostage_SettlementInterrupted}The treaty's hostage pledge could not be completed. The hostages are being released. Concessions already carried out remain in effect; no further concessions will be imposed under this interrupted settlement."").ToString()))"
+"Behaviors/HouseholdRansomBehavior.cs","76","OpenHouseholdRansomInquiry","BellumCivileNotifications.ShowPersonal","(
+                    new TextObject(""{=BC_HouseholdRansom_NoLongerAvailable}No member of your household is presently available for ransom.""),
+                    BellumNotificationColors.Warning)"
+"Behaviors/HouseholdRansomBehavior.cs","104","OpenHouseholdRansomInquiry","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"Behaviors/HouseholdRansomBehavior.cs","119","OnHouseholdRansomConfirmed","InformationManager.ShowInquiry","(new InquiryData(
+                        new TextObject(""{=BC_Hostage_BrokerTitle}Ransom Broker"").ToString(),
+                        HostagePactText.BrokerRefusal(pact, prisoner).ToString(), true, false,
+                        new TextObject(""{=BC_Hostage_BrokerUnderstood}I understand."").ToString(), null,
+                        OpenHouseholdRansomInquiry, null), true)"
+"Behaviors/HouseholdRansomBehavior.cs","146","OnHouseholdRansomConfirmed","BellumCivileNotifications.ShowPersonal","(
+                    new TextObject(""{=BC_HouseholdRansom_ChangedCustody}The captive's circumstances have changed, and the broker can no longer honor that ransom offer.""),
+                    BellumNotificationColors.Warning)"
+"Behaviors/HouseholdRansomBehavior.cs","156","OnHouseholdRansomConfirmed","BellumCivileNotifications.ShowPersonal","(insufficient, BellumNotificationColors.Warning)"
+"Behaviors/HouseholdRansomBehavior.cs","165","OnHouseholdRansomConfirmed","BellumCivileNotifications.ShowPersonal","(released, BellumNotificationColors.Success)"
+"Behaviors/IdeologyBehavior.cs","678","Msg","BellumCivileNotifications.ShowPersonal","(text, color)"
+"Behaviors/IdeologyBehavior.cs","836","TryExpelKingForRebellion","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: kingdom, primaryClan: faction.Leader, secondaryClan: expelled)"
+"Behaviors/IdeologyBehavior.cs","1047","PacifyIdeologyMembers","NotificationHelper.ShowFactionDisbanded","(rebelFaction, reason.ToString())"
+"Behaviors/IdeologyBehavior.cs","1054","PacifyIdeologyMembers","NotificationHelper.ShowClanLeftFaction","(member, rebelFaction, reason.ToString())"
+"Behaviors/IdeologyBehavior.cs","1183","ApplyCourtFactionLeadershipChange","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Politics,
+                primaryKingdom: kingdom,
+                primaryClan: newLeader)"
+"Behaviors/IdeologyBehavior.cs","1201","ShowPlayerCourtFactionLeadershipInquiry","InformationManager.ShowInquiry","(new InquiryData(
+                title.ToString(),
+                description.ToString(),
+                true,
+                hasAlternativeCandidate,
+                new TextObject(""{=BC_Ideology_PlayerLeader_Accept}Accept"").ToString(),
+                new TextObject(""{=BC_Ideology_PlayerLeader_Refuse}Refuse"").ToString(),
+                () =>
+                {
+                    if (CourtMembershipEligibility.CanBelong(Clan.PlayerClan, kingdom)
+                        && faction.Members?.Contains(Clan.PlayerClan) == true)
+                    {
+                        ApplyCourtFactionLeadershipChange(faction, kingdom, Clan.PlayerClan);
+                    }
+                },
+                () =>
+                {
+                    Clan nextCandidate = GetRankedCourtFactionLeadershipCandidates(faction, kingdom)
+                        .FirstOrDefault(clan => clan != Clan.PlayerClan);
+                    if (nextCandidate == null)
+                        return;
+
+                    faction.Leader = nextCandidate;
+                    TextObject refusal = new TextObject(""{=BC_Ideology_PlayerLeader_Refused}Having declined leadership of the {FACTION_NAME}, you leave {CLAN_NAME} to represent its interests in court."");
+                    refusal.SetTextVariable(""FACTION_NAME"", GetFactionDisplayName(faction));
+                    refusal.SetTextVariable(""CLAN_NAME"", nextCandidate.Name);
+                    BellumCivileNotifications.Show(
+                        refusal,
+                        BellumNotificationColors.Politics,
+                        primaryKingdom: kingdom,
+                        primaryClan: nextCandidate);
+                }), true)"
+"Behaviors/IdeologyBehavior.cs","1227","ShowPlayerCourtFactionLeadershipInquiry","BellumCivileNotifications.Show","(
+                        refusal,
+                        BellumNotificationColors.Politics,
+                        primaryKingdom: kingdom,
+                        primaryClan: nextCandidate)"
+"Behaviors/IdeologyBehavior.cs","1391","OnDailyTickClan_Rebellion","NotificationHelper.ShowFactionDisbanded","(currentFaction, new TextObject(""{=BC_Ideology_DisbandReason_Appeased}their leader was appeased by the crown"").ToString())"
+"Behaviors/IdeologyBehavior.cs","1413","OnDailyTickClan_Rebellion","NotificationHelper.ShowFactionDisbanded","(currentFaction, new TextObject(""{=BC_Ideology_DisbandReason_WeakSupport}it failed to gather enough support"").ToString())"
+"Behaviors/IdeologyBehavior.cs","1426","OnDailyTickClan_Rebellion","NotificationHelper.ShowClanLeftFaction","(clan, currentFaction, new TextObject(""{=BC_Ideology_LeftReason_ColdFeet}they got cold feet"").ToString())"
+"Behaviors/IdeologyBehavior.cs","1436","OnDailyTickClan_Rebellion","NotificationHelper.ShowClanLeftFaction","(clan, currentFaction, new TextObject(""{=BC_Ideology_LeftReason_BitterRivalry}due to a bitter rivalry with the faction leader"").ToString())"
+"Behaviors/IdeologyBehavior.cs","1514","AttemptDefectToActiveCivilWar","NotificationHelper.ShowClanDefectedToRebellion","(clan, activeRebellion, parentKingdom)"
+"Behaviors/IdeologyBehavior.cs","1670","TryJoinPreparationFaction","NotificationHelper.ShowClanJoinedFaction","(clan, faction)"
+"Behaviors/IdeologyBehavior.cs","1690","CreateRebelFaction","NotificationHelper.ShowFactionFormed","(faction)"
+"Behaviors/IdeologyBehavior.cs","2158","ShowPlayerTreasonJudgment","InformationManager.ShowInquiry","(inquiry, true)"
+"Behaviors/IdeologyBehavior.cs","2231","SubmitPlayerTreasonJudgment","BellumCivileNotifications.ShowPersonal","(msg, BellumNotificationColors.Danger)"
+"Behaviors/IdeologyBehavior.cs","2316","ExecuteTreasonPurge","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: kingdom, primaryClan: rulingClan, secondaryClan: targetClan)"
+"Behaviors/IdeologyBehavior.cs","2324","ExecuteTreasonPurge","BellumCivileNotifications.Show","(text, BellumNotificationColors.Danger, primaryKingdom: kingdom, primaryClan: rulingClan, secondaryClan: targetClan)"
+"Behaviors/IdeologyBehavior.cs","2511","FinalizeLegalExpulsionRebellion","BellumCivileNotifications.Show","(
+                    text,
+                    BellumNotificationColors.Rebellion,
+                    primaryKingdom: kingdom,
+                    secondaryKingdom: rebelKingdom,
+                    primaryClan: targetClan)"
+"Behaviors/IdeologyBehavior.cs","2517","FinalizeLegalExpulsionRebellion","NotificationHelper.ShowTreasonSolidarityChoiceToPlayer","(rebelFaction, kingdom, targetClan)"
+"Behaviors/IdeologyBehavior.cs","2722","FinalizeTreasonRebellion","BellumCivileNotifications.Show","(
+                    startMessage,
+                    BellumNotificationColors.Rebellion,
+                    primaryKingdom: kingdom,
+                    secondaryKingdom: rebelKingdom,
+                    primaryClan: targetClan,
+                    isPersonal: personalNotification)"
+"Behaviors/IdeologyBehavior.cs","2731","FinalizeTreasonRebellion","NotificationHelper.ShowTreasonSolidarityChoiceToPlayer","(rebelFaction, kingdom, targetClan)"
+"Behaviors/IdeologyBehavior.cs","2851","RallyTreasonSolidaritySupporters","BellumCivileNotifications.Show","(text, BellumNotificationColors.Rebellion, primaryKingdom: kingdom, primaryClan: supporter, secondaryClan: accusedClan)"
+"Behaviors/IdeologyEventShockBehavior.cs","386","CompleteCrownAccession","BellumCivileNotifications.ShowPersonal","(text, BellumNotificationColors.InheritanceWarning)"
+"Behaviors/InternalPeaceOffers.cs","45","ShowTerms","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_InternalPeace_Title}Terms of Reconciliation"").ToString(),
+                new TextObject(""{=BC_InternalPeace_Introduction}What terms shall we put before the assembled houses? Your own side must endorse the settlement, and the opposing side must be willing to accept it."").ToString(),
+                options, true, 1, 1, new TextObject(""{=BC_InternalPeace_Propose}Propose Terms"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                selected => Propose(first, second, key, (string)selected[0].Identifier), null))"
+"Behaviors/InternalPeaceOffers.cs","150","Notify","InformationManager.DisplayMessage","(
+            new InformationMessage(text.ToString(), BellumNotificationColors.Warning))"
+"Behaviors/InternalPeaceSettlementBehavior.cs","90","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/InternalPeaceSettlementBehavior.cs","108","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/InternalPeaceSettlementBehavior.cs","185","AskPlayerConsent","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_InternalPeace_Title}Terms of Reconciliation"").ToString(),
+                new TextObject(""{=BC_InternalPeace_Received}An envoy from {REALM} brings terms endorsed by their council. Will you accept this settlement?\n\n{TERMS}"")
+                    .SetTextVariable(""REALM"", first.Name).SetTextVariable(""TERMS"", terms).ToString(),
+                true, true, new TextObject(""{=BC_InternalPeace_Accept}Accept the Terms"").ToString(),
+                new TextObject(""{=BC_InternalPeace_Refuse}Continue the Conflict"").ToString(),
+                () =>
+                {
+                    if (_first.ContainsKey(key) && second.Leader?.StringId == leader && second.RulingClan == Clan.PlayerClan
+                        && first.IsAtWarWith(second) && TryIdentify(first, second, out string current, out _) && current == key)
+                        _consentLeader.Remove(key);
+                    else Remove(key);
+                },
+                () => { Remove(key); BellumCivileLogger.Log($""Internal settlement refused by player; conflict={key}.""); }))"
+"Behaviors/LordshipBehavior.cs","404","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/LordshipBehavior.cs","415","OnTick","InformationManager.ShowInquiry","(new InquiryData(Text(""BC_Lordship_MigrationTitle"", ""Retainers Await Endowment"").ToString(),
+                body.ToString(), true, true, Text(""BC_Lordship_GrantPlural"", ""Endow Retainers"").ToString(),
+                Text(""BC_Lordship_Attend"", ""I Will Attend to It"").ToString(), () => LordshipPlayerActions.ShowMigration(), null,
+                isAffirmativeOptionEnabled: () => (Villages(Clan.PlayerClan).Any(v => pending.Any(a => CanGrant(Clan.PlayerClan, v, a.Hero, out _))),
+                    Text(""BC_Lordship_NoVacancies"", ""None of your villages are available for a grant."").ToString())), true)"
+"Behaviors/LordshipCommandTransfers.cs","187","ShowCommandReplacementInquiry","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                Text(""BC_Lordship_ReplacementTitle"", ""Appoint a New Commander"").ToString(),
+                Text(""BC_Lordship_ReplacementBody"", ""{HERO} must relinquish command of {PARTY}. Choose a new commander to keep the party in the field, or order it disbanded."")
+                    .SetTextVariable(""HERO"", former.Name).SetTextVariable(""PARTY"", party.Name).ToString(), choices, true, 1, 1,
+                Text(""BC_Lordship_ReplacementAppoint"", ""Appoint"").ToString(), Text(""BC_Lordship_ReplacementDisband"", ""Disband Party"").ToString(),
+                selected =>
+                {
+                    if (selected?.FirstOrDefault()?.Identifier is Hero replacement) Decide(replacement);
+                    else { _replacementInquiryOpen = false; _retirementQueued = true; }
+                }, _ => Decide(null)), true)"
+"Behaviors/PartitionCrossClanInheritance.cs","435","ShowEstateInheritanceMessage","BellumCivileNotifications.Show","(message, BellumNotificationColors.Inheritance,
+                        primaryKingdom: record.Realm, primaryClan: recipient, secondaryClan: record.Source)"
+"Behaviors/PartitionSuccessionBehavior.cs","1066","ShowPartitionMessage","BellumCivileNotifications.Show","(text, BellumNotificationColors.Inheritance, primaryKingdom: kingdom, primaryClan: cadetClan, secondaryClan: parentClan)"
+"Behaviors/PartitionSuccessionBehavior.cs","1085","ShowSovereignPartitionMessage","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Inheritance,
+                primaryKingdom: successorKingdom,
+                secondaryKingdom: parentKingdom,
+                primaryClan: cadetClan,
+                secondaryClan: parentClan,
+                isMajorEvent: true)"
+"Behaviors/PlayerMarriageAgreementBehavior.cs","137","Notify","InformationManager.DisplayMessage","(new InformationMessage(reason.ToString()))"
+"Behaviors/PlayerMarriageAgreementBehavior.cs","147","ConfirmDeparture","InformationManager.ShowInquiry","(new InquiryData(record.FormText().ToString(), warning.ToString(), true, true,
+                GameTexts.FindText(""str_accept"").ToString(), GameTexts.FindText(""str_cancel"").ToString(), accept, cancel))"
+"Behaviors/PolicyDeliberationBehavior.cs","123","QueuePolicyVote","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Politics, primaryKingdom: kingdom, primaryClan: proposingFaction?.Leader)"
+"Behaviors/PolicyDeliberationBehavior.cs","241","TryShowPlayerPolicyMandateDeviationConfirmation","InformationManager.ShowInquiry","(new InquiryData(
+                title.ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_PolicyMandate_Proceed}Proceed"").ToString(),
+                new TextObject(""{=BC_PolicyMandate_Reconsider}Reconsider"").ToString(),
+                onConfirmed,
+                null), true)"
+"Behaviors/PolicyDeliberationBehavior.cs","341","QueuePlayerProposedVote","BellumCivileNotifications.Show","(msg, BellumNotificationColors.Politics, primaryKingdom: kingdom, primaryClan: Clan.PlayerClan, isPersonal: true)"
+"Behaviors/PrivyCouncilBehavior.cs","141","OnTick","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/PrivyCouncilBehavior.cs","149","OnTick","InformationManager.ShowInquiry","(new InquiryData(
+                dismissal.Title,
+                dismissal.Body,
+                true,
+                false,
+                new TextObject(""{=BC_Council_DisgracedDismissalAcknowledge}Understood"").ToString(),
+                null,
+                () => _isShowingPlayerDismissal = false,
+                null), true, false)"
+"Behaviors/PrivyCouncilBehavior.cs","1068","BuildAssignmentEffectSummary","NotificationHelper.GetFactionDisplayName","(faction)"
+"Behaviors/PrivyCouncilBehavior.cs","2489","TryAppointOffice","BellumCivileNotifications.Show","(
+                    message,
+                    BellumNotificationColors.Politics,
+                    primaryKingdom: kingdom,
+                    primaryClan: candidate,
+                    isPersonal: kingdom == Clan.PlayerClan?.Kingdom)"
+"Behaviors/PrivyCouncilBehavior.cs","2577","TryDismissOfficeHolderByRuler","BellumCivileNotifications.Show","(
+                message,
+                BellumNotificationColors.Warning,
+                primaryKingdom: kingdom,
+                primaryClan: formerHolder,
+                isPersonal: kingdom == Clan.PlayerClan?.Kingdom)"
+"Behaviors/PrivyCouncilBehavior.cs","3022","TryDismissDisgracedOfficeHolder","BellumCivileNotifications.Show","(
+                message,
+                BellumNotificationColors.Warning,
+                primaryKingdom: kingdom,
+                primaryClan: holder,
+                isPersonal: kingdom == Clan.PlayerClan?.Kingdom)"
+"Behaviors/ProxyWarBehavior.cs","487","OpenTargetSelectionInquiry","MBInformationManager.ShowMultiSelectionInquiry","(data, true)"
+"Behaviors/ProxyWarBehavior.cs","570","OnTargetSelected","MBInformationManager.ShowMultiSelectionInquiry","(data, true)"
+"Behaviors/ProxyWarBehavior.cs","674","OnActionSelected","BellumCivileNotifications.ShowPersonal","(departMsg, BellumNotificationColors.CovertAction)"
+"Behaviors/ProxyWarBehavior.cs","696","OnDailyTick","BellumCivileNotifications.ShowPersonal","(abortFallen, BellumNotificationColors.Warning)"
+"Behaviors/ProxyWarBehavior.cs","717","OnDailyTick","BellumCivileNotifications.ShowPersonal","(execMsg, BellumNotificationColors.Danger)"
+"Behaviors/ProxyWarBehavior.cs","725","OnDailyTick","BellumCivileNotifications.ShowPersonal","(escMsg, BellumNotificationColors.Warning)"
+"Behaviors/ProxyWarBehavior.cs","740","OnDailyTick","BellumCivileNotifications.ShowPersonal","(abortArrived, BellumNotificationColors.Warning)"
+"Behaviors/ProxyWarBehavior.cs","746","OnDailyTick","BellumCivileNotifications.ShowPersonal","(successMsg, BellumNotificationColors.Success)"
+"Behaviors/ProxyWarBehavior.cs","1244","TryShowUndetectedImpactToPlayer","NotificationHelper.ShowProxyWarUndetectedImpact","(
+                actionType,
+                targetKingdom,
+                outcome.VictimKingdom,
+                outcome.AffectedSettlement,
+                outcome.AffectedFaction,
+                outcome.AffectedClan)"
+"Behaviors/ProxyWarBehavior.cs","1368","ApplyDiscoveryFallout","NotificationHelper.ShowProxyWarDiscovered","(actingKingdom, targetKingdom, actingRuler, targetRuler, actionType)"
+"Behaviors/RegencyBehavior.cs","700","TryShowPlayerRegencyIntroduction","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/RegencyBehavior.cs","744","TryShowPlayerRegencyIntroduction","InformationManager.ShowInquiry","(
+                new InquiryData(
+                    title.ToString(),
+                    description.ToString(),
+                    true,
+                    false,
+                    new TextObject(""{=BC_PlayerRegency_ChooseRegent}Choose a Regent"").ToString(),
+                    string.Empty,
+                    () => _isShowingPlayerRegencyIntroduction = false,
+                    null),
+                true)"
+"Behaviors/RegencyBehavior.cs","762","TryShowPlayerRegencyHandover","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/RegencyBehavior.cs","791","TryShowPlayerRegencyHandover","InformationManager.ShowInquiry","(
+                new InquiryData(
+                    new TextObject(""{=BC_PlayerRegency_HandoverTitle}The Regency Ends"").ToString(),
+                    description.ToString(),
+                    true,
+                    false,
+                    new TextObject(""{=BC_PlayerRegency_HandoverContinue}Continue as Heir"").ToString(),
+                    string.Empty,
+                    () =>
+                    {
+                        _isShowingPlayerRegencyHandover = false;
+                        CompletePlayerRegencyHandover(record, ward, regent);
+                    },
+                    null),
+                true)"
+"Behaviors/RegencyBehavior.cs","1529","ShowRegencyNotification","BellumCivileNotifications.Show","(
+                text,
+                BellumNotificationColors.Inheritance,
+                primaryKingdom: clan?.Kingdom,
+                primaryClan: clan,
+                isMajorEvent: clan != null && clan == clan.Kingdom?.RulingClan)"
+"Behaviors/RetainerIndentures.cs","108","MaintainIndentures","InformationManager.DisplayMessage","(new InformationMessage(Text(""BC_Indenture_Expired"", ""{HERO}'s indenture has expired."")
+                        .SetTextVariable(""HERO"", contract.Holder.Name).ToString()))"
+"Behaviors/RetainerIndentures.cs","123","ShowIndentureRenewalInquiry","InformationManager.ShowInquiry","(new InquiryData(Text(""BC_Indenture_RenewalTitle"", ""Indenture Nearing Its End"").ToString(),
+                Text(""BC_Indenture_RenewalBody"", ""Your indenture with {HERO} ends in {DAYS} {?DAYS > 1}days{?}day{\\?}. Will you retain their services for another term?"")
+                    .SetTextVariable(""HERO"", contract.Holder.Name).SetTextVariable(""DAYS"", IndentureDaysLeft(contract)).ToString(),
+                true, true, Text(""BC_Indenture_Renew"", ""Renew Indenture"").ToString(), Text(""BC_Indenture_LetExpire"", ""Let It Expire"").ToString(),
+                () => { _indentureInquiryOpen = false; ShowIndentureRenewalTerms(contract); },
+                () => _indentureInquiryOpen = false), true)"
+"Behaviors/RetainerIndentures.cs","133","CanShowIndentureRenewal","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/RetainerIndentures.cs","148","ShowIndentureRenewalTerms","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                Text(""BC_Indenture_Renew"", ""Renew Indenture"").ToString(),
+                Text(""BC_Indenture_RenewalTerms"", ""{HERO} offers to serve for another term, with the fee payable in advance."")
+                    .SetTextVariable(""HERO"", contract.Holder.Name).ToString(), choices, true, 1, 1,
+                Text(""BC_Indenture_Agree"", ""Agree"").ToString(), Text(""BC_UI_Cancel"", ""Cancel"").ToString(), selected =>
+                {
+                    _indentureInquiryOpen = false;
+                    if (!(selected?.FirstOrDefault()?.Identifier is int years)) return;
+                    if (!TrySignIndenture(contract.Holder, years, out var reason, expectedEnd))
+                        InformationManager.DisplayMessage(new InformationMessage(reason.ToString(), Colors.Red));
+                    else InformationManager.DisplayMessage(new InformationMessage(Text(""BC_Indenture_Renewed"", ""Your indenture with {HERO} has been renewed."")
+                        .SetTextVariable(""HERO"", contract.Holder.Name).ToString()));
+                }, _ => _indentureInquiryOpen = false), true)"
+"Behaviors/RetainerIndentures.cs","157","ShowIndentureRenewalTerms","InformationManager.DisplayMessage","(new InformationMessage(reason.ToString(), Colors.Red))"
+"Behaviors/RetainerIndentures.cs","158","ShowIndentureRenewalTerms","InformationManager.DisplayMessage","(new InformationMessage(Text(""BC_Indenture_Renewed"", ""Your indenture with {HERO} has been renewed."")
+                        .SetTextVariable(""HERO"", contract.Holder.Name).ToString()))"
+"Behaviors/SuccessionChallengeDispatch.cs","63","SettleChallengedCrown","BellumCivileNotifications.Show","(text, BellumNotificationColors.Inheritance,
+                        primaryKingdom: record.Realm, primaryClan: receivingHouse, isMajorEvent: true)"
+"Behaviors/SuccessionChallengePlayer.cs","47","StartPlayerChallenge","InformationManager.DisplayMessage","(new InformationMessage(reason.ToString()))"
+"Behaviors/SuccessionChallengePledges.cs","99","ProcessChallengeInquiry","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/SuccessionChallengePledges.cs","106","ProcessChallengeInquiry","InformationManager.ShowInquiry","(new InquiryData(Label(""{=BC_Challenge_Title}Dynastic Falling-out""), text.ToString(), true, true,
+                    Label(""{=BC_Challenge_Back}Support the claimant""), Label(""{=BC_Challenge_Loyal}Remain loyal""),
+                    () => AnswerCall(choice, true), () => AnswerCall(choice, false)), true)"
+"Behaviors/SuccessionChallengePledges.cs","125","ProcessChallengeInquiry","InformationManager.ShowInquiry","(new InquiryData(Label(""{=BC_Challenge_Title}Dynastic Falling-out""),
+                        proposal + ""\n\n"" + PowerSummary(report), true, true,
+                        Label(""{=BC_PlayerChallenge_Send}Send ultimatum""), Label(""{=BC_PlayerChallenge_Withdraw}Withdraw""),
+                        () => AnswerPlayerUltimatum(report, true), () => AnswerPlayerUltimatum(report, false)), true)"
+"Behaviors/SuccessionChallengePledges.cs","137","ProcessChallengeInquiry","InformationManager.ShowInquiry","(new InquiryData(Label(""{=BC_Challenge_Title}Dynastic Falling-out""),
+                    text + (report.Phase == SuccessionChallengePhase.Cancelled ? """" : ""\n\n"" + PowerSummary(report)), true, false, Label(""{=BC_Election_Continue}Continue""), """",
+                    () => { report.ReportPending = false; _inquiry = null; }, null), true)"
+"Behaviors/SuccessionChallengeTesting.cs","64","ShowRulerResponse","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                Label(""{=BC_Challenge_Title}Dynastic Falling-out""), text + ""\n\n"" + PowerSummary(record)
+                    + ""\n\n"" + DemandEstatePreview(record), choices, false, 1, 1,
+                Label(""{=BC_Challenge_Confirm}Confirm response""), """",
+                selected =>
+                {
+                    _inquiry = null;
+                    if (selected == null || selected.Count != 1 || !(selected[0].Identifier is SuccessionChallengePhase phase)) return;
+                    if (!RecordPlayerResponse(record, phase))
+                        InformationManager.DisplayMessage(new InformationMessage(Label(""{=BC_Challenge_Changed}The challenge conditions changed. No response was recorded."")));
+                }, null), true)"
+"Behaviors/SuccessionChallengeTesting.cs","73","ShowRulerResponse","InformationManager.DisplayMessage","(new InformationMessage(Label(""{=BC_Challenge_Changed}The challenge conditions changed. No response was recorded."")))"
+"Behaviors/SuccessionChallengeTesting.cs","104","AnnounceConcession","BellumCivileNotifications.Show","(text, BellumNotificationColors.Inheritance,
+                primaryKingdom: record.Realm, primaryClan: record.Challenger.Clan)"
+"Behaviors/SuccessionLawBehavior.cs","346","ShowSuccessionLineEscheatNotification","BellumCivileNotifications.ShowPersonal","(message, BellumNotificationColors.Warning)"
+"Behaviors/SuccessionLawBehavior.cs","504","CompletePlayerLawChange","BellumCivileNotifications.ShowPersonal","(message, BellumNotificationColors.Warning)"
+"Behaviors/VoluntaryPactProposalBehavior.cs","417","OfferPlayerTargetChoice","InformationManager.IsAnyInquiryActive","()"
+"Behaviors/VoluntaryPactProposalBehavior.cs","432","OfferPlayerTargetChoice","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                    new TextObject(""{=BC_VoluntaryPact_ChooseHostageTitle}A Pledge of Peace"").ToString(), body.ToString(), choices,
+                    false, 1, 1, new TextObject(""{=BC_VoluntaryPact_ConfirmChoice}Confirm"").ToString(), null,
+                    selected =>
+                    {
+                        _targetInquiryOpen = false;
+                        if (selected?.Count != 1 || !IsPlayerRulingHouse(proposal)
+                            || proposal.Phase != VoluntaryPactProposalPhase.TargetChoice) return;
+                        if (!(selected[0].Identifier is Hero hostage)) { CancelProposal(proposal, VoluntaryPactCloseReason.TargetDeclined); return; }
+                        ApplyPlayerTargetChoice(proposal, hostage);
+                    }, null), true)"
+"Behaviors/VoluntaryPactProposalBehavior.cs","531","ReportOutcomes","InformationManager.DisplayMessage","(new InformationMessage(text.ToString()))"
+"Behaviors/WarScoreBehavior.cs","1555","ShowPlayerInternalWhitePeaceInquiry","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_WarScore_PlayerWhitePeaceTitle}White Peace Proposed"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_WarScore_PlayerWhitePeaceAccept}Accept White Peace"").ToString(),
+                new TextObject(""{=BC_WarScore_PlayerWhitePeaceContinue}Continue the Conflict"").ToString(),
+                () => ResolvePlayerInternalWhitePeaceChoice(war.WarKey, accept: true),
+                () => ResolvePlayerInternalWhitePeaceChoice(war.WarKey, accept: false)))"
+"Behaviors/WarScoreBehavior.cs","1590","ShowWhitePeaceMessage","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), BellumNotificationColors.Warning))"
+"Behaviors/WarScoreBehavior.cs","1647","ResolveTerminalConflict","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), BellumNotificationColors.Warning))"
+"UI/ClaimFeudItemVM.cs","121","ExecutePetition","BellumCivileNotifications.ShowPersonal","(failure, BellumNotificationColors.Danger)"
+"UI/ClaimFeudItemVM.cs","126","ExecutePetition","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_ClaimFeud_PetitionSent}Your petition has been placed before the ruler.""), BellumNotificationColors.InheritanceWarning)"
+"UI/FactionsWindowVM.cs","1042","TryDefectToActiveRebellion","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_UI_Err_DefectWrongSide}You must still be sworn to the crown to defect to this rebellion.""), BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1052","TryDefectToActiveRebellion","BellumCivileNotifications.ShowPersonal","(defectMsg, BellumNotificationColors.Success)"
+"UI/FactionsWindowVM.cs","1070","TryRejoinCrownFromActiveRebellion","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_UI_Err_LeaveLead}You cannot leave a rebellion you lead. You must disband it.""), BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1081","TryRejoinCrownFromActiveRebellion","BellumCivileNotifications.ShowPersonal","(rejoinMsg, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1097","ExecuteJoin","BellumCivileNotifications.ShowPersonal","(block, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1107","ExecuteJoin","InformationManager.ShowInquiry","(new InquiryData(new TextObject(""{=BC_FeudLeave_Title}Withdraw Your Pledge"").ToString(),
+                    text.ToString(), true, true, new TextObject(""{=BC_UI_Leave}Leave"").ToString(),
+                    new TextObject(""{=BC_FeudLeave_Remain}Remain"").ToString(), () =>
+                    {
+                        bool success = behavior.TryWithdrawPlayerSupport(feud.RecordId, out var reason);
+                        BellumCivileNotifications.ShowPersonal(success
+                            ? new TextObject(""{=BC_FeudLeave_Done}Your house has withdrawn its swords from the feud. Your former allies will remember your broken pledge."")
+                            : reason, BellumNotificationColors.Warning);
+                        OnClaimFeudActionCompleted();
+                        RefreshButtonStates();
+                    }, null), true)"
+"UI/FactionsWindowVM.cs","1112","ExecuteJoin","BellumCivileNotifications.ShowPersonal","(success
+                            ? new TextObject(""{=BC_FeudLeave_Done}Your house has withdrawn its swords from the feud. Your former allies will remember your broken pledge."")
+                            : reason, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1126","ExecuteJoin","BellumCivileNotifications.ShowPersonal","(joinGrace, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1133","ExecuteJoin","BellumCivileNotifications.ShowPersonal","(CourtMembershipEligibility.IsRuler(Clan.PlayerClan)
+                    ? CourtMembershipEligibility.RulerReason : CourtMembershipEligibility.IneligibleReason, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1150","ExecuteJoin","BellumCivileNotifications.ShowPersonal","(leftMsg, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1183","ExecuteJoin","BellumCivileNotifications.ShowPersonal","(joinMsg, BellumNotificationColors.Success)"
+"UI/FactionsWindowVM.cs","1205","ExecuteCreate","BellumCivileNotifications.ShowPersonal","(failed, BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1213","ExecuteCreate","BellumCivileNotifications.ShowPersonal","(message, _isClaimFeudSurrenderMode ? BellumNotificationColors.Danger : BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1235","ExecuteCreate","BellumCivileNotifications.ShowPersonal","(
+                        new TextObject(""{=BC_UI_Err_LoyalistSurrenderUnavailable}The crown cannot surrender because the active rebel realm could not be found.""),
+                        BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1244","ExecuteCreate","BellumCivileNotifications.ShowPersonal","(surrenderMsg, BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1265","ExecuteCreate","BellumCivileNotifications.ShowPersonal","(surrenderMsg, BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1272","ExecuteCreate","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_UI_Err_SurrenderUnavailable}The rebellion cannot surrender because its active rebel kingdom could not be found.""), BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1292","ExecuteCreate","BellumCivileNotifications.ShowPersonal","(disbandMsg, BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1313","ExecuteConfirmCreate","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_UI_Err_ActionUnavailable}This political action is not available right now.""), BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1321","ExecuteConfirmCreate","BellumCivileNotifications.ShowPersonal","(influenceError, BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1336","ExecuteConfirmCreate","BellumCivileNotifications.ShowPersonal","(failed, BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1346","ExecuteConfirmCreate","BellumCivileNotifications.ShowPersonal","(started, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1358","ExecuteConfirmCreate","BellumCivileNotifications.ShowPersonal","(grace, BellumNotificationColors.Warning)"
+"UI/FactionsWindowVM.cs","1370","ExecuteConfirmCreate","BellumCivileNotifications.ShowPersonal","(new TextObject(""{=BC_UI_Err_AlreadyCourtFaction}You already belong to a court faction. Leave it before founding another party.""), BellumNotificationColors.Danger)"
+"UI/FactionsWindowVM.cs","1404","ExecuteConfirmCreate","BellumCivileNotifications.ShowPersonal","(formedMsg, BellumNotificationColors.Success)"
+"UI/FactionsWindowVM.cs","1695","ExecuteUltimatum","BellumCivileNotifications.ShowPersonal","(manager.CivilWarGraceBlock(selectedBackendFaction.ParentKingdom), BellumNotificationColors.Warning)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","180","ExecuteRenounce","InformationManager.ShowInquiry","(new InquiryData(RenounceText, description.ToString(), true, true,
+                new TextObject(""{=BC_Renounce_Accept}Renounce Claim"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(), () =>
+                {
+                    if (!FeudalTitlePlayerActionService.TryExecuteRenunciation(Title, out var reason))
+                    {
+                        ShowActionFailure(reason?.ToString());
+                        RefreshPlayerActions();
+                        return;
+                    }
+                    var message = new TextObject(""{=BC_Renounce_Success}Your house has relinquished its claims to {TITLE_NAME}."");
+                    message.SetTextVariable(""TITLE_NAME"", new TextObject(""{=!}"" + FormatTitleName(Title)));
+                    InformationManager.DisplayMessage(new InformationMessage(message.ToString(), Colors.Green));
+                    RefreshPlayerActions();
+                    _onHierarchyChanged?.Invoke(Title?.TitleId);
+                }, null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","192","ExecuteRenounce","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), Colors.Green))"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","202","ExecuteChallenge","InformationManager.ShowInquiry","(new InquiryData(ChallengeText,
+                new TextObject(""{=BC_PlayerChallenge_Confirm}Call upon the houses of the realm to support your claim to the crown? Once their answers arrive, you may send an ultimatum or withdraw, even if outmatched. Your coalition must hold a town or castle. Failure or withdrawal will delay another challenge."").ToString(),
+                true, true, ChallengeText, new TextObject(""{=BC_PlayerChallenge_Cancel}Cancel"").ToString(),
+                () =>
+                {
+                    SuccessionChallengeBehavior.Instance?.StartPlayerChallenge(Title);
+                    RefreshPlayerActions();
+                }, null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","261","ExecuteClaim","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Hierarchy_ClaimConfirmTitle}Fabricate Claim"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_Hierarchy_ActionClaim}Claim"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                () => StartPlayerFabrication(),
+                null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","326","ExecuteUsurp","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","338","ExecuteUsurp","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Hierarchy_UsurpConfirmTitle}Usurp Title"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_Hierarchy_ActionUsurp}Usurp"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                () => CompletePlayerUsurpation(elevation?.IsRequired == true
+                    ? FeudalSovereignElevationChoice.PeacefulSeparation
+                    : FeudalSovereignElevationChoice.NotApplicable),
+                null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","372","ExecuteRevoke","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Hierarchy_RevokeConfirmTitle}Revoke Claimed Title"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_Hierarchy_ActionRevoke}Revoke"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                CompletePlayerRevocation,
+                null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","422","ExecuteForm","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","439","ExecuteDissolve","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Hierarchy_DissolveConfirmTitle}Dissolve Title"").ToString(),
+                description.ToString() + resentmentWarning,
+                true,
+                true,
+                new TextObject(""{=BC_Hierarchy_ActionDissolve}Dissolve"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                CompletePlayerDissolution,
+                null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","464","ExecuteRename","InformationManager.ShowTextInquiry","(new TextInquiryData(
+                new TextObject(""{=BC_Hierarchy_RenameTitle}Rename Title"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_Hierarchy_ActionRename}Rename"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                CompletePlayerRename,
+                null,
+                false,
+                enteredName =>
+                {
+                    bool valid = FeudalTitleBehavior.IsValidCustomTitleName(enteredName, out _);
+                    string validationText = valid
+                        ? string.Empty
+                        : new TextObject(""{=BC_Hierarchy_FormNameInvalid}Enter a name of no more than 64 characters without braces or line breaks."").ToString();
+                    return new Tuple<bool, string>(valid, validationText);
+                },
+                string.Empty,
+                currentName), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","524","ExecuteService","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","570","ExecuteGrant","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","745","CompletePlayerRevocation","InformationManager.DisplayMessage","(new InformationMessage(preview.RestrictionReason.ToString(), Colors.Red))"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","757","CompletePlayerRevocation","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), holderDefied ? Colors.Red : Colors.Green))"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","792","BeginFormationNaming","InformationManager.ShowTextInquiry","(new TextInquiryData(
+                new TextObject(""{=BC_Hierarchy_FormNameTitle}Name the New Title"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_UI_Continue}Continue"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                enteredName =>
+                {
+                    if (!behavior.TryBuildFormationCandidate(
+                        Clan.PlayerClan,
+                        targetType,
+                        childTitleIds,
+                        Title.TitleId,
+                        enteredName,
+                        allowReorganization: true,
+                        out FeudalTitleFormationCandidate candidate,
+                        out string buildReason))
+                    {
+                        ShowActionFailure(buildReason);
+                        return;
+                    }
+
+                    ShowFormationConfirmation(candidate);
+                },
+                null,
+                false,
+                enteredName =>
+                {
+                    bool valid = FeudalTitleBehavior.IsValidCustomTitleName(enteredName, out _);
+                    string validationText = valid
+                        ? string.Empty
+                        : new TextObject(""{=BC_Hierarchy_FormNameInvalid}Enter a name of no more than 64 characters without braces or line breaks."").ToString();
+                    return new Tuple<bool, string>(valid, validationText);
+                },
+                string.Empty,
+                defaultName), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","863","ShowFormationConfirmation","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                    new TextObject(""{=BC_Hierarchy_FormSovereignTitle}Form a Sovereign Title"").ToString(),
+                    choiceDescription.ToString(),
+                    choices,
+                    true,
+                    1,
+                    1,
+                    new TextObject(""{=BC_Hierarchy_ActionForm}Form"").ToString(),
+                    new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                    selected =>
+                    {
+                        if (selected?.FirstOrDefault()?.Identifier is FeudalSovereignElevationChoice choice)
+                            CompletePlayerFormation(candidate, choice);
+                    },
+                    null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","888","ShowFormationConfirmation","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Hierarchy_FormConfirmTitle}Form Higher Title"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_Hierarchy_ActionForm}Form"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                () => CompletePlayerFormation(candidate, elevationChoice),
+                null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","997","CompletePlayerDissolution","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), Colors.Green))"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","1014","CompletePlayerRename","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), Colors.Green))"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","1030","CompletePlayerServiceChange","InformationManager.DisplayMessage","(new InformationMessage(message.ToString()))"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","1047","ShowGrantConfirmation","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Hierarchy_GrantConfirmTitle}Grant Title"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_Hierarchy_ActionGrant}Grant"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                () => CompletePlayerGrant(recipient.Clan),
+                null), true)"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","1070","CompletePlayerGrant","InformationManager.DisplayMessage","(new InformationMessage(message.ToString()))"
+"UI/VanillaTabs/Kingdoms/Hierarchy/HierarchyTitleNodeVM.cs","1577","ShowActionFailure","InformationManager.DisplayMessage","(new InformationMessage(message.ToString(), Colors.Red))"
+"UI/VanillaTabs/Kingdoms/Factions/PrivyCouncilVM.cs","122","ExecutePropose","BellumCivileNotifications.ShowPersonal","(failureReason, BellumNotificationColors.Warning)"
+"UI/VanillaTabs/Kingdoms/Factions/PrivyCouncilVM.cs","147","ExecuteDismiss","InformationManager.ShowInquiry","(new InquiryData(
+                new TextObject(""{=BC_Council_DismissConfirmTitle}Dismiss Councillor"").ToString(),
+                description.ToString(),
+                true,
+                true,
+                new TextObject(""{=BC_Council_Dismiss}Dismiss"").ToString(),
+                new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                () => CompleteDismissal(behavior, office),
+                null), true)"
+"UI/VanillaTabs/Kingdoms/Factions/PrivyCouncilVM.cs","167","CompleteDismissal","BellumCivileNotifications.ShowPersonal","(failureReason, BellumNotificationColors.Warning)"
+"UI/VanillaTabs/Kingdoms/Succession/KingdomSuccessionTabVM.cs","280","ConfirmLawDefinitionChange","InformationManager.DisplayMessage","(new InformationMessage(failure.ToString()))"
+"UI/VanillaTabs/Kingdoms/Succession/KingdomSuccessionTabVM.cs","290","ConfirmLawChange","InformationManager.DisplayMessage","(new InformationMessage(failure?.ToString() ?? string.Empty))"
+"UI/VanillaTabs/Kingdoms/Succession/KingdomSuccessionTabVM.cs","310","ConfirmLawChange","InformationManager.ShowInquiry","(inquiry, true)"
+"UI/Parley/PeaceParleyHostages.cs","103","ToggleHostageTerm","MBInformationManager.ShowMultiSelectionInquiry","(new MultiSelectionInquiryData(
+                new TextObject(""{=BC_Parley_HostageTitle}A Pledge of Peace"").ToString(),
+                new TextObject(""{=BC_Parley_HostageChoose}Which relative shall stand hostage for {DAYS} days? They remain a member of their own house. A voluntary offering earns half its value in treaty credit, subject to the shared offering limit."")
+                    .SetTextVariable(""DAYS"", durationDays).ToString(),
+                choices, true, 1, 1, new TextObject(""{=BC_UI_Continue}Continue"").ToString(), new TextObject(""{=BC_UI_Cancel}Cancel"").ToString(),
+                selected =>
+                {
+                    if (_proposal != proposal || proposal.DraftRevision != draftRevision || IsDraftEditingDisabled) return;
+                    var candidate = TreatyHostageTerms.Available(supplier, receiver, durationDays)
+                        .FirstOrDefault(c => c.Hero.StringId == selected?.FirstOrDefault()?.Identifier as string);
+                    if (candidate == null)
+                    {
+                        DisplayActionFailure(""the selected relative is no longer available as a hostage"");
+                        return;
+                    }
+                    var updated = GetEditableDemandTerms();
+                    updated.RemoveAll(t => t.Type == TreatyTermType.HostagePeace && t.FromKingdomId == supplier.StringId);
+                    updated.Add(TreatyHostageTerms.Create(supplier, receiver, candidate, offering, durationDays, durationPriced, baselineDays));
+                    ReplaceDraft(updated);
+                }, null), true)"
+"UI/Parley/PeaceParleyVM.cs","1113","ToggleRoyalMarriageTerm","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"UI/Parley/PeaceParleyVM.cs","1154","ShowReceivingRoyalMarriageSelection","MBInformationManager.ShowMultiSelectionInquiry","(inquiry, true)"
+"UI/Parley/PeaceParleyVM.cs","1221","DisplayActionFailure","InformationManager.DisplayMessage","(new InformationMessage(LocalizeActionReport(report)))"
+"UI/Parley/PeaceParleyVM.cs","1512","ShowTreatyOutcomeInquiry","InformationManager.ShowInquiry","(new InquiryData(
+                outcome.Title,
+                outcome.Description,
+                true,
+                false,
+                GameTexts.FindText(""str_done"").ToString(),
+                string.Empty,
+                null,
+                null), true)"

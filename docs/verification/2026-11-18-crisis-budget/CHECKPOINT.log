@@ -1,0 +1,581 @@
+PASS both_routes_summed
+PASS three_serial_rounds_not_deduplicated
+PASS attempts_relay_queue_and_backoff_included
+PASS token_budget_ttft_and_tps
+PASS slower_tps_more_time
+PASS longer_output_more_time
+PASS reasoning_allowance_added_to_token_estimate
+PASS e2e_reasoning_not_counted_twice
+PASS explicit_conservative_provider_allowance
+PASS minimum_floor
+PASS margin_one
+PASS exact_cap_fits
+PASS over_cap_never_clamped
+PASS full_rounds_must_fit_cap
+PASS null_plan
+PASS empty_plan
+PASS null_call
+PASS missing_profile_no_fast_default
+PASS profile_route_mismatch
+PASS reasoning_profile_mismatch
+PASS input_exceeds_calibration
+PASS output_exceeds_calibration
+PASS hidden_reasoning_not_guessed_from_visible_tps
+PASS measured_mode_no_silent_token_fallback
+PASS unknown_estimate_mode
+PASS invalid_provider_seconds_NaN
+PASS invalid_tps_NaN
+PASS invalid_provider_seconds_Infinity
+PASS invalid_tps_Infinity
+PASS invalid_provider_seconds_-Infinity
+PASS invalid_tps_-Infinity
+PASS invalid_provider_seconds_0
+PASS invalid_tps_0
+PASS invalid_provider_seconds_-1
+PASS invalid_tps_-1
+PASS invalid_queue_NaN
+PASS invalid_backoff_NaN
+PASS invalid_queue_Infinity
+PASS invalid_backoff_Infinity
+PASS invalid_queue_-1
+PASS invalid_backoff_-1
+PASS invalid_attempt_count_0
+PASS invalid_attempt_count_-1
+PASS invalid_attempt_count_9
+PASS invalid_margin_0
+PASS invalid_margin_0.99
+PASS invalid_margin_NaN
+PASS invalid_margin_Infinity
+PASS invalid_floor_0
+PASS invalid_floor_-1
+PASS invalid_floor_NaN
+PASS invalid_floor_Infinity
+PASS invalid_cap_0
+PASS invalid_cap_9
+PASS invalid_cap_NaN
+PASS invalid_cap_Infinity
+PASS negative_input
+PASS zero_output
+PASS blank_route
+PASS invalid_profile_calibration_bounds
+PASS overflow_fails_closed
+PASS oversize_plan_refused_not_truncated
+PASS deterministic_no_clock_or_provider_side_effects
+PASS default_status_not_ready
+CRISIS BUDGET PASS 64; synthetic profiles; no provider calibration or active timer
+PASS new_operation_added
+PASS retry_same_id_and_creation_day
+PASS retry_preserves_original_day
+PASS identity_conflict_0
+PASS identity_conflict_1
+PASS identity_conflict_2
+PASS identity_conflict_3
+PASS identity_conflict_4
+PASS identity_conflict_5
+PASS identity_conflict_6
+PASS identity_conflict_7
+PASS identity_conflict_8
+PASS identity_conflict_9
+PASS null_request_refused
+PASS same_realm_refused
+PASS blank_owner_refused
+PASS control_character_refused
+PASS out_of_scope_source_Unknown
+PASS out_of_scope_source_VoluntaryPact
+PASS out_of_scope_source_HostageChoice
+PASS out_of_scope_source_InternalConflict
+PASS out_of_scope_source_TerminalForeignWar
+PASS out_of_scope_source_PendingForeignRatification
+PASS invalid_creation_day_NaN
+PASS invalid_creation_day_Infinity
+PASS invalid_creation_day_-1
+PASS missing_session_refused
+PASS existing_sync_order_preserved
+PASS isolated_new_save_key
+PASS saving_keeps_live_session
+PASS save_captures_original_operation
+PASS load_keeps_campaign_rotates_session
+PASS late_preload_reply_refused
+PASS late_preload_cancel_refused
+PASS late_preload_read_refused
+PASS load_retry_does_not_duplicate
+PASS recovery_requires_world_revalidation
+PASS pending_recovery_inventory
+PASS pending_projection_read_only
+PASS pending_inventory_owner_filtered
+PASS old_inventory_session_rejected
+PASS historical_identity_preserved
+PASS other_owner_cannot_read
+PASS missing_operation_explicit
+PASS changed_draft_cannot_cancel
+PASS cancellation_recorded
+PASS cancel_retry_idempotent
+PASS cancelled_intent_never_resurrected
+PASS earlier_snapshot_detached_from_cancellation
+PASS cancelled_not_in_pending_inventory
+PASS fresh_behavior_loads_same_campaign
+PASS tombstone_survives_field_copy
+PASS old_behavior_rejected_after_campaign_switch
+PASS other_behavior_session_rejected
+PASS actual_guard_rejects_worker_thread
+PASS new_campaign_distinct_identity
+PASS cross_campaign_session_rejected
+PASS old_save_without_key_initializes_empty_journal
+PASS corrupt_quarantined_0
+PASS corrupt_payload_not_replaced_0
+PASS corrupt_quarantined_1
+PASS corrupt_payload_not_replaced_1
+PASS corrupt_quarantined_2
+PASS corrupt_payload_not_replaced_2
+PASS corrupt_quarantined_3
+PASS corrupt_payload_not_replaced_3
+PASS corrupt_quarantined_4
+PASS corrupt_payload_not_replaced_4
+PASS corrupt_quarantined_5
+PASS corrupt_payload_not_replaced_5
+PASS corrupt_quarantined_6
+PASS corrupt_payload_not_replaced_6
+PASS corrupt_quarantined_7
+PASS corrupt_payload_not_replaced_7
+PASS corrupt_quarantined_8
+PASS corrupt_payload_not_replaced_8
+PASS corrupt_quarantined_9
+PASS corrupt_payload_not_replaced_9
+PASS corrupt_quarantined_10
+PASS corrupt_payload_not_replaced_10
+PASS corrupt_quarantined_11
+PASS corrupt_payload_not_replaced_11
+PASS corrupt_quarantined_12
+PASS corrupt_payload_not_replaced_12
+PASS corrupt_quarantined_13
+PASS corrupt_payload_not_replaced_13
+PASS corrupt_quarantined_14
+PASS corrupt_payload_not_replaced_14
+PASS corrupt_quarantined_15
+PASS corrupt_payload_not_replaced_15
+PASS present_null_not_old_save
+PASS full_journal_refuses_without_eviction
+PASS full_journal_keeps_idempotency
+PASS oversize_load_quarantined
+PASS datastore_exception_propagates
+PASS failed_load_still_invalidates_old_session
+PASS earlier_legacy_load_failure_propagates
+PASS earlier_legacy_load_failure_invalidates_session
+PASS failed_load_never_reopens_old_state
+PASS missing_campaign_denied
+PASS all_fields_unique_save_ids_ForeignDiplomacyJournalState
+PASS all_fields_unique_save_ids_ForeignDiplomacyIntentRecord
+PASS state_exact_field_schema
+PASS intent_exact_field_schema
+JOURNAL TOTAL PASS 104; engine_serializer_game=NOT_RUN
+SCHEMA_PASS all_existing_type_definitions_and_order_preserved
+SCHEMA_PASS all_existing_container_definitions_and_order_preserved
+SCHEMA_PASS AddClassDefinition(typeof(ForeignDiplomacyJournalState), 150);
+SCHEMA_PASS AddClassDefinition(typeof(ForeignDiplomacyIntentRecord), 151);
+SCHEMA_PASS new_list_registered_once
+SCHEMA_PASS global_class_enum_ids_unique
+SCHEMA_PASS only_two_types_one_container_added
+SCHEMA_PASS save_base_id_unchanged
+SCHEMA TOTAL PASS 8; Native registry startup NOT_RUN
+JOURNAL_MUTATION_REJECTED stale_begin_allowed
+JOURNAL_MUTATION_REJECTED ruler_binding_removed
+JOURNAL_MUTATION_REJECTED retry_replaces_operation_id
+JOURNAL_MUTATION_REJECTED cancelled_intent_resurrected
+JOURNAL_MUTATION_REJECTED load_keeps_old_session
+JOURNAL MUTATIONS REJECTED 5
+PASS complete_handshake
+PASS null_readiness_refused
+PASS default_readiness_refused
+PASS missing_capability_0
+PASS missing_capability_1
+PASS missing_capability_2
+PASS missing_capability_3
+PASS missing_capability_4
+PASS missing_capability_5
+PASS missing_capability_6
+PASS missing_capability_7
+PASS pending_or_unknown_-1
+PASS pending_or_unknown_1
+PASS pending_or_unknown_17
+PASS disabled_Unknown
+PASS outside_scope_Unknown
+PASS disabled_AutomaticForeignWar
+PASS outside_scope_AutomaticForeignWar
+PASS disabled_AutomaticForeignPeace
+PASS outside_scope_AutomaticForeignPeace
+PASS disabled_AutomaticForeignParley
+PASS outside_scope_AutomaticForeignParley
+PASS disabled_PendingForeignRatification
+PASS outside_scope_PendingForeignRatification
+PASS disabled_TerminalForeignWar
+PASS outside_scope_TerminalForeignWar
+PASS disabled_PlayerAction
+PASS outside_scope_PlayerAction
+PASS disabled_InternalConflict
+PASS outside_scope_InternalConflict
+PASS disabled_ClientObligation
+PASS outside_scope_ClientObligation
+PASS disabled_ExistingTreatyObligation
+PASS outside_scope_ExistingTreatyObligation
+PASS disabled_VoluntaryPact
+PASS outside_scope_VoluntaryPact
+PASS disabled_HostageChoice
+PASS outside_scope_HostageChoice
+PASS excluded_PlayerAction
+PASS excluded_InternalConflict
+PASS excluded_ClientObligation
+PASS excluded_ExistingTreatyObligation
+PASS excluded_VoluntaryPact
+PASS excluded_HostageChoice
+PASS intent_AutomaticForeignWar
+PASS owner_lost_AutomaticForeignWar
+PASS consent_cannot_bypass_initiative_AutomaticForeignWar
+PASS intent_AutomaticForeignPeace
+PASS owner_lost_AutomaticForeignPeace
+PASS consent_cannot_bypass_initiative_AutomaticForeignPeace
+PASS intent_AutomaticForeignParley
+PASS owner_lost_AutomaticForeignParley
+PASS consent_cannot_bypass_initiative_AutomaticForeignParley
+PASS unbound_ratification_waits
+PASS bound_consent_only_allows_native_validation
+PASS owner_fault_cannot_ratify
+PASS terminal_uses_crisis_not_ordinary_parley
+PASS terminal_owner_fault_no_legacy_fallback
+PASS consent_cannot_bypass_crisis
+PASS unknown_source_in_scope_held
+PASS unknown_source_legacy_preserved
+PASS unknown_source_outside_scope_preserved
+PASS default_source_is_unknown
+PASS default_verdict_is_hold
+PASS default_activation_not_ready
+TOTAL PASS 65
+MUTATION_REJECTED owner_fault_falls_through
+MUTATION_REJECTED terminal_becomes_ordinary_intent
+MUTATION_REJECTED ratification_accepts_without_consent
+MUTATION_REJECTED pending_activation_allowed
+MUTATION_REJECTED default_unknown_permitted
+TOTAL MUTATIONS REJECTED 5
+PASS recorded will and applied pressure copy exact scope and values
+PASS missing will stays unknown without inserting initial value
+PASS recorded zero remains zero
+PASS finite stored value is never silently clamped or recomputed
+PASS pressure deltas are not added to already recorded will
+PASS missing will storage remains unavailable and null
+PASS missing pressure storage is explicit while stored will stays usable
+PASS both absent sections remain absent
+PASS empty pressure storage is known empty
+PASS pressure zero expiry is nonexpiring
+PASS negative expiry preserves Native nonexpiring semantics
+PASS expiry at capture day is excluded without ending source
+PASS past positive expiry is excluded
+PASS future expiry remains included
+PASS positive negative and zero amounts preserve recorded signs
+PASS ended pressure remains excluded
+PASS other clan pressure and will are excluded
+PASS corrupt other-clan numeric state does not contaminate scope
+PASS null row fails closed without removing it
+PASS duplicate pressure IDs fail closed
+PASS blank pressure ID fails closed
+PASS nonfinite stored will fails closed
+PASS infinite stored will fails closed
+PASS nonfinite pressure amount fails closed
+PASS infinite pressure amount fails closed
+PASS unknown reason enum fails closed
+PASS unknown reason zero remains valid without invented text
+PASS nonfinite expiry fails closed before expiration filtering
+PASS infinite expiry fails closed
+PASS future creation day fails closed
+PASS negative creation day fails closed
+PASS invalid capture day fails closed
+PASS null clan is unavailable
+PASS eliminated clan is unavailable
+PASS detached same-ID clan is unavailable
+PASS blank clan ID is unavailable
+PASS missing behavior is explicit
+PASS capacity overflow has no partial data or will fallback
+PASS capacity boundary stays complete and ordinal sorted
+PASS expired records do not consume active capacity
+PASS later source mutation cannot change captured snapshot
+PASS read preserves every saved pressure field and storage identity
+PASS returned collection is immutable
+PASS private reason contexts and future target preference are absent
+PASS existing GetWarWill still materializes initial value when explicitly called
+PASS existing PeekWarWill still uses initial default without insertion
+PASS actual guard rejects worker-thread read
+PASS actual guard rejects missing integration
+PASS actual guard rejects missing campaign
+RESULT 49 named cases PASS; actual records and extracted methods; Native boundary doubles, not a shipping build or game test.
+PASS primary side preserves score and duration
+PASS defending side reverses score only in copy
+PASS negative source score reverses for defending side
+PASS raw foreign civil and feud kinds remain distinct
+PASS ended and unrelated wars are excluded
+PASS empty recorded list does not become unavailable
+PASS null collection is unavailable and remains null
+PASS missing behavior is explicit
+PASS null realm is unavailable
+PASS eliminated realm is unavailable
+PASS same ID from detached realm object is rejected
+PASS empty realm ID is rejected
+PASS recorded active war can have no Native hostility
+PASS unresolved opponent makes hostility unknown
+PASS null row fails closed without repair
+PASS duplicate keys fail closed
+PASS blank record key fails closed
+PASS blank opponent fails closed
+PASS same two sides fail closed
+PASS unknown conflict kind fails closed
+PASS nonfinite score fails closed
+PASS infinite start day fails closed
+PASS future start day fails closed
+PASS negative start day fails closed
+PASS invalid capture day fails closed
+PASS capacity overflow is explicit without partial results
+PASS capacity boundary remains complete and ordinal sorted
+PASS source mutation does not alter detached snapshot
+PASS snapshot collection is immutable
+PASS private negotiation and event fields are absent from DTO
+PASS infinite score fails closed
+PASS war starting at capture time has zero duration
+PASS read preserves every saved field and collection identity
+PASS campaign guard precedes all source reads
+PASS absent campaign is blocked
+RESULT 35 named cases PASS; Native boundary doubles; not a shipping build or game test.
+PASS active claim is copied with exact clan day and strength
+PASS expiry zero is expired unlike pressure zero
+PASS expiry at current day is excluded
+PASS future expiry remains active
+PASS negative expiry retains existing no-expiry semantics
+PASS float-day precision matches native active predicate
+PASS inactive saved flag is excluded without reactivation
+PASS other clan is excluded
+PASS barred hereditary carrier is excluded
+PASS empty hereditary carrier falls back to barred source hero
+PASS current eligible carrier wins over barred source hero
+PASS generation depth makes otherwise ordinary source hereditary
+PASS all hereditary source labels use barred filter
+PASS nonhereditary claim preserves existing barred-person semantics
+PASS missing title is explicit without dropping the claim
+PASS missing title collection remains null and unknown
+PASS inactive title is explicit and not reactivated
+PASS dissolved title takes precedence over active flag
+PASS mismatched target dictionary identity fails closed
+PASS null claim storage remains null and unavailable
+PASS empty saved list is recorded empty
+PASS missing behavior is explicit
+PASS null clan is unavailable
+PASS eliminated clan is unavailable
+PASS detached same-ID clan object is rejected
+PASS blank clan ID is rejected
+PASS null saved row fails closed without repair
+PASS duplicate claim IDs fail closed without choosing a winner
+PASS distinct claims to one title are not normalized
+PASS blank claim ID fails closed
+PASS blank target fails closed
+PASS unknown strength fails closed
+PASS nonfinite expiry is invalid rather than silently expired
+PASS infinite expiry fails closed
+PASS future created day fails closed
+PASS invalid capture day fails closed
+PASS capacity overflow is explicit without partial result
+PASS capacity boundary is complete and ordinal sorted
+PASS source mutation cannot alter prior copy
+PASS read preserves every claim field and list identity
+PASS returned collection is immutable
+PASS private provenance and hero IDs are absent from DTO
+PASS actual thread guard rejects worker read
+PASS missing integration service is blocked by actual guard
+PASS missing campaign is blocked by actual guard
+RESULT 45 named cases PASS; actual predicates/records, Native boundary doubles; not a shipping build or game test.
+PASS existing complete council is detached and sorted
+PASS missing records do not create a council or imply vacancies
+PASS null saved record list remains null
+PASS null realm returns unavailable without materialization
+PASS eliminated realm is unavailable
+PASS temporary rebellion and feud shells stay unavailable
+PASS superseded empty parent shell stays unavailable
+PASS partial recorded council never synthesizes missing offices
+PASS uninitialized record stays uninitialized and is not exposed
+PASS duplicate office records return invalid rather than choosing a holder
+PASS corrupt record identity is not repaired or exposed
+PASS unknown office enum is rejected
+PASS snapshot is unchanged when later source holder changes
+PASS returned collection cannot be mutated
+PASS private assignment and controversy fields never enter DTO
+PASS recorded empty holder is copied without asserting office eligibility
+PASS other realms and null unrelated rows do not leak
+PASS missing behavior is distinguished from missing council
+PASS public facade always uses campaign-thread guard
+PASS capture day belongs to the snapshot and invalid times are rejected
+EXISTING_COUNCIL_STATE_PASS 20 named cases; boundary fixtures, not Native game proof.
+PASS exact title identity copies recorded label and time
+PASS missing title leaves registry empty
+PASS null title storage remains unavailable and null
+PASS missing title behavior is explicit
+PASS wrong title case is not fuzzy matched
+PASS case insensitive dictionary cannot change identity semantics
+PASS corrupt dictionary record identity is rejected
+PASS null stored title is invalid without repair
+PASS inactive title has no label payload
+PASS dissolved title has explicit priority
+PASS blank title name is not replaced by its ID
+PASS title localization uses a fresh text object
+PASS title render failure is explicit
+PASS title rename affects next read not earlier snapshot
+PASS same display name on different titles never coalesces IDs
+PASS existing Native realm label is copied without Kingdom.Name
+PASS missing Native label does not seed cache or read fallback
+PASS unknown realm is not matched by label or prefix
+PASS realm case comparison is exact
+PASS duplicate realm IDs are ambiguous
+PASS eliminated realm label is not exposed
+PASS null realm collection is unavailable
+PASS unrelated null realm entry does not become an identity
+PASS new realm object cannot read prior object cache by same name
+PASS cached label replacement affects next read only
+PASS TextObject variables render from a copy without source changes
+PASS copy failure denies instead of losing source variables
+PASS legacy Copy helper fallback remains unchanged
+PASS realm render failure is explicit without source rendering
+PASS empty cached realm label is not replaced by ID
+PASS same recorded label on different realms preserves identity
+PASS title read leaves every saved field unchanged
+PASS invalid request kind ID and clock return no label
+PASS snapshot contains scalars only and no ownership metadata
+PASS actual guard denies worker
+PASS actual guard denies absent campaign
+EXISTING_RECORDED_NAMES_PASS 36 named cases; actual new code/saved title/extracted helpers and guard, Native boundary doubles; not shipping/game proof.
+PASS receipt schema exists
+PASS new prepared successor
+PASS actual ruler differs from founder
+PASS existing challenge flag preserved
+PASS early Ready retry keeps source identity
+PASS direct repeated stamp cannot overwrite
+PASS throwing creation listener never creates preparation receipt
+PASS retry stamps actual later completion not earlier notification
+PASS callback invalidation stays before Ready
+PASS historical strings do not follow live mutations
+PASS detached previous snapshot unchanged
+PASS save-field copy retains receipt (not native save serialization)
+PASS old Ready rows stay undated
+PASS reading pending does not prepare or stamp
+PASS previously pending record can complete now
+PASS replacement allows same parent and source
+PASS unknown historical hero is not invented
+PASS capture failure preserves mechanical success
+PASS capture exception leaves no partial stamp
+PASS separate procedures with identical entity IDs remain distinct
+PASS duplicate source ID fails closed
+PASS future receipt fails closed
+PASS nonfinite saved day has no payload
+PASS corrupt identity fails closed
+PASS partial stamp is not silently repaired
+PASS no stamp before Ready
+PASS empty existing store gives no event
+PASS missing behavior explicit
+PASS worker query rejected by facade guard
+PASS query without campaign rejected
+PASS missing integration owner rejected by actual guard
+PASS noncanonical GUID spelling rejected
+PASS valid campaign day zero retained
+PASS bounded projection reports omission without deleting history
+PASS null store is not initialized by reader
+PASS save field numbers unique and additive 18 through 27
+PASS public receipt contains only detached primitives
+REALM_PREPARATION_PASS 37 named cases; native_save_build_game=NOT_RUN
+SOURCE_BOUNDARY_PASS callback before terminal slice; native_recovery=NOT_RUN
+BELLUM_NAVAL_RELEASE_PASS both_projects_required
+BELLUM_NAVAL_RELEASE_PASS isolated_naval_compilation_preserves_existing_core
+BELLUM_NAVAL_RELEASE_PASS legacy_naval_copy_preserved_unless_release_isolated
+BELLUM_NAVAL_RELEASE_PASS naval_dependency_preflight
+BELLUM_NAVAL_RELEASE_PASS companion_identity_guard
+BELLUM_NAVAL_RELEASE_PASS companion_copy_hash_guard
+BELLUM_NAVAL_RELEASE_PASS zip_naval_presence_guard
+BELLUM_NAVAL_RELEASE_PASS zip_core_presence_guard
+BELLUM_NAVAL_RELEASE_PASS no_core_only_success
+BELLUM_NAVAL_RELEASE_SOURCE_PASS; Windows build and game validation still required.
+PASS resolve actual module location with spaces
+PASS invalid installation layout rejected
+PASS normal log format and five-megabyte rotation
+PASS old dated logs pruned while unrelated file retained
+PASS blank normal message ignored
+PASS yearly report in same module logs folder
+PASS empty yearly category retains general fallback
+PASS blank yearly report ignored
+PASS write failure contained with existing debugger fallback
+PASS no external log directory fallback
+PASS core and Naval fixtures have distinct bytes
+BELLUM_MODULE_BUILD_PACKAGE_PASS version=1.4.12.6; core=present; naval=present; zip=/tmp/bellum-logs-70c6f191bdc04f17814842a0296cfcf0/build-result/BellumCivile_1.4.12.6_complete.zip; module=/tmp/bellum-logs-70c6f191bdc04f17814842a0296cfcf0/build-result/Modules/BellumCivile; gameplay=NOT_RUN; deployed=false
+PASS actual packaging block creates full module layout with both fixture DLLs
+PASS packaged core bytes match core input
+PASS packaged Naval bytes match Naval input
+PASS ZIP uses source module version
+PASS exactly one ZIP entry BellumCivile.dll
+PASS ZIP input bytes preserved BellumCivile.dll
+PASS exactly one ZIP entry BellumCivile.NavalDLCPatch.dll
+PASS ZIP input bytes preserved BellumCivile.NavalDLCPatch.dll
+PASS report matches packaged identity and paths
+PASS report records both input hashes
+PASS fixture report never claims deployment or gameplay
+PASS all GUI XML localization and license copied unchanged
+PASS packaged XML uses new hotfix version
+BELLUM_MODULE_LOG_PASS 24 named checks; full game build NOT_RUN
+[
+  {
+    "Test": "ForeignCrisisBudget.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ForeignDiplomacyJournal.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ForeignDiplomacyJournal.Schema.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ForeignDiplomacyJournal.Mutations",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ForeignDiplomacyAdmission.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ForeignDiplomacyAdmission.Mutations",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ExistingPoliticalPressure.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ExistingWarState.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ExistingClaimState.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ExistingCouncilState.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ExistingRecordedName.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "RealmPreparationReceipt.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "CompleteReleaseNaval.Tests",
+    "ExitCode": 0
+  },
+  {
+    "Test": "ModuleLocalLogs.Tests",
+    "ExitCode": 0
+  }
+]
+CHECKPOINT_FIXTURES_PASS; actual Windows build and game/save-load NOT_RUN

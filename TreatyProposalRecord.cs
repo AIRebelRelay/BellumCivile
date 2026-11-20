@@ -30,6 +30,12 @@ namespace BellumCivile
         [SaveableField(21)] private bool _councilConsequencesApplied;
         [SaveableField(22)] private float _resolvedDay;
         [SaveableField(23)] private bool _hasResolutionDate;
+        // Optional on historical saves: absence is unknown, never bound by pair/time inference.
+        [SaveableField(24)] private string _conflictInstanceId;
+        // Optional in older saves. Only the explicitly authenticated CR gateway may set these.
+        [SaveableField(25)] private bool _crRoyalAccord;
+        [SaveableField(26)] private string _crRoyalFirstRulerId;
+        [SaveableField(27)] private string _crRoyalSecondRulerId;
 
         internal bool TryMarkCouncilConsequences()
         {
@@ -40,6 +46,29 @@ namespace BellumCivile
         }
 
         public string ProposalId => _proposalId;
+        public string BoundConflictInstanceId => _conflictInstanceId;
+        internal bool WasCrRoyalAccord => _crRoyalAccord;
+        public bool IsCrRoyalAccord => _crRoyalAccord && !_isForced && IsExplicitWhitePeace
+            && !string.IsNullOrWhiteSpace(_conflictInstanceId)
+            && !string.IsNullOrWhiteSpace(_crRoyalFirstRulerId)
+            && !string.IsNullOrWhiteSpace(_crRoyalSecondRulerId);
+        internal string CrRoyalFirstRulerId => _crRoyalFirstRulerId;
+        internal string CrRoyalSecondRulerId => _crRoyalSecondRulerId;
+
+        // Source of authority is the CR gateway, not a forced/terminal Bellum settlement.
+        internal bool TryMarkCrRoyalAccord(string conflictInstanceId, string firstRulerId, string secondRulerId)
+        {
+            if (_crRoyalAccord || _isForced || _state != TreatyProposalState.ParleyPending
+                || !IsExplicitWhitePeace || string.IsNullOrWhiteSpace(conflictInstanceId)
+                || !string.Equals(_conflictInstanceId, conflictInstanceId, StringComparison.Ordinal)
+                || string.IsNullOrWhiteSpace(firstRulerId) || string.IsNullOrWhiteSpace(secondRulerId)
+                || firstRulerId == secondRulerId)
+                return false;
+            _crRoyalFirstRulerId = firstRulerId;
+            _crRoyalSecondRulerId = secondRulerId;
+            _crRoyalAccord = true;
+            return true;
+        }
         public string WarKey => _warKey;
         public string WinnerKingdomId => _winnerKingdomId;
         public string LoserKingdomId => _loserKingdomId;
@@ -52,6 +81,7 @@ namespace BellumCivile
         internal bool IsWhitePeaceOrEmpty => _terms == null
             || _terms.All(term => term == null)
             || _terms.Any(term => term?.Type == TreatyTermType.WhitePeace);
+        internal bool IsExplicitWhitePeace => _terms?.Count == 1 && _terms[0]?.Type == TreatyTermType.WhitePeace;
         public int UsedWarScore => TreatyWarScoreAccounting.Calculate(
             _terms,
             _winnerKingdomId,
@@ -70,9 +100,10 @@ namespace BellumCivile
         public bool PlayerVoteSubmitted => _playerVoteSubmitted;
         public string DrafterKingdomId => _drafterKingdomId;
 
-        public TreatyProposalRecord(string warKey, string winnerKingdomId, string loserKingdomId, string drafterKingdomId, float createdDay, int warScoreBudget, bool isForced)
+        public TreatyProposalRecord(string warKey, string winnerKingdomId, string loserKingdomId, string drafterKingdomId, float createdDay, int warScoreBudget, bool isForced, string conflictInstanceId = null)
         {
             _proposalId = Guid.NewGuid().ToString("N");
+            _conflictInstanceId = conflictInstanceId;
             _warKey = warKey ?? string.Empty;
             _winnerKingdomId = winnerKingdomId ?? string.Empty;
             _loserKingdomId = loserKingdomId ?? string.Empty;
@@ -111,6 +142,13 @@ namespace BellumCivile
         public void MarkPlayerInfluenceSpent()
         {
             _playerInfluenceSpent = true;
+        }
+
+        internal void ResetPlayerResponse()
+        {
+            _playerVoteStance = (int)TreatyCouncilVoteStance.Abstain;
+            _playerInfluenceCommitment = 0;
+            _playerVoteSubmitted = false;
         }
 
         public void SetRatification(float winnerSupport, float loserSupport, int winnerOverrideCost, int loserOverrideCost)

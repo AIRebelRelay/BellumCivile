@@ -46,12 +46,11 @@ Check ($final.Contains('internal static bool Supported { get; private set; } = t
        $final.Contains('private static bool Prepare()') -and
        $final.Contains('FindTarget(') -and
        $final.Contains('ApplyPatches') -and $final.Contains('ProcessMovie')) 'Prefab finalizer verifies installed UIExtender method shape before patching.'
-Check ($final.Contains('if (movieName == "EncyclopediaHeroPage")') -and
-       !$final.Contains('EncyclopediaClanHouseholdPrefabPatch') -and
-       !$final.Contains('EncyclopediaClanPage')) 'Finalizer touches only Hero Family; unported clan household is excluded.'
+Check ($final.Contains('if (movieName == "EncyclopediaHeroPage") new EncyclopediaHeroFamilyPrefabPatch().Apply(document);') -and
+       $final.Contains('if (movieName == "EncyclopediaClanPage") new EncyclopediaClanHouseholdPrefabPatch().Apply(document);')) 'Imported Hero Family and Clan Household layouts dispatch only for their exact movie IDs.'
 Check ($divider.Contains('if (__instance.Id != "FamilyDivider" || !EncyclopediaFamilyLayoutCompatibility.Enabled) return true;') -and
-       !$divider.Contains('MembersDivider') -and
-       !$divider.Contains('EncyclopediaClanHousehold')) 'Native divider patch is disabled for all other widgets, including clan members.'
+       $divider.Contains('__instance.Id == "MembersDivider" && EncyclopediaClanHouseholdPrefabPatch.Enabled') -and
+       $divider.Contains('__instance.ParentWidget?.FindChild("BellumClanHousehold", false) != null')) 'Native divider interception stays scoped to compatible Family or the marked Bellum Clan Household subtree.'
 Check ($tree.Contains('Bannerlord.FamilyTree.1.4.8') -and $tree.Contains('new Version(1, 4, 8, 0)') -and
        $tree.Contains('MatchesToggleBody(toggle, PatchProcessor.GetOriginalInstructions(prefix))')) 'Only known Family Tree 1.4.8 IL signature can be adapted.'
 Check ($tree.Contains('!IsKnownPrefix(prefix) || HasOwnPatches(prefix)') -and

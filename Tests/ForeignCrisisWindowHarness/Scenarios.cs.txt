@@ -1,0 +1,65 @@
+using System;
+using BellumCivile;
+public static class ForeignCrisisWindowScenarios
+{
+ static int passed;
+ static void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);passed++;Console.WriteLine("PASS "+name);}
+ static ForeignCrisisBudgetResult Budget(){
+  var profile=new ForeignCrisisLatencyProfile("synthetic-route",false,4096,1024,ForeignCrisisEstimateMode.MeasuredEndToEnd,50,null,null,null);
+  var call=new ForeignCrisisPlannedCall("synthetic-route",1000,1000,1,0,0,false,profile);
+  return ForeignCrisisBudgetEstimator.Estimate(new[]{call},2,10,100);
+ }
+ static ForeignCrisisWindowState Open(){ForeignCrisisWindowState s;if(!ForeignCrisisWindowPolicy.TryOpen(10,3,Budget(),out s))throw new Exception("setup");return s;}
+ static ForeignCrisisWindowDecision At(ForeignCrisisWindowState s,double day,double spent,bool paused=false,ForeignCrisisReplyState reply=ForeignCrisisReplyState.Pending){return ForeignCrisisWindowPolicy.Observe(s,day,spent,paused,reply);}
+ public static void Run(){
+  var s=Open();Check(s.OpeningDay==10&&s.CampaignFloorDay==13&&s.BudgetSeconds==100&&s.SpentActiveSeconds==0,"real_budget_result_opens_frozen_window");
+  Check(At(s,12,100).Status==ForeignCrisisWindowStatus.WaitCampaignFloor,"real_budget_expired_not_enough_campaign_days");
+  Check(At(s,13,99).Status==ForeignCrisisWindowStatus.WaitOpportunity,"campaign_floor_alone_does_not_outrun_slow_llm");
+  Check(At(s,13,100).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"exact_both_boundaries");
+  Check(At(s,14,120).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"both_boundaries_exceeded");
+  Check(At(s,13,0,reply:ForeignCrisisReplyState.ValidTerminalResponse).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"valid_final_reply_closes_opportunity_early");
+  Check(At(s,12,0,reply:ForeignCrisisReplyState.ValidTerminalResponse).Status==ForeignCrisisWindowStatus.WaitCampaignFloor,"valid_final_reply_never_shortens_campaign_floor");
+  foreach(var reply in new[]{ForeignCrisisReplyState.Pending,ForeignCrisisReplyState.TechnicalFailure,ForeignCrisisReplyState.StaleOrInvalidResponse}){
+   Check(At(s,13,99,reply:reply).Status==ForeignCrisisWindowStatus.WaitOpportunity,"nonterminal_before_budget_"+reply);
+   Check(At(s,13,100,reply:reply).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"budget_expiry_after_campaign_floor_"+reply);
+  }
+  foreach(var reply in new[]{ForeignCrisisReplyState.Pending,ForeignCrisisReplyState.ValidTerminalResponse,ForeignCrisisReplyState.TechnicalFailure})
+   Check(At(s,14,120,true,reply).Status==ForeignCrisisWindowStatus.Paused,"paused_never_authorizes_assessment_"+reply);
+  var paused=At(s,12,120,true).Next;
+  Check(paused.SpentActiveSeconds==120&&paused.OpeningDay==10&&paused.CampaignFloorDay==13,"paused_provider_work_retained");
+  Check(At(paused,12,120).Status==ForeignCrisisWindowStatus.WaitCampaignFloor,"unpause_does_not_advance_campaign_time");
+  Check(At(paused,13,120).Status==ForeignCrisisWindowStatus.ReadyForNativeAssessment,"unpause_after_both_clocks_ready");
+  var observation=At(s,11,30);var repeated=At(observation.Next,11,30);
+  Check(repeated.Next.SpentActiveSeconds==30,"repeat_observation_not_double_counted");
+  var retried=At(repeated.Next,12,40,reply:ForeignCrisisReplyState.TechnicalFailure).Next;
+  Check(retried.OpeningDay==10&&retried.MinimumCampaignDays==3&&retried.BudgetSeconds==100&&retried.SpentActiveSeconds==40,"retry_preserves_origin_floor_and_budget");
+  Check(s.SpentActiveSeconds==0&&s.LastObservedDay==10,"original_state_immutable");
+  Check(At(retried,12,39).Status==ForeignCrisisWindowStatus.Invalid,"active_time_rollback_refused");
+  Check(At(retried,11.9,40).Status==ForeignCrisisWindowStatus.Invalid,"campaign_rollback_refused");
+  Check(At(retried,12,0,reply:ForeignCrisisReplyState.TechnicalFailure).Status==ForeignCrisisWindowStatus.Invalid,"failure_cannot_reset_counter");
+  var earlyValid=At(s,12,10,reply:ForeignCrisisReplyState.ValidTerminalResponse).Next;
+  Check(At(earlyValid,13,20,reply:ForeignCrisisReplyState.StaleOrInvalidResponse).Status==ForeignCrisisWindowStatus.WaitOpportunity,"stale_reply_not_latched_as_final_consent");
+  Check(At(s,13,1,reply:(ForeignCrisisReplyState)999).Status==ForeignCrisisWindowStatus.Invalid,"unknown_reply_status_blocked");
+  Check(At(null,13,1).Status==ForeignCrisisWindowStatus.Invalid,"null_state_refused");
+  Check(At(s,9,0).Next==null,"invalid_observation_has_no_next_state");
+  foreach(double bad in new[]{double.NaN,double.PositiveInfinity,double.NegativeInfinity,-1}){
+   Check(At(s,bad,0).Status==ForeignCrisisWindowStatus.Invalid,"invalid_campaign_day_"+bad);
+   Check(At(s,13,bad).Status==ForeignCrisisWindowStatus.Invalid,"invalid_active_counter_"+bad);
+  }
+  ForeignCrisisWindowState rejected;
+  Check(!ForeignCrisisWindowPolicy.TryOpen(10,3,null,out rejected)&&rejected==null,"null_budget_cannot_open");
+  foreach(var status in new[]{ForeignCrisisBudgetStatus.DoesNotFit,ForeignCrisisBudgetStatus.MissingProfile,ForeignCrisisBudgetStatus.InvalidConfiguration})
+   Check(!ForeignCrisisWindowPolicy.TryOpen(10,3,new ForeignCrisisBudgetResult(status,budget:100),out rejected),"failed_budget_cannot_open_"+status);
+  foreach(double bad in new[]{0,-1,double.NaN,double.PositiveInfinity}){
+   Check(!ForeignCrisisWindowPolicy.TryOpen(10,3,new ForeignCrisisBudgetResult(ForeignCrisisBudgetStatus.Ready,budget:bad),out rejected),"invalid_ready_budget_"+bad);
+   Check(!ForeignCrisisWindowPolicy.TryOpen(10,bad,Budget(),out rejected),"invalid_grace_"+bad);
+  }
+  Check(!ForeignCrisisWindowPolicy.TryOpen(double.MaxValue,double.MaxValue,Budget(),out rejected),"campaign_deadline_overflow_refused");
+  Check(!ForeignCrisisWindowPolicy.TryOpen(double.MaxValue,1,Budget(),out rejected),"campaign_deadline_precision_collapse_refused");
+  var corrupt=new[]{new ForeignCrisisWindowState(-1,3,100,10,0),new ForeignCrisisWindowState(10,0,100,10,0),new ForeignCrisisWindowState(10,3,0,10,0),new ForeignCrisisWindowState(10,3,100,9,0),new ForeignCrisisWindowState(10,3,100,10,-1),new ForeignCrisisWindowState(10,3,100,double.NaN,0)};
+  for(int i=0;i<corrupt.Length;i++)Check(At(corrupt[i],13,100).Status==ForeignCrisisWindowStatus.Invalid,"corrupt_state_"+i);
+  var sameAgain=At(s,13,100);Check(sameAgain.Status==At(s,13,100).Status&&sameAgain.Next.BudgetSeconds==100,"deterministic_policy_no_wall_clock_dependency");
+  Check(default(ForeignCrisisWindowStatus)==ForeignCrisisWindowStatus.Invalid,"default_verdict_not_ready");
+  Console.WriteLine("CRISIS WINDOW PASS "+passed+"; pure policy; active clocks, save-load and Native execution NOT_RUN");
+ }
+}

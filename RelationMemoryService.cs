@@ -67,7 +67,9 @@ namespace BellumCivile
         public const string SatisfiedSuccessionDemand = "satisfied_succession_demand";
         public const string RecentFavor = "recent_favor";
         public const string CourtTitleGrant = "court_title_grant";
+        public const string RefusedCourtTitleGrant = "refused_court_title_grant";
         public const string ClientLandGrant = "client_land_grant";
+        public const string GrantedRealmIndependence = "granted_realm_independence";
         public const string DeliveredNoblePrisoners = "delivered_noble_prisoners";
         public const string RecentGrievance = "recent_grievance";
         public const string KilledKinsman = "killed_kinsman";
@@ -144,6 +146,11 @@ namespace BellumCivile
             TextObject text;
             switch (sourceId ?? string.Empty)
             {
+                case "lordship_granted": text = new TextObject("{=BC_RelationMemory_LordshipGranted}Granted me a lordship"); break;
+                case "lordship_revoked": text = new TextObject("{=BC_RelationMemory_LordshipRevoked}Revoked my lordship"); break;
+                case "lordship_returned": text = new TextObject("{=BC_RelationMemory_LordshipReturned}Returned a granted lordship"); break;
+                case "asylum_granted": text = new TextObject("{=BC_RelationMemory_AsylumGranted}Granted our house asylum"); break;
+                case "asylum_refused": text = new TextObject("{=BC_RelationMemory_AsylumRefused}Refused our house asylum"); break;
                 case RevokedMyTitle: text = new TextObject("{=BC_RelationMemory_RevokedMyTitle}Revoked my title"); break;
                 case SupportedCouncilAdvice: text = new TextObject("{=BC_RelationMemory_SupportedCouncilAdvice}Supported my council advice"); break;
                 case RejectedCouncilAdvice: text = new TextObject("{=BC_RelationMemory_RejectedCouncilAdvice}Rejected my council advice"); break;
@@ -233,6 +240,9 @@ namespace BellumCivile
                     break;
                 case RecentGrievance:
                     text = new TextObject("{=BC_RelationMemory_RecentGrievance}Recent grievance");
+                    break;
+                case RefusedCourtTitleGrant:
+                    text = new TextObject("{=BC_TitleGrantOfferRefusalMemory}Refused my title grant");
                     break;
                 case KilledKinsman:
                     text = new TextObject("{=BC_RelationMemory_KilledKinsman}Killed my kinsman");
@@ -377,6 +387,9 @@ namespace BellumCivile
                     break;
                 case LiberatedMyRealm:
                     text = new TextObject("{=BC_RelationMemory_LiberatedMyRealm}Liberated my realm");
+                    break;
+                case GrantedRealmIndependence:
+                    text = new TextObject("{=BC_RelationMemory_GrantedRealmIndependence}Granted my realm its independence");
                     break;
                 case BrokeTreatyOrAlliance:
                     text = new TextObject("{=BC_RelationMemory_BrokeTreatyOrAlliance}Broke a treaty or alliance");

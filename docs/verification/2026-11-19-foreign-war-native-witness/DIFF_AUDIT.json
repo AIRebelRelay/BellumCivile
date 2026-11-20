@@ -1,0 +1,47 @@
+{
+  "candidate": "1.4.12.11",
+  "source_base": "1.4.12.10 S27 inventory-corrected",
+  "remote_ref": "AIRebelRelay/BellumCivile feature/cr-realm-preparation-receipts-2026-11-18 / PR54 / 903f6772a8bebab68b1296121d770b741ae1a232",
+  "changed_existing": [
+    "Behaviors/WarScoreBehavior.cs",
+    "CheatCommands.cs",
+    "Properties/AssemblyInfo.cs",
+    "Tests/WarConflictIdentity.Tests.ps1",
+    "Tests/WarConflictIdentityHarness/Scenarios.cs.txt",
+    "WarScoreRecord.cs",
+    "_Module/SubModule.xml",
+    "docs/backlog/2026-11-18-cr-diplomacy-current-handoff.md"
+  ],
+  "added": [
+    "Behaviors/WarScoreForeignNativeWitness.cs",
+    "BellumIntegrationForeignWarNativeWitness.cs",
+    "ForeignWarNativeWitnessSnapshot.cs",
+    "README_CR_NATIVE_WAR_PROVENANCE_UK.md",
+    "Tests/WarNativeWitness.Tests.ps1",
+    "Tests/WarNativeWitnessHarness/Scenarios.cs.txt",
+    "docs/backlog/2026-11-19-foreign-war-native-witness-contract.md",
+    "scripts/Verify-CrBellumNativeWitnessWindows.ps1"
+  ],
+  "removed": [],
+  "unchanged_existing_count": 1734,
+  "old_save_fields_1_38_byte_contract": "PRESERVED",
+  "new_saved_fields": [
+    39,
+    40,
+    41
+  ],
+  "shared_methods_unchanged": [
+    "SyncData",
+    "RegisterConflict",
+    "OnMakePeace",
+    "ReconcileExistingWars"
+  ],
+  "S27_formatter_unchanged": true,
+  "Naval_tree_unchanged": true,
+  "static_checks": "PASS",
+  "PowerShell_7_net472_windows_build": "NOT_RUN",
+  "Native_serializer": "NOT_RUN",
+  "gameplay": "NOT_RUN",
+  "missed_callback_reuse": "NOT_FIXED",
+  "unique_epoch": "NOT_PROVEN"
+}

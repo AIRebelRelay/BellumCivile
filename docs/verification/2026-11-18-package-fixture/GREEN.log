@@ -1,0 +1,26 @@
+PASS resolve actual module location with spaces
+PASS invalid installation layout rejected
+PASS normal log format and five-megabyte rotation
+PASS old dated logs pruned while unrelated file retained
+PASS blank normal message ignored
+PASS yearly report in same module logs folder
+PASS empty yearly category retains general fallback
+PASS blank yearly report ignored
+PASS write failure contained with existing debugger fallback
+PASS no external log directory fallback
+PASS core and Naval fixtures have distinct bytes
+BELLUM_MODULE_BUILD_PACKAGE_PASS version=1.4.12.5; core=present; naval=present; zip=/tmp/bellum-logs-d5868db6639e41cba9525648e5d359c1/build-result/BellumCivile_1.4.12.5_complete.zip; module=/tmp/bellum-logs-d5868db6639e41cba9525648e5d359c1/build-result/Modules/BellumCivile; gameplay=NOT_RUN; deployed=false
+PASS actual packaging block creates full module layout with both fixture DLLs
+PASS packaged core bytes match core input
+PASS packaged Naval bytes match Naval input
+PASS ZIP uses source module version
+PASS exactly one ZIP entry BellumCivile.dll
+PASS ZIP input bytes preserved BellumCivile.dll
+PASS exactly one ZIP entry BellumCivile.NavalDLCPatch.dll
+PASS ZIP input bytes preserved BellumCivile.NavalDLCPatch.dll
+PASS report matches packaged identity and paths
+PASS report records both input hashes
+PASS fixture report never claims deployment or gameplay
+PASS all GUI XML localization and license copied unchanged
+PASS packaged XML uses new hotfix version
+BELLUM_MODULE_LOG_PASS 24 named checks; full game build NOT_RUN

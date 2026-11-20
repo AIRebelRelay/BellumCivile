@@ -906,6 +906,15 @@ namespace BellumCivile.Behaviors
                 .Sum(m => Math.Max(0, m.GetCurrentValue(CurrentDay))));
         }
 
+        internal bool HasVoluntaryReleaseGratitude(Hero firstHero, Hero secondHero)
+        {
+            if (!IsCampaignThread || !BellumCivileOptions.EnableDynamicRelationDrift || !ShouldAffectPair(firstHero, secondHero)) return false;
+            RefreshMemoryDurationMultiplier();
+            return _personalMemoriesByPair.TryGetValue(new DynamicRelationPairKey(firstHero, secondHero), out var memories)
+                && memories.Any(m => m.Scope == RelationMemoryScope.Personal
+                    && m.SourceId == RelationMemorySources.GrantedRealmIndependence && !m.IsExpired(CurrentDay));
+        }
+
         internal int LimitPrisonerDonationGain(Hero firstHero, Hero secondHero, int proposedGain)
         {
             if (!IsCampaignThread || !BellumCivileOptions.EnableDynamicRelationDrift || !ShouldAffectPair(firstHero, secondHero))
@@ -1313,7 +1322,8 @@ namespace BellumCivile.Behaviors
                 return true;
             if (hero == Hero.MainHero || hero.Clan == Clan.PlayerClan)
                 return true;
-            if (!hero.IsLord || hero.Clan == null)
+            if ((!hero.IsLord && !(LordshipBehavior.Instance?.Ready == true && (HouseholdMembership.IsRetainer(hero)
+                || (HouseholdMembership.Supports(hero.Clan) && HouseholdMembership.IsFamily(hero))))) || hero.Clan == null)
                 return false;
             if (hero.Clan.IsNoble)
                 return true;

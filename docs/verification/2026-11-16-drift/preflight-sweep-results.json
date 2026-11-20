@@ -1,0 +1,20 @@
+[
+  {
+    "test": "AiInfluenceNpcCrownStage9.BuildGate.Tests.ps1",
+    "status": "FAIL",
+    "exitCode": 1,
+    "pass_markers": 2
+  },
+  {
+    "test": "P014EWorkshopDependencies.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 10
+  },
+  {
+    "test": "P014FGameVersionManifest.Tests.ps1",
+    "status": "PASS",
+    "exitCode": 0,
+    "pass_markers": 6
+  }
+]

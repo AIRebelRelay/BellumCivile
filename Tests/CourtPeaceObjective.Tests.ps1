@@ -17,7 +17,10 @@ Check ($behavior.Contains('plan.Members = agenda.Faction.Members') -and $behavio
 Check ((Read 'Behaviors/CourtPoliticalSupport.cs').Contains('agenda.Faction.Members.Contains(voter)') -and $behavior.Contains('!Eligible(voter, realm)')) 'Live eligibility prevents stale membership bonuses.'
 Check ($treaty.Contains('PeaceInitiativeBonus(kingdom, war, clan)') -and $treaty.Contains('"Court peace initiative"')) 'Treaty ratification and previews include a separately explained bonus.'
 Check ($votes.Contains('PeaceInitiativeBonus(source, war, voter)') -and $votes.Contains('support = supportPeaceOutcome ? raw : -raw')) 'Native peace support keeps symmetric outcome scoring with the bonus.'
-Check ($agenda.IndexOf('MaintainPeaceObjectives();') -lt $agenda.IndexOf('OpenTerm(realm, manager, ideology);')) 'Expired objectives settle before new-term cleanup and selection.'
+Check ($agenda.IndexOf('MaintainPeaceObjectives();') -ge 0 -and
+    $agenda.IndexOf('PrepareQueuedCourtTerms(realms, manager, ideology);') -ge 0 -and
+    $agenda.IndexOf('MaintainPeaceObjectives();') -lt $agenda.IndexOf('PrepareQueuedCourtTerms(realms, manager, ideology);') -and
+    (Read 'Behaviors/CourtTermPreparation.cs').Contains('OpenTerm(realm, manager, ideology, term);')) 'Expired objectives settle before new-term cleanup and selection.'
 Check ($agenda.Contains('!a.IsUnopened && !a.IsOngoingObjective') -and (Read 'Behaviors/CourtExecutiveAgendas.cs').Contains('!a.IsUnopened && !a.IsOngoingObjective')) 'Ongoing objectives survive term and closed-vote cleanup.'
 Check ($agenda.Contains('CampaignEvents.MakePeace.AddNonSerializedListener(this, OnCourtPeace)') -and $behavior.Contains('latest != plan.War')) 'Actual peace callback is matched to the saved war instance.'
 Check ($behavior.Contains('CourtAgendaSuccessShock') -and $behavior.Contains('CourtAgendaFailureShock') -and $behavior.Contains('TryClaimResult()')) 'Existing outcome mood weights use a one-shot result receipt.'

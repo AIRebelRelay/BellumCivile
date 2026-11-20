@@ -9,7 +9,13 @@ $foreign = Read 'Behaviors/CrownForeignAccession.cs'
 $crown = Read 'Behaviors/CrownAccessionBehavior.cs'
 $incoming = Read 'Behaviors/CrownIncomingHouse.cs'
 Check ($foreign -match 'ApplyByJoinToKingdom\(house, record.Realm' -and $foreign -notmatch 'ApplyByLeave|DeclareWarAction|ApplyByJoinToKingdomByDefection') 'Foreign accession never invokes confiscation, rebellion or defection actions.'
-Check ($foreign -match 'RequiresRealmUnion' -and $foreign -match 'realm union is not implemented yet') 'Existing foreign sovereigns wait for union support instead of losing their first realm.'
+$unionStart = $foreign.IndexOf('if (RequiresRealmUnion(house, record.Realm))')
+$unionEnd = $foreign.IndexOf('if (house.Leader == null', $unionStart)
+if ($unionStart -lt 0 -or $unionEnd -le $unionStart) { throw 'Missing scoped foreign-sovereign union branch' }
+$union = $foreign.Substring($unionStart, $unionEnd - $unionStart)
+Check ($union.Contains('if (!TryPublishRealmUnion(record, out string reason)) return DeferAbdication(record, reason);') -and
+    $union.Contains('if (!TryAdvanceRealmUnion(record, out reason)) return DeferAbdication(record, reason);') -and
+    $union.Contains('return false;')) 'Foreign sovereign accession delegates to journaled realm union without falling through to ordinary allegiance transfer.'
 Check ($foreign -match 'ForeignMoveStarted = true' -and $foreign.IndexOf('ForeignMoveStarted = true') -lt $foreign.IndexOf('ChangeKingdomAction.ApplyByJoin')) 'Foreign movement is journaled before native membership callbacks.'
 Check ($foreign -match 'ForeignInfluenceRestored' -and $foreign -match 'ForeignLegalRightsUnchanged') 'Foreign completion validates legal rights and restores recorded influence once.'
 Check ($crown.IndexOf('PrepareForeignCrownClan(record, house)') -lt $crown.IndexOf('ChangeRulingClanAction.Apply(record.Realm, house)')) 'Incoming membership settles before the target Crown changes hands.'

@@ -33,6 +33,81 @@ internal static class InternalInstabilityPresetTests
         public Action ApplyInstabilityPreset { get => () => Clicks++; set { } }
     }
 
+    // Match SuccessionEngineHarness.csproj: canonical Modules install first, then the
+    // official MCM Steam Workshop module. Never scan unrelated mod directories.
+    private static string ResolveMcmUiPath(string game, Version gameVersion)
+    {
+        string modules = Path.Combine(game, "Modules", "Bannerlord.MBOptionScreen", "bin", "Win64_Shipping_Client");
+        string workshop = Path.GetFullPath(Path.Combine(game, "..", "..", "workshop", "content",
+            "261550", "2859238197", "bin", "Win64_Shipping_Client"));
+        foreach (string folder in new[] { modules, workshop })
+        {
+            if (!File.Exists(Path.Combine(folder, "MCMv5.dll"))) continue;
+            var candidate = Directory.EnumerateFiles(folder, "Bannerlord.MBOptionScreen.v*.dll")
+                .Select(path => new {
+                    Path = path,
+                    Name = Path.GetFileNameWithoutExtension(path).Substring("Bannerlord.MBOptionScreen.v".Length)
+                })
+                .Select(item => new {
+                    item.Path,
+                    Version = Version.TryParse(item.Name, out var parsed) ? parsed : null
+                })
+                .Where(item => item.Version != null && item.Version <= gameVersion)
+                .OrderByDescending(item => item.Version)
+                .FirstOrDefault();
+            if (candidate != null) return candidate.Path;
+        }
+        throw new FileNotFoundException("No compatible MCM UI assembly for Bannerlord " + gameVersion
+            + "; checked the canonical Modules and Steam Workshop 2859238197 locations: "
+            + modules + " | " + workshop);
+    }
+
+    private static void CheckMcmUiPathContracts(Action<bool, string> check)
+    {
+        string root = Path.Combine(Path.GetTempPath(), "Bellum-McmUi-" + Guid.NewGuid().ToString("N"));
+        string game = Path.Combine(root, "common", "BannerlordFixture");
+        string modules = Path.Combine(game, "Modules", "Bannerlord.MBOptionScreen", "bin", "Win64_Shipping_Client");
+        string workshop = Path.Combine(root, "workshop", "content", "261550", "2859238197",
+            "bin", "Win64_Shipping_Client");
+        string wrongWorkshop = Path.Combine(root, "workshop", "content", "261550", "3720376888",
+            "bin", "Win64_Shipping_Client");
+        string uiName = "Bannerlord.MBOptionScreen.v1.5.0.dll";
+        try
+        {
+            Directory.CreateDirectory(workshop);
+            File.WriteAllText(Path.Combine(workshop, "MCMv5.dll"), "");
+            string workshopUi = Path.Combine(workshop, uiName);
+            File.WriteAllText(workshopUi, "");
+            check(ResolveMcmUiPath(game, new Version(1, 5, 7)) == workshopUi,
+                "MCM UI resolves from official Steam Workshop when Modules install is absent");
+
+            Directory.CreateDirectory(modules);
+            File.WriteAllText(Path.Combine(modules, "MCMv5.dll"), "");
+            string modulesUi = Path.Combine(modules, uiName);
+            File.WriteAllText(modulesUi, "");
+            check(ResolveMcmUiPath(game, new Version(1, 5, 7)) == modulesUi,
+                "Standard Modules MCM retains priority when both installations exist");
+
+            File.Delete(modulesUi);
+            File.WriteAllText(Path.Combine(modules, "Bannerlord.MBOptionScreen.v1.6.0.dll"), "");
+            check(ResolveMcmUiPath(game, new Version(1, 5, 7)) == workshopUi,
+                "Incompatible newer MCM UI cannot override a compatible Workshop build");
+
+            File.Delete(workshopUi);
+            Directory.CreateDirectory(wrongWorkshop);
+            File.WriteAllText(Path.Combine(wrongWorkshop, "MCMv5.dll"), "");
+            File.WriteAllText(Path.Combine(wrongWorkshop, uiName), "");
+            bool failedClosed = false;
+            try { ResolveMcmUiPath(game, new Version(1, 5, 7)); }
+            catch (FileNotFoundException) { failedClosed = true; }
+            check(failedClosed, "Missing canonical MCM fails closed without using another mod's DLL");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
     internal static void Run(Type settingsType, Action<bool, string> check)
     {
         var assembly = typeof(CourtAgendaBehavior).Assembly;
@@ -42,9 +117,9 @@ internal static class InternalInstabilityPresetTests
             (IReadOnlyDictionary<string, int>)getValues.Invoke(null, new object[] { index });
         var names = new[] { "RebellionThreshold", "CourtCrisisMoodThreshold", "CourtChallengeChancePercent",
             "HeirChallengeLoyaltyThreshold", "ElectionChallengeChancePercent", "ClaimFeudStartThreshold",
-            "ClaimedRevocationChancePercent", "TreasonResistanceChancePercent", "ClientLiberationWillingnessThreshold" };
-        var expected = new[] { new[] { 100, -60, 100, 25, 100, 65, 100, 100, 75 },
-            new[] { 125, -80, 50, 15, 50, 80, 50, 50, 85 }, new[] { 75, -40, 100, 35, 125, 55, 150, 150, 65 } };
+            "ClaimedRevocationChancePercent", "TreasonResistanceChancePercent", "ClientLiberationWillingnessThreshold", "CivilWarGraceYears" };
+        var expected = new[] { new[] { 100, -60, 100, 25, 100, 65, 100, 100, 75, 2 },
+            new[] { 125, -80, 50, 15, 50, 80, 50, 50, 85, 3 }, new[] { 75, -40, 100, 35, 125, 55, 150, 150, 65, 1 } };
         object settings = Activator.CreateInstance(settingsType, true);
         int Read(string name) => (int)settingsType.GetProperty(name).GetValue(settings);
         var selector = (Dropdown<string>)settingsType.GetProperty("InstabilityPreset").GetValue(settings);
@@ -52,7 +127,7 @@ internal static class InternalInstabilityPresetTests
         for (int i = 0; i < 3; i++)
         {
             var values = Values(i);
-            check(values.Count == 9, "Preset " + i + " contains only the nine instability settings");
+            check(values.Count == 10, "Preset " + i + " contains only the ten instability settings");
             for (int j = 0; j < names.Length; j++)
             {
                 var slider = settingsType.GetProperty(names[j]).GetCustomAttributes(false).OfType<SettingPropertyIntegerAttribute>().Single();
@@ -76,10 +151,8 @@ internal static class InternalInstabilityPresetTests
         string game = (string)AccessTools.Field(typeof(Program), "_game").GetValue(null);
         var native = new XmlDocument(); native.Load(Path.Combine(game, "Modules", "Native", "SubModule.xml"));
         var version = new Version(native.SelectSingleNode("/Module/Version/@value").Value.TrimStart('v', 'e'));
-        string uiFolder = Path.Combine(game, "Modules", "Bannerlord.MBOptionScreen", "bin", "Win64_Shipping_Client");
-        var uiPath = Directory.GetFiles(uiFolder, "Bannerlord.MBOptionScreen.v*.dll")
-            .Select(p => new { Path = p, Version = new Version(Path.GetFileNameWithoutExtension(p).Substring("Bannerlord.MBOptionScreen.v".Length)) })
-            .Where(p => p.Version <= version).OrderByDescending(p => p.Version).First().Path;
+        CheckMcmUiPathContracts(check);
+        string uiPath = ResolveMcmUiPath(game, version);
         var ui = Assembly.LoadFrom(uiPath);
         Type Ui(string name) => ui.GetType(name, true);
         object Blank(Type type) => FormatterServices.GetUninitializedObject(type);

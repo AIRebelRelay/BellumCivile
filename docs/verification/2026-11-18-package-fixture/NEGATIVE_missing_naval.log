@@ -1,0 +1,16 @@
+PASS resolve actual module location with spaces
+PASS invalid installation layout rejected
+PASS normal log format and five-megabyte rotation
+PASS old dated logs pruned while unrelated file retained
+PASS blank normal message ignored
+PASS yearly report in same module logs folder
+PASS empty yearly category retains general fallback
+PASS blank yearly report ignored
+PASS write failure contained with existing debugger fallback
+PASS no external log directory fallback
+PASS core and Naval fixtures have distinct bytes
+Exception: 
+Line |
+  22 |  … f($entries -cnotcontains $required){throw ('zip_missing='+$required)}
+     |                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | zip_missing=BellumCivile/bin/Win64_Shipping_Client/BellumCivile.NavalDLCPatch.dll

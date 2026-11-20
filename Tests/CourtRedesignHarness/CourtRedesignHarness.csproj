@@ -6,6 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="CourtTermSchedulerTests.cs" />
+    <Compile Include="../../CourtTermPreparationRecord.cs" Link="CourtTermPreparationRecord.cs" />
+    <Compile Include="../../CourtTermScheduler.cs" Link="CourtTermScheduler.cs" />
     <Compile Include="../../CourtLiberationRules.cs" Link="CourtLiberationRules.cs" />
     <Compile Include="../../CourtLiberationRecord.cs" Link="CourtLiberationRecord.cs" />
     <Compile Include="../../ClientKingdomRecord.cs" Link="ClientKingdomRecord.cs" />
@@ -15,6 +18,7 @@
     <Compile Include="CouncilSelectionSimulation.cs" />
     <Compile Include="MarriageStrategySimulation.cs" />
     <Compile Include="../../Behaviors/MarriageHealthRules.cs" Link="MarriageHealthRules.cs" />
+    <Compile Include="../../BellumCivileConstants.cs" Link="BellumCivileConstants.cs" />
     <Compile Include="MarriageHealthTests.cs" />
     <Compile Include="../../Behaviors/MarriagePoliticalRules.cs" Link="MarriagePoliticalRules.cs" />
     <Compile Include="MarriagePoliticalTests.cs" />

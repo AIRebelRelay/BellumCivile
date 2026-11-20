@@ -1,0 +1,37 @@
+PASS exact title identity copies recorded label and time
+PASS missing title leaves registry empty
+PASS null title storage remains unavailable and null
+PASS missing title behavior is explicit
+PASS wrong title case is not fuzzy matched
+PASS case insensitive dictionary cannot change identity semantics
+PASS corrupt dictionary record identity is rejected
+PASS null stored title is invalid without repair
+PASS inactive title has no label payload
+PASS dissolved title has explicit priority
+PASS blank title name is not replaced by its ID
+PASS title localization uses a fresh text object
+PASS title render failure is explicit
+PASS title rename affects next read not earlier snapshot
+PASS same display name on different titles never coalesces IDs
+PASS existing Native realm label is copied without Kingdom.Name
+PASS missing Native label does not seed cache or read fallback
+PASS unknown realm is not matched by label or prefix
+PASS realm case comparison is exact
+PASS duplicate realm IDs are ambiguous
+PASS eliminated realm label is not exposed
+PASS null realm collection is unavailable
+PASS unrelated null realm entry does not become an identity
+PASS new realm object cannot read prior object cache by same name
+PASS cached label replacement affects next read only
+PASS TextObject variables render from a copy without source changes
+PASS copy failure denies instead of losing source variables
+PASS legacy Copy helper fallback remains unchanged
+PASS realm render failure is explicit without source rendering
+PASS empty cached realm label is not replaced by ID
+PASS same recorded label on different realms preserves identity
+PASS title read leaves every saved field unchanged
+PASS invalid request kind ID and clock return no label
+PASS snapshot contains scalars only and no ownership metadata
+PASS actual guard denies worker
+PASS actual guard denies absent campaign
+EXISTING_RECORDED_NAMES_PASS 36 named cases; actual new code/saved title/extracted helpers and guard, Native boundary doubles; not shipping/game proof.

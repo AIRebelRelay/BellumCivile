@@ -1,0 +1,345 @@
+--- S25B/Behaviors/WarScoreBehavior.cs
++++ S26A/Behaviors/WarScoreBehavior.cs
+@@ -40,7 +40,11 @@
+         {
+             dataStore.SyncData("BellumCivile_WarScore_Wars", ref _wars);
+             EnsureCollectionsInitialized();
+-            foreach (var war in _wars) war?.EnsureRaidHistory();
++            foreach (var war in _wars)
++            {
++                war?.EnsureRaidHistory();
++                war?.InitializeMissingConflictInstanceId();
++            }
+         }
+ 
+         public IReadOnlyList<WarScoreRecord> GetActiveWars()
+--- S25B/Properties/AssemblyInfo.cs
++++ S26A/Properties/AssemblyInfo.cs
+@@ -30,5 +30,5 @@
+ //      Revision
+ //
+ [assembly: AssemblyVersion("1.0.0.0")]
+-[assembly: AssemblyFileVersion("1.4.12.7")]
+-[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.7")]
++[assembly: AssemblyFileVersion("1.4.12.8")]
++[assembly: AssemblyInformationalVersion("1.4.12b-cr-alpha.8")]
+--- S25B/WarScoreRecord.cs
++++ S26A/WarScoreRecord.cs
+@@ -37,6 +37,27 @@
+         [SaveableField(29)] private Dictionary<string, float> _prisonerCustody;
+         [SaveableField(30)] private List<string> _attackerRaidedVillages;
+         [SaveableField(31)] private List<string> _defenderRaidedVillages;
++        [SaveableField(38)] private string _conflictInstanceId;
++
++        // Recorded-conflict lifetime only. Pair/rulers/context must still be revalidated separately.
++        // Passive accessor: legacy missing or corrupt evidence is unknown, never allocated on read.
++        public string ConflictInstanceId
++        {
++            get
++            {
++                System.Guid id;
++                return System.Guid.TryParseExact(_conflictInstanceId, "N", out id)
++                    && id != System.Guid.Empty && id.ToString("N") == _conflictInstanceId
++                        ? _conflictInstanceId : null;
++            }
++        }
++
++        internal bool InitializeMissingConflictInstanceId()
++        {
++            if (_conflictInstanceId != null) return false;
++            _conflictInstanceId = System.Guid.NewGuid().ToString("N");
++            return true;
++        }
+ 
+         public string WarKey => _warKey;
+         public string OriginalWarKey => _originalWarKey ?? _warKey;
+@@ -107,6 +128,7 @@
+             _terminalResolutionQueued = false;
+             _terminalResolutionReason = string.Empty;
+             _landlessPressureScore = 0f;
++            InitializeMissingConflictInstanceId();
+         }
+ 
+         internal void AddMissingFiefSnapshots(IEnumerable<WarScoreFiefSnapshotRecord> snapshots)
+--- S25B/_Module/SubModule.xml
++++ S26A/_Module/SubModule.xml
+@@ -3,7 +3,7 @@
+     <Name value="Bellum Civile"/>
+     <Id value="BellumCivile"/>
+     <!-- 1.4.12b CR alpha identity; numeric 4th part for Bannerlord ApplicationVersion. -->
+-    <Version value="v1.4.12.7"/>
++    <Version value="v1.4.12.8"/>
+ 	<DefaultModule value="false"/>
+ 	<ModuleCategory value="Singleplayer"/>
+ 	<Official value="false"/>
+--- S25B/scripts/Build-CrBellumModuleWindows.ps1
++++ S26A/scripts/Build-CrBellumModuleWindows.ps1
+@@ -1,7 +1,7 @@
+ #Requires -Version 7.2
+ # Both BellumCivile.dll and BellumCivile.NavalDLCPatch.dll are mandatory in CR releases.
+ # Force launch from extracted ZIP root (new output folder required):
+-# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14127_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++# pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14128_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
+ [CmdletBinding()]
+ param(
+  [Parameter(Mandatory)][string]$OutputRoot,
+--- S25B/scripts/Test-ForeignDiplomacyCheckpoint.ps1
++++ S26A/scripts/Test-ForeignDiplomacyCheckpoint.ps1
+@@ -6,7 +6,7 @@
+ $root=Split-Path $PSScriptRoot -Parent
+ $pwsh=(Get-Process -Id $PID).Path
+ $results=@()
+-foreach($name in @('ForeignCrisisWindow.Tests','ForeignCrisisBudget.Tests','ForeignDiplomacyJournal.Tests','ForeignDiplomacyJournal.Schema.Tests','ForeignDiplomacyJournal.Mutations',
++foreach($name in @('WarConflictIdentity.Tests','ForeignCrisisWindow.Tests','ForeignCrisisBudget.Tests','ForeignDiplomacyJournal.Tests','ForeignDiplomacyJournal.Schema.Tests','ForeignDiplomacyJournal.Mutations',
+  'ForeignDiplomacyAdmission.Tests','ForeignDiplomacyAdmission.Mutations','ExistingPoliticalPressure.Tests','ExistingWarState.Tests',
+  'ExistingClaimState.Tests','ExistingCouncilState.Tests','ExistingRecordedName.Tests','RealmPreparationReceipt.Tests',
+  'CompleteReleaseNaval.Tests','ModuleLocalLogs.Tests')){
+--- /dev/null
++++ S26A/README_S26A_UK.md
+@@ -0,0 +1,40 @@
++# Bellum1.4.12.8 — S26A, ID запису конкретного конфлікту
++
++Актуальний опис накопичувального ZIP; інвентар — `S26A_PACKAGE_FILES_SHA256.json`.
++Попередні README/інвентарі збережені як історія.
++
++Додано збережуваний ConflictInstanceId до WarScoreRecord: нові записи отримують
++різні GUID навіть для тієї самої пари держав і дати. Старі записи з відсутнім ID
++ініціалізуються через SyncData; просте читання нічого не створює. Чинні37 полів
++сейву, рахунок і політичні механіки не змінені. Невалідні наявні ID не переписуються.
++
++ID стосується життєвого циклу запису, а не гарантує незмінність учасників або
++повноту ігрових callback. Майбутній шлюз мусить перевіряти актуальний світ та
++відхиляти неоднозначні дублікати. Жодні відповіді LLM/таймери ще не прив’язані
++до цього поля автоматично.
++
++31 фінальна перевірка ID та перевірка незмінності старих полів PASS.
++Накопичувальний запуск16 наборів PASS; після нього додатково пройшли2 нові
++перевірки завантаження/першого збереження старого сейву на підставному IDataStore.
++П’ять навмисних помилок виявлені. Реальний serializer Bannerlord НЕ перевірений.
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForeignDiplomacyCheckpoint.ps1
++```
++
++Додаткова перевірка чутливості тестів:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\WarConflictIdentity.Mutations.ps1
++```
++
++Щоб ID старого сейву закріпився, потрібне наступне збереження новою версією.
++Повторне завантаження незміненого старого файлу не доводить тяглість нового ID.
++Зараз на ПК нічого робити не потрібно. Windows-білд і реальний game/save-load
++залишаються NOT_RUN. Збережений повний білдер обох DLL:
++
++```powershell
++pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CrBellumModuleWindows.ps1 -OutputRoot C:\CR_Builds\Bellum_14128_01 -GameFolder "F:\Steam\steamapps\common\Mount & Blade II Bannerlord" -WorkshopFolder "F:\Steam\steamapps\workshop\content\261550"
++```
++
++Межі, call chain, докази й обмеження: `docs/verification/2026-11-18-war-identity/`.
+--- /dev/null
++++ S26A/Tests/WarConflictIdentity.Mutations.ps1
+@@ -0,0 +1,30 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\WarConflictIdentity.Mutations.ps1
++$ErrorActionPreference='Stop'
++$PSNativeCommandUseErrorActionPreference=$false
++$root=Split-Path $PSScriptRoot -Parent
++$pwsh=(Get-Process -Id $PID).Path
++$cases=@(
++ @('sync_reassigns_valid_id','WarScoreRecord.cs','if (_conflictInstanceId != null) return false;','if (_conflictInstanceId == "__never__") return false;'),
++ @('all_instances_share_id','WarScoreRecord.cs','System.Guid.NewGuid().ToString("N")','"11111111111111111111111111111111"'),
++ @('getter_mutates_legacy','WarScoreRecord.cs','System.Guid id;','InitializeMissingConflictInstanceId(); System.Guid id;'),
++ @('missing_sync_migration','Behaviors/WarScoreBehavior.cs','war?.InitializeMissingConflictInstanceId();','// mutation: no legacy identity migration'),
++ @('end_reassigns_identity','WarScoreRecord.cs','_endedDay = day;','_conflictInstanceId = null; InitializeMissingConflictInstanceId(); _endedDay = day;')
++)
++foreach($case in $cases){
++ $name,$relative,$before,$after=$case
++ $source=Get-Content -Raw -LiteralPath (Join-Path $root $relative)
++ if([regex]::Matches($source,[regex]::Escape($before)).Count -ne 1){throw "Mutation boundary changed: $name"}
++ $temp=Join-Path ([IO.Path]::GetTempPath()) ('war-id-mutant-'+[guid]::NewGuid().ToString('N'))
++ New-Item -ItemType Directory -Path (Join-Path $temp 'Tests'),(Join-Path $temp 'Behaviors') | Out-Null
++ try{
++  foreach($path in @('WarScoreRecord.cs','WarScorePeaceReconsideration.cs','WarScoreFeudObjective.cs','WarScoreConflictType.cs','WarScoreFiefSnapshotRecord.cs','WarScoreEventRecord.cs','WarScoreEventType.cs','TreatyTermRecord.cs','TreatyTermType.cs','BellumCivileConstants.cs','CivilWarConflictRecord.cs','Behaviors/WarScoreBehavior.cs','Tests/WarConflictIdentity.Tests.ps1')){Copy-Item -LiteralPath (Join-Path $root $path) -Destination (Join-Path $temp $path)}
++  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'WarConflictIdentityHarness') -Destination (Join-Path $temp 'Tests') -Recurse
++  [IO.File]::WriteAllText((Join-Path $temp $relative),$source.Replace($before,$after))
++  $output=(& $pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $temp 'Tests/WarConflictIdentity.Tests.ps1') 2>&1 | Out-String)
++  $code=$LASTEXITCODE
++  if($code -eq 0 -or $output -notmatch 'FAIL' -or $output -notmatch 'Exception calling' -or $output -match 'Add-Type:'){throw "Mutation not rejected by assertion: $name`n$output"}
++  Write-Output ('WAR_ID_MUTATION_REJECTED '+$name)
++ }finally{Remove-Item -LiteralPath $temp -Recurse -Force}
++}
++Write-Output 'WAR IDENTITY MUTATIONS REJECTED 5'
+--- /dev/null
++++ S26A/Tests/WarConflictIdentity.Tests.ps1
+@@ -0,0 +1,33 @@
++#Requires -Version 7.2
++# Force launch: pwsh -NoProfile -ExecutionPolicy Bypass -File .\Tests\WarConflictIdentity.Tests.ps1
++$ErrorActionPreference='Stop'
++$root=Split-Path $PSScriptRoot -Parent
++$temp=Join-Path ([IO.Path]::GetTempPath()) ('war-identity-'+[guid]::NewGuid().ToString('N'))
++New-Item -ItemType Directory -Path $temp | Out-Null
++try{
++ foreach($name in @('Fixtures','Scenarios')){Copy-Item -LiteralPath (Join-Path $root "Tests/WarConflictIdentityHarness/$name.cs.txt") -Destination (Join-Path $temp "$name.cs")}
++ $behavior=Get-Content -Raw -LiteralPath (Join-Path $root 'Behaviors/WarScoreBehavior.cs')
++ $a=$behavior.IndexOf('public override void SyncData(IDataStore dataStore)');$b=$behavior.IndexOf('public IReadOnlyList<WarScoreRecord> GetActiveWars()', $a)
++ if($a -lt 0 -or $b -le $a){throw 'Actual SyncData boundary changed'}
++ $ensure=[regex]::Match($behavior,'private void EnsureCollectionsInitialized\(\)\s*\{\s*_wars = _wars \?\? new List<WarScoreRecord>\(\);\s*\}')
++ if(!$ensure.Success){throw 'Actual list guard boundary changed'}
++ Set-Content -LiteralPath (Join-Path $temp 'ActualSync.cs') -Value ('using System.Collections.Generic;using TaleWorlds.CampaignSystem;namespace BellumCivile.Behaviors{public sealed partial class WarScoreBehavior{'+$behavior.Substring($a,$b-$a)+$ensure.Value+'}}')
++ $constants=Get-Content -Raw -LiteralPath (Join-Path $root 'BellumCivileConstants.cs')
++ $parts=@('TreatyOfferingCreditMultiplier','WarScoreFeudObjectiveCap','WarScoreFeudObjectiveDailyGain') | ForEach-Object {
++  $match=[regex]::Match($constants,('public const float '+$_+' = [^;]+;'));if(!$match.Success){throw "Missing actual constant $_"};$match.Value
++ }
++ $pair=Get-Content -Raw -LiteralPath (Join-Path $root 'CivilWarConflictRecord.cs');$prefix=[regex]::Match($pair,'internal const string RivalryPrefix = "[^"]*";')
++ if(!$prefix.Success){throw 'Missing actual rivalry prefix'}
++ Set-Content -LiteralPath (Join-Path $temp 'ActualConstants.cs') -Value ('namespace BellumCivile{internal static class BellumCivileConstants{'+($parts -join "`n")+'}internal sealed class CivilWarPairRecord{'+$prefix.Value+'}}')
++ $paths=@('WarScoreRecord.cs','WarScorePeaceReconsideration.cs','WarScoreFeudObjective.cs','WarScoreConflictType.cs','WarScoreFiefSnapshotRecord.cs','WarScoreEventRecord.cs','WarScoreEventType.cs','TreatyTermRecord.cs','TreatyTermType.cs') | ForEach-Object {Join-Path $root $_}
++ $paths+=@(Get-ChildItem -LiteralPath $temp -Filter *.cs | ForEach-Object FullName)
++ Add-Type -Path $paths -CompilerOptions '/langversion:7.3'
++ [WarConflictIdentityScenarios]::Run()
++ $baseline=Get-Content -Raw -LiteralPath (Join-Path $root 'Tests/WarConflictIdentityHarness/SaveFieldsBaseline.json') | ConvertFrom-Json
++ $actual=@(foreach($file in @('WarScoreRecord.cs','WarScorePeaceReconsideration.cs','WarScoreFeudObjective.cs')){
++  Get-Content -LiteralPath (Join-Path $root $file) | Where-Object {$_ -match '\[SaveableField\(' -and $_ -notmatch '\[SaveableField\(38\)\]'} | ForEach-Object {$_.Trim()}
++ })
++ if(($baseline -join "`n") -cne ($actual -join "`n")){throw 'Existing saved field identity/type/name changed'}
++ Write-Output 'WAR IDENTITY SCHEMA PASS original37 exact declarations preserved'
++
++}finally{Remove-Item -LiteralPath $temp -Recurse -Force}
+--- /dev/null
++++ S26A/Tests/WarConflictIdentityHarness/Fixtures.cs.txt
+@@ -0,0 +1,36 @@
++using System;
++using System.Collections;
++using System.Collections.Generic;
++using System.Linq;
++using System.Reflection;
++using System.Runtime.CompilerServices;
++namespace TaleWorlds.SaveSystem {
++ [AttributeUsage(AttributeTargets.Field)]public sealed class SaveableFieldAttribute:Attribute{public int Id;public SaveableFieldAttribute(int id){Id=id;}}
++}
++namespace TaleWorlds.CampaignSystem {
++ public interface IDataStore{bool SyncData<T>(string key,ref T value);}
++ public abstract class CampaignBehaviorBase{public abstract void SyncData(IDataStore dataStore);}
++}
++namespace BellumCivile.Behaviors {
++ public sealed partial class WarScoreBehavior:TaleWorlds.CampaignSystem.CampaignBehaviorBase {
++  private List<WarScoreRecord> _wars=new List<WarScoreRecord>();
++  public List<WarScoreRecord> Rows{get{return _wars;}set{_wars=value;}}
++ }
++}
++public sealed class IdentityStore:TaleWorlds.CampaignSystem.IDataStore {
++ public bool Loading;public object Saved;public string Key;
++ public bool SyncData<T>(string key,ref T value){Key=key;if(Loading)value=(T)Clone(Saved);else Saved=Clone(value);return true;}
++ public static FieldInfo[] Fields(Type t){return t.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Where(f=>f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null).ToArray();}
++ public static object Clone(object item){
++  if(item==null)return null;var t=item.GetType();if(t.IsPrimitive||t.IsEnum||t==typeof(string))return item;
++  var dict=item as IDictionary;if(dict!=null){var copy=(IDictionary)Activator.CreateInstance(t);foreach(DictionaryEntry pair in dict)copy.Add(Clone(pair.Key),Clone(pair.Value));return copy;}
++  var list=item as IList;if(list!=null){var copy=(IList)Activator.CreateInstance(t);foreach(var value in list)copy.Add(Clone(value));return copy;}
++  var result=RuntimeHelpers.GetUninitializedObject(t);foreach(var f in Fields(t))f.SetValue(result,Clone(f.GetValue(item)));return result;
++ }
++ public static string LegacyDigest(object item){
++  if(item==null)return "<null>";var t=item.GetType();if(t.IsPrimitive||t.IsEnum||t==typeof(string))return t.FullName+":"+Convert.ToString(item,System.Globalization.CultureInfo.InvariantCulture);
++  var list=item as IList;if(list!=null)return "["+string.Join(";",list.Cast<object>().Select(LegacyDigest))+"]";
++  var dict=item as IDictionary;if(dict!=null){var rows=new List<string>();foreach(DictionaryEntry p in dict)rows.Add(LegacyDigest(p.Key)+"="+LegacyDigest(p.Value));return "{"+string.Join(";",rows.OrderBy(x=>x))+"}";}
++  return string.Join(";",Fields(t).Where(f=>!(t==typeof(BellumCivile.WarScoreRecord)&&f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>().Id==38)).OrderBy(f=>f.Name).Select(f=>f.Name+"="+LegacyDigest(f.GetValue(item))));
++ }
++}
+--- /dev/null
++++ S26A/Tests/WarConflictIdentityHarness/SaveFieldsBaseline.json
+@@ -0,0 +1,39 @@
++[
++  "[SaveableField(1)] private string _warKey;",
++  "[SaveableField(2)] private string _attackerKingdomId;",
++  "[SaveableField(3)] private string _defenderKingdomId;",
++  "[SaveableField(4)] private float _startedDay;",
++  "[SaveableField(5)] private float _endedDay;",
++  "[SaveableField(6)] private float _score;",
++  "[SaveableField(7)] private bool _isActive;",
++  "[SaveableField(8)] private List<WarScoreFiefSnapshotRecord> _fiefSnapshots;",
++  "[SaveableField(9)] private List<WarScoreEventRecord> _events;",
++  "[SaveableField(10)] private float _occupationScore;",
++  "[SaveableField(11)] private float _battleScore;",
++  "[SaveableField(12)] private float _raidScore;",
++  "[SaveableField(13)] private float _prisonerScore;",
++  "[SaveableField(14)] private float _tickingScore;",
++  "[SaveableField(15)] private float _lastTickDay;",
++  "[SaveableField(16)] private WarScoreConflictType _conflictType;",
++  "[SaveableField(17)] private string _contextId;",
++  "[SaveableField(18)] private bool _resolutionPending;",
++  "[SaveableField(19)] private float _objectiveScore;",
++  "[SaveableField(20)] private float _nextWhitePeaceCheckDay;",
++  "[SaveableField(21)] private bool _whitePeaceOfferPending;",
++  "[SaveableField(22)] private bool _parleyPending;",
++  "[SaveableField(23)] private bool _parleyForced;",
++  "[SaveableField(24)] private float _parleyOpenedDay;",
++  "[SaveableField(25)] private bool _terminalResolutionQueued;",
++  "[SaveableField(26)] private string _terminalResolutionReason;",
++  "[SaveableField(27)] private float _landlessPressureScore;",
++  "[SaveableField(28)] private string _originalWarKey;",
++  "[SaveableField(29)] private Dictionary<string, float> _prisonerCustody;",
++  "[SaveableField(30)] private List<string> _attackerRaidedVillages;",
++  "[SaveableField(31)] private List<string> _defenderRaidedVillages;",
++  "[SaveableField(32)] private float _peaceRetryDay;",
++  "[SaveableField(33)] private float _peaceReconsiderationScore;",
++  "[SaveableField(34)] private List<string> _refusalReactions;",
++  "[SaveableField(37)] private float _peaceFeasibilityRetryDay;",
++  "[SaveableField(35)] private int _feudObjectiveVerifiedController;",
++  "[SaveableField(36)] private float _feudObjectiveControlSinceDay;"
++]--- /dev/null
++++ S26A/Tests/WarConflictIdentityHarness/Scenarios.cs.txt
+@@ -0,0 +1,54 @@
++using System;
++using System.Linq;
++using System.Reflection;
++using BellumCivile;
++using BellumCivile.Behaviors;
++public static class WarConflictIdentityScenarios {
++ static int count;static void Check(bool ok,string name){if(!ok)throw new Exception("FAIL "+name);count++;Console.WriteLine("PASS "+name);}
++ static WarScoreRecord New(WarScoreConflictType kind=WarScoreConflictType.ForeignWar){return new WarScoreRecord("a|b","a","b",10,null,kind);}
++ static FieldInfo IdentityField(){return typeof(WarScoreRecord).GetField("_conflictInstanceId",BindingFlags.Instance|BindingFlags.NonPublic);}
++ static void Put(WarScoreRecord war,string value){IdentityField().SetValue(war,value);}
++ static bool Valid(string value){Guid id;return Guid.TryParseExact(value,"N",out id)&&id!=Guid.Empty;}
++ public static void Run(){
++  var first=New();var second=New();var id=first.ConflictInstanceId;
++  Check(Valid(id),"new_record_has_canonical_instance_id");Check(id!=second.ConflictInstanceId,"same_pair_same_day_different_instances");
++  var endedId=id;first.MarkEnded(20);var later=New();Check(first.ConflictInstanceId==endedId&&later.ConflictInstanceId!=endedId,"new_war_never_reuses_ended_identity");
++  Check(first.WarKey==later.WarKey&&first.StartedDay==later.StartedDay,"instance_independent_of_pair_timestamp");
++  var behavior=new WarScoreBehavior();behavior.Rows.Add(first);behavior.Rows.Add(later);behavior.Rows.Add(null);var store=new IdentityStore();behavior.SyncData(store);
++  Check(store.Key=="BellumCivile_WarScore_Wars","existing_save_key_unchanged");
++  Check(first.ConflictInstanceId==endedId&&later.ConflictInstanceId!=endedId,"saving_preserves_existing_ids");
++  var reload=new WarScoreBehavior();store.Loading=true;reload.SyncData(store);
++  Check(reload.Rows[0].ConflictInstanceId==endedId&&reload.Rows[1].ConflictInstanceId==later.ConflictInstanceId&&reload.Rows[2]==null,"field_copy_load_preserves_ids_and_null_row");
++  var legacy=New();Put(legacy,null);legacy.AddBattleScore(12,100);legacy.RecordPeaceRejection(12);var digest=IdentityStore.LegacyDigest(legacy);
++  Check(legacy.ConflictInstanceId==null&&IdentityField().GetValue(legacy)==null,"legacy_read_is_passive_no_guid_allocation");
++  var migration=new WarScoreBehavior();migration.Rows.Add(legacy);migration.SyncData(new IdentityStore());var migratedId=legacy.ConflictInstanceId;
++  Check(Valid(migratedId),"legacy_missing_id_assigned_by_sync");Check(IdentityStore.LegacyDigest(legacy)==digest,"migration_preserves_all_prior_saved_fields");
++  migration.SyncData(new IdentityStore());Check(legacy.ConflictInstanceId==migratedId,"repeated_sync_does_not_reassign");
++  var oldLoadedRecord=(WarScoreRecord)IdentityStore.Clone(legacy);Put(oldLoadedRecord,null);
++  var preUpgrade=new IdentityStore{Loading=true,Saved=new System.Collections.Generic.List<WarScoreRecord>{oldLoadedRecord}};
++  var oldLoader=new WarScoreBehavior();oldLoader.SyncData(preUpgrade);var oldLoadId=oldLoader.Rows[0].ConflictInstanceId;
++  Check(Valid(oldLoadId)&&IdentityStore.LegacyDigest(oldLoader.Rows[0])==digest,"actual_load_hook_migrates_missing_identity_only");
++  var firstUpgradedSave=new IdentityStore();oldLoader.SyncData(firstUpgradedSave);firstUpgradedSave.Loading=true;var firstUpgradedLoad=new WarScoreBehavior();firstUpgradedLoad.SyncData(firstUpgradedSave);
++  Check(firstUpgradedLoad.Rows[0].ConflictInstanceId==oldLoadId,"first_save_after_legacy_load_keeps_allocated_id");
++  var upgraded=new IdentityStore();migration.SyncData(upgraded);upgraded.Loading=true;var loaded=new WarScoreBehavior();loaded.SyncData(upgraded);
++  Check(loaded.Rows[0].ConflictInstanceId==migratedId,"upgraded_save_retains_migrated_identity");
++  foreach(string invalid in new[]{""," ","bad",new string('0',32),"ABCDEF0123456789ABCDEF0123456789"}){
++   var corrupt=New();Put(corrupt,invalid);var b=new WarScoreBehavior();b.Rows.Add(corrupt);b.SyncData(new IdentityStore());
++   Check(corrupt.ConflictInstanceId==null&&((string)IdentityField().GetValue(corrupt))==invalid,"malformed_id_preserved_unknown_"+invalid);
++  }
++  var a=New();var b2=New();Put(a,null);Put(b2,null);var old=new WarScoreBehavior();old.Rows.Add(a);old.Rows.Add(b2);old.SyncData(new IdentityStore());Check(a.ConflictInstanceId!=b2.ConflictInstanceId,"two_legacy_records_migrate_independently");
++  var empty=new WarScoreBehavior();empty.Rows=null;empty.SyncData(new IdentityStore());Check(empty.Rows!=null&&empty.Rows.Count==0,"null_list_recovery_unchanged");
++  var counter=New();var original=counter.ConflictInstanceId;counter.SetOccupationScore(20);counter.AddBattleScore(5,100);counter.AddRaidScore(5,100);Check(counter.Score==30&&counter.ConflictInstanceId==original,"score_math_preserved");
++  Check(counter.QueueTerminalResolution("test")&&counter.ConflictInstanceId==original,"terminal_queue_keeps_identity");counter.ClearTerminalResolution();Check(counter.BeginParley(true,12)&&counter.ConflictInstanceId==original,"parley_keeps_identity");counter.EndParley();Check(counter.BeginResolution()&&counter.ConflictInstanceId==original,"resolution_keeps_identity");counter.CancelResolution();
++  var civil=new WarScoreRecord("a|b","a","b",10,null,WarScoreConflictType.CivilWar);var civilId=civil.ConflictInstanceId;
++  Check(civil.TryRetargetCivilWarDefender("b","c")&&civil.ConflictInstanceId==civilId&&civil.WarKey=="a|c","civil_retarget_keeps_record_identity_and_pair_update");
++  var rival=new WarScoreRecord("a|b","a","b",10,null,WarScoreConflictType.CivilWar,CivilWarPairRecord.RivalryPrefix+"fixture");var rivalId=rival.ConflictInstanceId;rival.AddBattleScore(10,100);
++  Check(rival.TryPromoteRivalry("a","b","c")&&rival.ConflictInstanceId==rivalId&&rival.Score==-10&&rival.WarKey=="b|c","rival_promotion_preserves_identity_and_score_reversal");
++  var feud=New(WarScoreConflictType.ClaimFeud);var feudId=feud.ConflictInstanceId;feud.UpdateFeudObjectiveControl("a",true,10);feud.UpdateFeudObjectiveControl("a",true,12);Check(feud.Score==2&&feud.ConflictInstanceId==feudId,"claim_feud_objective_partial_preserved");
++  var fields=IdentityStore.Fields(typeof(WarScoreRecord));var ids=fields.Select(f=>f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>().Id).ToArray();
++  Check(fields.Length==38&&ids.Distinct().Count()==38&&ids.OrderBy(n=>n).SequenceEqual(Enumerable.Range(1,38)),"global_record_partial_field_ids_unique_1_to_38");
++  Check(IdentityField().FieldType==typeof(string)&&IdentityField().GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>().Id==38,"new_identity_is_string_field38");
++  Check(typeof(WarScoreRecord).GetProperty("ConflictInstanceId").GetSetMethod()==null,"identity_has_no_public_setter");
++  Console.WriteLine("WAR IDENTITY PASS "+count+"; actual record and SyncData; engine serializer/game NOT_RUN");
++ }
++}

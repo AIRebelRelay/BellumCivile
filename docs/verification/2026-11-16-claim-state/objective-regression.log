@@ -1,0 +1,54 @@
+PASS: Claim motion requires ordinary Nobility agenda eligibility.
+PASS: Direct and ancestor title claims retain identity and cycle protection.
+PASS: Discovery preserves ordinary ownership eligibility and existing de jure exception.
+PASS: Discovery is cached per selection pass, not rerun for each score.
+PASS: Claim targets do not multiply foreign-family lottery weight.
+PASS: Pending grace saves separately from next-term agendas.
+PASS: Grace cannot occupy the next normal term.
+PASS: Runtime grace uses frozen duration rather than current MCM or retry date.
+PASS: Verified award to another house seals grace failure.
+PASS: Loss during grace seals failure before recapture.
+PASS: Final ownership requires both native and title ownership with no pending allocation.
+PASS: Satisfied claim is recognized before title restoration invalidates it.
+PASS: Allocation bonus is applied once in the shared scorer, never over bribery commitments.
+PASS: Allocation reuses current member and aligned NPC Crown checks.
+PASS: Treaty matching includes the exact named holding.
+PASS: Named treaty alternative reuses legal territorial candidates and real budget.
+PASS: Alternative seeds named claim before competing ordinary demands.
+PASS: Named demand cannot be added twice.
+PASS: Manual selection retains prepared claimant and early session.
+PASS: Claim save IDs are appended.
+PASS: Outcome reports use one-shot receipts and actual capped mood.
+PASS: Unique claim localization: BC_AgendaShortClaim
+PASS: Matching claim fallback: BC_AgendaShortClaim
+PASS: Unique claim localization: BC_CourtClaimBegun
+PASS: Matching claim fallback: BC_CourtClaimBegun
+PASS: Unique claim localization: BC_CourtClaimCancelled
+PASS: Matching claim fallback: BC_CourtClaimCancelled
+PASS: Unique claim localization: BC_CourtClaimClosed
+PASS: Matching claim fallback: BC_CourtClaimClosed
+PASS: Unique claim localization: BC_CourtClaimCombinedHint
+PASS: Matching claim fallback: BC_CourtClaimCombinedHint
+PASS: Unique claim localization: BC_CourtClaimComplete
+PASS: Matching claim fallback: BC_CourtClaimComplete
+PASS: Unique claim localization: BC_CourtClaimDetail
+PASS: Matching claim fallback: BC_CourtClaimDetail
+PASS: Unique claim localization: BC_CourtClaimExpired
+PASS: Matching claim fallback: BC_CourtClaimExpired
+PASS: Unique claim localization: BC_CourtClaimFailed
+PASS: Matching claim fallback: BC_CourtClaimFailed
+PASS: Unique claim localization: BC_CourtClaimGrace
+PASS: Matching claim fallback: BC_CourtClaimGrace
+PASS: Unique claim localization: BC_CourtClaimGraceHint
+PASS: Matching claim fallback: BC_CourtClaimGraceHint
+PASS: Unique claim localization: BC_CourtClaimStatus
+PASS: Matching claim fallback: BC_CourtClaimStatus
+PASS: Unique claim localization: BC_CourtClaimSucceeded
+PASS: Matching claim fallback: BC_CourtClaimSucceeded
+PASS: Unique claim localization: BC_CourtRestoreClaim
+PASS: Matching claim fallback: BC_CourtRestoreClaim
+PASS: Unique claim localization: BC_Fief_Delib_ReasonCourtClaim
+PASS: Matching claim fallback: BC_Fief_Delib_ReasonCourtClaim
+PASS: Unique claim localization: BC_WarClaimReason
+PASS: Matching claim fallback: BC_WarClaimReason
+Claim source/XML contracts passed; live campaign and save/load remain separate tests.

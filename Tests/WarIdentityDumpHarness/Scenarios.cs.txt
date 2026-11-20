@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using BellumCivile;
+using BellumCivile.Behaviors;
+
+public static class WarIdentityDumpScenarios
+{
+    private static int count;
+    private static void Check(bool ok, string name)
+    {
+        if (!ok) throw new Exception("FAIL " + name);
+        count++; Console.WriteLine("PASS " + name);
+    }
+    private static WarScoreRecord War(string a = "a", string b = "b", WarScoreConflictType kind = WarScoreConflictType.ForeignWar)
+        => new WarScoreRecord(WarScoreRecord.PairKey(a, b), a, b, 10f, null, kind);
+    private static void Put(WarScoreRecord w, string field, object value)
+        => typeof(WarScoreRecord).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(w, value);
+    private static string Header(IReadOnlyList<string> lines) => lines[0];
+    private static string Fingerprint(IReadOnlyList<string> lines) => Header(lines).Split(new[] { "fingerprint=" }, StringSplitOptions.None)[1];
+
+    public static void Run()
+    {
+        var behavior = new WarScoreBehavior();
+        var empty = behavior.BuildWarIdentityDump();
+        Check(Header(empty).Contains("records=0") && empty.Count == 2, "empty_history_has_two_markers_and_no_rows");
+        var w = War();
+        behavior.Rows.Add(w);
+        var saved = IdentityReaderDigest.Dump(behavior.Rows);
+        var first = behavior.BuildWarIdentityDump();
+        Check(first.Count == 3 && first[1].Contains("id=" + w.ConflictInstanceId)
+            && first[1].Contains("kind=ForeignWar") && first[1].Contains("primary=a opposing=b")
+            && first[1].Contains("state=ACTIVE started_day=10"), "real_record_identity_and_ordered_sides");
+        Check(IdentityReaderDigest.Dump(behavior.Rows) == saved, "passive_read_preserves_all_saved_fields");
+        Check(Fingerprint(first) == Fingerprint(behavior.BuildWarIdentityDump()), "repeat_read_same_fingerprint");
+        w.AddBattleScore(4, 100);
+        Check(first[1].Contains("flags=OK") && first[1] != null, "snapshot_detached_from_later_record_mutation");
+        var newRow = War("c", "d", WarScoreConflictType.CivilWar);
+        var originalNewId = newRow.ConflictInstanceId;
+        newRow.MarkEnded(20);
+        behavior.Rows.Add(newRow);
+        var mixed = behavior.BuildWarIdentityDump();
+        Check(mixed.Count == 4 && Header(mixed).Contains("active=1 ended=1")
+            && mixed.Any(s => s.Contains("kind=CivilWar") && s.Contains("state=ENDED")), "includes_ended_and_internal_rows");
+        behavior.Rows.Reverse();
+        Check(Fingerprint(mixed) == Fingerprint(behavior.BuildWarIdentityDump()), "fingerprint_stable_across_row_order");
+        Put(newRow, "_conflictInstanceId", w.ConflictInstanceId);
+        var duplicated = behavior.BuildWarIdentityDump();
+        Check(Header(duplicated).Contains("duplicate_rows=2")
+            && duplicated.Count(s => s.Contains("flags=DUPLICATE_ID")) == 2, "global_duplicate_including_internal_ended");
+        Put(newRow, "_conflictInstanceId", null);
+        var legacyBefore = IdentityReaderDigest.Dump(behavior.Rows);
+        var legacy = behavior.BuildWarIdentityDump();
+        Check(Header(legacy).Contains("missing_ids=1") && legacy.Any(s => s.Contains("flags=MISSING_ID")), "legacy_null_marked_missing");
+        Check(legacyBefore == IdentityReaderDigest.Dump(behavior.Rows) && newRow.ConflictInstanceId == null,
+            "legacy_null_never_allocated_or_repaired");
+        Put(newRow, "_conflictInstanceId", "MALFORMED\nID");
+        var corruptBefore = IdentityReaderDigest.Dump(behavior.Rows);
+        var corrupt = behavior.BuildWarIdentityDump();
+        Check(corrupt.Any(s => s.Contains("flags=INVALID_ID") && s.Contains("raw_id=MALFORMED\\u000aID")),
+            "malformed_id_visible_but_escaped");
+        Check(corruptBefore == IdentityReaderDigest.Dump(behavior.Rows), "corrupt_raw_id_unchanged");
+        Put(newRow, "_conflictInstanceId", originalNewId);
+        Put(newRow, "_warKey", "broken");
+        var invalid = behavior.BuildWarIdentityDump();
+        Check(invalid.Any(s => s.Contains("flags=INVALID_RECORD")), "invalid_pair_key_flagged_without_repair");
+        behavior.Rows.Add(null);
+        Check(behavior.BuildWarIdentityDump().Any(s => s.Contains("flags=NULL_ROW")), "null_row_flagged_not_dropped");
+        behavior.Rows = null;
+        var uninitialized = behavior.BuildWarIdentityDump();
+        Check(Header(uninitialized).Contains("status=UNINITIALIZED")
+            && behavior.Rows == null && uninitialized.Count == 2, "null_list_never_initialized");
+        Console.WriteLine("WAR_ID_DUMP_PASS " + count + "; actual formatter and saved records; Native game NOT_RUN");
+    }
+}

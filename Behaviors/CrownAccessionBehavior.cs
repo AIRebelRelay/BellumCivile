@@ -16,16 +16,69 @@ namespace BellumCivile.Behaviors
         private readonly HashSet<CrownAccessionRecord> _resolving = new HashSet<CrownAccessionRecord>();
         public static CrownAccessionBehavior Instance => Campaign.Current?.GetCampaignBehavior<CrownAccessionBehavior>();
 
+        public event Action<string, Kingdom, Hero, Hero> CoronationCompleted;
+
+        public bool TryReadCoronation(string id, out Kingdom realm, out Hero previous, out Hero successor)
+        {
+            realm = null; previous = null; successor = null;
+            if (!Guid.TryParseExact(id, "N", out _)) return false;
+            var matches = _accessions.Where(r => r != null && r.CoronationId == id).Take(2).ToList();
+            if (matches.Count != 1) return false;
+            var record = matches[0];
+            if (!record.Completed || !record.TitleTransferred || record.RegentReplacement || record.Realm == null
+                || record.Predecessor == null || record.Heir == null || record.Heir == record.Predecessor) return false;
+            realm = record.Realm; previous = record.Predecessor; successor = record.Heir;
+            return true;
+        }
+
+        // Latest ordinary accession only. Pending or untyped later transitions remain unresolved.
+        // Historical receipts continue to be available through TryReadCoronation.
+        public bool TryReadCurrentCoronation(string id, out Kingdom realm, out Hero previous, out Hero successor)
+        {
+            if (!TryReadCoronation(id, out realm, out previous, out successor)) return false;
+            Kingdom currentRealm = realm;
+            var latest = _accessions.LastOrDefault(r => r != null && r.Realm == currentRealm);
+            if (latest == null || latest.CoronationId != id || realm.IsEliminated
+                || realm.RulingClan == null || realm.RulingClan.Leader != successor
+                || successor.Clan != realm.RulingClan)
+            {
+                realm = null; previous = null; successor = null;
+                return false;
+            }
+            return true;
+        }
+
+        private void NotifyCoronation(CrownAccessionRecord record)
+        {
+            var listeners = CoronationCompleted;
+            if (listeners == null) return;
+            foreach (Action<string, Kingdom, Hero, Hero> listener in listeners.GetInvocationList())
+            {
+                try { listener(record.CoronationId, record.Realm, record.Predecessor, record.Heir); }
+                catch (Exception ex) { BellumCivileLogger.Log("Coronation observer failed: " + ex.GetType().Name); }
+            }
+        }
+
         public override void RegisterEvents()
         {
             CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, ResumePending);
             CampaignEvents.OnPlayerCharacterChangedEvent.AddNonSerializedListener(this, OnPlayerChanged);
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, RegisterCrownDepartureDialogue);
+            CampaignEvents.TickEvent.AddNonSerializedListener(this, ProcessPlayerCrownDepartures);
         }
 
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData("BC_CrownAccessions", ref _accessions);
             _accessions = _accessions ?? new List<CrownAccessionRecord>();
+            if (dataStore.IsLoading)
+            {
+                _activeCrownDeparture = null;
+                _activeCrownDepartureLetter = null;
+                _crownDeparturePostLoadTicks = 2;
+                foreach (var record in _accessions.Where(r => r.PlayerDepartureCaptured && r.PlayerDepartureDialogueAttempted))
+                    record.PlayerDepartureWantsDialogue = false;
+            }
         }
 
         public void Capture(Hero victim)
@@ -332,6 +385,7 @@ namespace BellumCivile.Behaviors
 
         private void Finish(CrownAccessionRecord record, Clan house)
         {
+            CapturePlayerCrownDeparture(record, allowDialogue: false);
             if (!record.TitleTransferred)
             {
                 if (Campaign.Current.GetCampaignBehavior<FeudalTitleBehavior>()?.TrySetKingdomTitleRuler(
@@ -387,6 +441,10 @@ namespace BellumCivile.Behaviors
                         record.ElectiveElection ? ElectiveSuccessionBehavior.Instance?.Get(record.Realm) : null)) return;
             }
             record.Completed = true;
+            bool firstCoronation = record.CoronationId == null;
+            record.StampCoronation();
+            if (firstCoronation && record.CoronationId != null) NotifyCoronation(record);
+            if (!record.RegentReplacement) TitleAcquisitionBehavior.Acceded(record.Realm, record.Predecessor, record.Heir);
             ElectiveContestBehavior.Instance?.CompleteAccession(record);
             if (!record.RegentReplacement) HereditaryLoyaltyBehavior.Instance?.Observe(record.Realm, false);
             if (record.ElectiveElection) ElectiveSuccessionBehavior.Instance?.Complete(record.Realm);

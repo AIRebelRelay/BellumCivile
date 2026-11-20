@@ -20,9 +20,12 @@ Check ($restored.Contains('internal static class RestoredRealmRecoveryTests') -a
 Check ($restored.Contains('Blocked founder movement cannot strand followers') -and
        $restored.Contains('Only verified elimination removes the cleanup record') -and
        $restored.Contains('A saved unfinished restoration is not treated as an unowned historical orphan')) 'Household retry and neighboring orphan protection remain exercised.'
-Check (-not $restored.Contains('ProtectedRealmLoadMigrationPatch') -and
-       -not $restored.Contains('IsMigrationActive') -and
-       -not $restored.Contains('A deferred native duplicate-ruler migration restores')) 'Absent ProtectedRealmLoadMigrationPatch is explicitly excluded; no dummy compatibility patch introduced.'
+Check ($restored.Contains('assembly.GetType("BellumCivile.Patches.ProtectedRealmLoadMigrationPatch", true)') -and
+       $restored.Contains('Patch(AccessTools.Method(migrationPatch, "IsMigrationActive"), nameof(Yes))') -and
+       $restored.Contains('Patch(AccessTools.Method(migrationPatch, "IsMigrationActive"), nameof(No))') -and
+       $restored.Contains('An ordinary load outside the version migration receives no ruler rollback') -and
+       (Read 'Patches/ProtectedRealmLoadMigrationPatch.cs').Contains('[HarmonyPatch(typeof(ClanVariablesCampaignBehavior), "OnGameLoadFinished")]') -and
+       (Read 'Patches/ProtectedRealmLoadMigrationPatch.cs').Contains('MBSaveLoad.IsUpdatingGameVersion')) 'Imported real load-migration patch has active and ordinary-load fixtures, not a dummy compatibility type.'
 Check ($collapse.Contains('internal static class CollapseClaimantRecoveryTests') -and
        $collapse.Contains('An uncommitted winner defecting to an unrelated realm cannot take the Crown') -and
        $collapse.Contains('Ordinary external defections are not hidden by the owned-transfer guard') -and

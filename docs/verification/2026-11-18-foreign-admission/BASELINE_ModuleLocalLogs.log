@@ -1,0 +1,15 @@
+PASS resolve actual module location with spaces
+PASS invalid installation layout rejected
+PASS normal log format and five-megabyte rotation
+PASS old dated logs pruned while unrelated file retained
+PASS blank normal message ignored
+PASS yearly report in same module logs folder
+PASS empty yearly category retains general fallback
+PASS blank yearly report ignored
+PASS write failure contained with existing debugger fallback
+PASS no external log directory fallback
+Copy-Item: 
+Line |
+  10 |  Copy-Item -LiteralPath $navalDll -Destination $packagedNavalDll
+     |                         ~~~~~~~~~
+     | Cannot bind argument to parameter 'LiteralPath' because it is null.

@@ -1,0 +1,36 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+namespace TaleWorlds.SaveSystem {
+ [AttributeUsage(AttributeTargets.Field)]public sealed class SaveableFieldAttribute:Attribute{public int Id;public SaveableFieldAttribute(int id){Id=id;}}
+}
+namespace TaleWorlds.CampaignSystem {
+ public interface IDataStore{bool SyncData<T>(string key,ref T value);}
+ public abstract class CampaignBehaviorBase{public abstract void SyncData(IDataStore dataStore);}
+}
+namespace BellumCivile.Behaviors {
+ public sealed partial class WarScoreBehavior:TaleWorlds.CampaignSystem.CampaignBehaviorBase {
+  private List<WarScoreRecord> _wars=new List<WarScoreRecord>();
+  public List<WarScoreRecord> Rows{get{return _wars;}set{_wars=value;}}
+ }
+}
+public sealed class IdentityStore:TaleWorlds.CampaignSystem.IDataStore {
+ public bool Loading;public object Saved;public string Key;
+ public bool SyncData<T>(string key,ref T value){Key=key;if(Loading)value=(T)Clone(Saved);else Saved=Clone(value);return true;}
+ public static FieldInfo[] Fields(Type t){return t.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Where(f=>f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>()!=null).ToArray();}
+ public static object Clone(object item){
+  if(item==null)return null;var t=item.GetType();if(t.IsPrimitive||t.IsEnum||t==typeof(string))return item;
+  var dict=item as IDictionary;if(dict!=null){var copy=(IDictionary)Activator.CreateInstance(t);foreach(DictionaryEntry pair in dict)copy.Add(Clone(pair.Key),Clone(pair.Value));return copy;}
+  var list=item as IList;if(list!=null){var copy=(IList)Activator.CreateInstance(t);foreach(var value in list)copy.Add(Clone(value));return copy;}
+  var result=RuntimeHelpers.GetUninitializedObject(t);foreach(var f in Fields(t))f.SetValue(result,Clone(f.GetValue(item)));return result;
+ }
+ public static string LegacyDigest(object item){
+  if(item==null)return "<null>";var t=item.GetType();if(t.IsPrimitive||t.IsEnum||t==typeof(string))return t.FullName+":"+Convert.ToString(item,System.Globalization.CultureInfo.InvariantCulture);
+  var list=item as IList;if(list!=null)return "["+string.Join(";",list.Cast<object>().Select(LegacyDigest))+"]";
+  var dict=item as IDictionary;if(dict!=null){var rows=new List<string>();foreach(DictionaryEntry p in dict)rows.Add(LegacyDigest(p.Key)+"="+LegacyDigest(p.Value));return "{"+string.Join(";",rows.OrderBy(x=>x))+"}";}
+  return string.Join(";",Fields(t).Where(f=>!(t==typeof(BellumCivile.WarScoreRecord)&&f.GetCustomAttribute<TaleWorlds.SaveSystem.SaveableFieldAttribute>().Id==38)).OrderBy(f=>f.Name).Select(f=>f.Name+"="+LegacyDigest(f.GetValue(item))));
+ }
+}

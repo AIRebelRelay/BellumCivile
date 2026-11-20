@@ -16,7 +16,11 @@ $old31j = Read 'Tests/Stage31JCourtPublicProvenanceSourceAudit.Tests.ps1'
 
 Check ($patch.Contains('[HarmonyPatch(typeof(KingdomPolicyDecision), "ApplyChosenOutcome")]') -and
     $patch.Contains('Resolved.Add(__instance, new object());') -and
-    $patch.Contains('CourtAgendaBehavior.Current?.Conclude(kingdom, policy, __instance.ProposerClan, abolish, motionSucceeded, __state);')) 'actual_source_vote_conclude_caller_unchanged'
+    $patch.Contains('CourtAgendaBehavior court = CourtAgendaBehavior.Current;') -and
+    $patch.Contains('court?.Conclude(kingdom, policy, __instance.ProposerClan, abolish, motionSucceeded, __state);') -and
+    $patch.IndexOf('ISet<string> proofIdsBefore = court?.SnapshotPolicyVoteProofIds();') -ge 0 -and
+    $patch.IndexOf('court?.Conclude(') -gt $patch.IndexOf('ISet<string> proofIdsBefore =') -and
+    $patch.IndexOf('court?.CapturePolicyVoteAudience(__instance, motionSucceeded, proofIdsBefore);') -gt $patch.IndexOf('court?.Conclude(')) 'actual_source_vote_conclude_caller_unchanged'
 Check ($court.Contains('SyncCourtTerminalEvictionReceipts(dataStore);') -and
     $court.Contains('SyncCourtPolicyVotePublicProvenance(dataStore);') -and
     $court.Contains('RestoreIntegrationIds();')) 'isolated_save_hook_compatible_with_receipts'
@@ -31,7 +35,8 @@ Check ($proof.Contains('private const int MaxCourtPolicyVotePublicProvenance = 1
     $proof.Contains('status=overflow')) 'bounded_and_overflow_visible'
 Check ($proof.Contains('if (_courtPolicyVotePublicProvenance.ContainsKey(agenda.IntegrationId)) return;') -and
     $proof.Contains('_courtPolicyVotePublicProvenance.Add(agenda.IntegrationId, value);')) 'stable_integration_id_dedup'
-Check ($proof.Contains('if (!ValidRealm(agenda.Realm)') -and
+Check ($proof.Contains('if (agenda == null || policy == null || agenda.Sponsor == null') -and
+    $proof.Contains('|| !ValidRealm(agenda.Realm)') -and
     $proof.Contains('!agenda.IsPolicy') -and
     $proof.Contains('!string.IsNullOrEmpty(agenda.CancellationReason)') -and
     $proof.Contains('!Guid.TryParseExact(agenda.IntegrationId, "N"')) 'exclude_invalid_realm_nonpolicy_cancellation_bad_id'

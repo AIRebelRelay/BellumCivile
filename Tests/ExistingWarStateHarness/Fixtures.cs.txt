@@ -1,0 +1,31 @@
+// Boundary doubles only; actual saved records and production readers compile unchanged.
+using System;
+using System.Collections.Generic;
+using TaleWorlds.CampaignSystem;
+namespace TaleWorlds.SaveSystem {
+    [AttributeUsage(AttributeTargets.Field)] public sealed class SaveableFieldAttribute : Attribute { public SaveableFieldAttribute(int id) { } }
+}
+namespace TaleWorlds.CampaignSystem {
+    public sealed class Campaign {
+        public static Campaign Current = new Campaign();
+        public BellumCivile.Behaviors.WarScoreBehavior Wars;
+        public T GetCampaignBehavior<T>() where T : class { return Wars as T; }
+    }
+    public sealed class CampaignTime { public static CampaignTime Now = new CampaignTime(); public double ToDays = 100; }
+    public sealed class Kingdom {
+        public static List<Kingdom> All = new List<Kingdom>();
+        public string StringId; public bool IsEliminated; public bool Hostile = true;
+        public bool IsAtWarWith(Kingdom other) { return Hostile; }
+    }
+}
+namespace BellumCivile.Behaviors {
+    public static class BellumIntegrationBehavior {
+        public static bool Allow = true;
+        public static int GateCalls;
+        public static void RequireCampaignThread() { GateCalls++; if (!Allow || Campaign.Current == null) throw new InvalidOperationException("Fixture campaign thread denied"); }
+    }
+    public sealed partial class WarScoreBehavior {
+        private List<BellumCivile.WarScoreRecord> _wars = new List<BellumCivile.WarScoreRecord>();
+        public List<BellumCivile.WarScoreRecord> FixtureRows { get { return _wars; } set { _wars = value; } }
+    }
+}

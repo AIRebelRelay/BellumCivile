@@ -40,7 +40,11 @@ namespace BellumCivile.Behaviors
         {
             dataStore.SyncData("BellumCivile_WarScore_Wars", ref _wars);
             EnsureCollectionsInitialized();
-            foreach (var war in _wars) war?.EnsureRaidHistory();
+            foreach (var war in _wars)
+            {
+                war?.EnsureRaidHistory();
+                war?.InitializeMissingConflictInstanceId();
+            }
         }
 
         public IReadOnlyList<WarScoreRecord> GetActiveWars()
@@ -337,6 +341,8 @@ namespace BellumCivile.Behaviors
                     && (war.AttackerKingdomId == proposer.Kingdom.StringId || war.DefenderKingdomId == proposer.Kingdom.StringId))
                 .Where(war => !IsAuxiliaryClientWar(war))
                 .Where(war => !IsStorylineProtectedForeignWar(war))
+                .Where(war => !AlliancePeaceRestriction.IsPeaceBlocked(
+                    ResolveKingdom(war.AttackerKingdomId), ResolveKingdom(war.DefenderKingdomId)))
                 .Where(war => war.CanReconsiderPeace(CurrentDay))
                 .Where(war => !requireLowWill || CourtAgendaBehavior.EffectiveWarWill(proposer,war,
                     Campaign.Current.GetCampaignBehavior<WarPeaceRevampBehavior>()?.GetWarWill(proposer) ?? 50) < BellumCivileOptions.WarWillPeaceThreshold)
@@ -469,7 +475,28 @@ namespace BellumCivile.Behaviors
             if (!ShouldTrackForeignWar(attacker, defender))
                 return;
 
-            RegisterConflict(WarScoreConflictType.ForeignWar, attacker, defender, string.Empty, "war declared");
+            // Do not treat an active pair as proof of the same Native war incarnation.
+            // We cannot distinguish a duplicate callback from a redeclaration after
+            // a missed peace callback, so retain gameplay state and mark provenance uncertain.
+            WarScoreRecord previouslyTracked = GetActiveWar(attacker, defender);
+            WarScoreRecord record = RegisterConflict(WarScoreConflictType.ForeignWar, attacker, defender,
+                string.Empty, "war declared");
+            if (record == null) return;
+            if (previouslyTracked != null)
+            {
+                if (record.FlagAmbiguousNativeForeignDeclaration())
+                {
+                    TouchRuntimeRevision();
+                    BellumCivileLogger.Log($"Native foreign war declaration ambiguous; war={record.WarKey}; record_id={record.ConflictInstanceId ?? "unknown"}; observed_again=true; record_unchanged=true; authority=false.");
+                }
+                return;
+            }
+            double nativeStart = ReadForeignNativeWarStart(attacker, defender);
+            if (record.CaptureNewNativeForeignWarStart(nativeStart))
+            {
+                TouchRuntimeRevision();
+                BellumCivileLogger.Log($"Native foreign war-start witness captured; war={record.WarKey}; record_id={record.ConflictInstanceId}; native_start={nativeStart:R}; unique_epoch=false; authority=false.");
+            }
         }
 
         internal bool EnsureProtectionInterventionTracked(Kingdom protector, Kingdom threat, bool declarationAttempted)
@@ -1239,6 +1266,13 @@ namespace BellumCivile.Behaviors
                 }
 
                 if (IsAuxiliaryClientWar(war))
+                {
+                    war.ClearTerminalResolution();
+                    TouchRuntimeRevision();
+                    return false;
+                }
+
+                if (AlliancePeaceRestriction.IsPeaceBlocked(attacker, defender))
                 {
                     war.ClearTerminalResolution();
                     TouchRuntimeRevision();

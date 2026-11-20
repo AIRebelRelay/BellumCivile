@@ -37,6 +37,63 @@ namespace BellumCivile
         [SaveableField(29)] private Dictionary<string, float> _prisonerCustody;
         [SaveableField(30)] private List<string> _attackerRaidedVillages;
         [SaveableField(31)] private List<string> _defenderRaidedVillages;
+        [SaveableField(38)] private string _conflictInstanceId;
+        // Weak Native war-start evidence: never a unique epoch/authority token.
+        // Old saves have all three fields at default values (unknown).
+        [SaveableField(39)] private double _nativeForeignWarStartDay;
+        [SaveableField(40)] private bool _nativeForeignWarStartObserved;
+        [SaveableField(41)] private bool _nativeForeignDeclarationAmbiguous;
+
+        // Recorded-conflict lifetime only. Pair/rulers/context must still be revalidated separately.
+        // Passive accessor: legacy missing or corrupt evidence is unknown, never allocated on read.
+        public string ConflictInstanceId
+        {
+            get
+            {
+                System.Guid id;
+                return System.Guid.TryParseExact(_conflictInstanceId, "N", out id)
+                    && id != System.Guid.Empty && id.ToString("N") == _conflictInstanceId
+                        ? _conflictInstanceId : null;
+            }
+        }
+
+        // Raw saved value for passive diagnostics only; never normalizes or allocates.
+        internal string StoredConflictInstanceId => _conflictInstanceId;
+
+        internal bool NativeForeignWarStartObserved => _nativeForeignWarStartObserved;
+        internal double NativeForeignWarStartDay => _nativeForeignWarStartDay;
+        internal bool NativeForeignDeclarationAmbiguous => _nativeForeignDeclarationAmbiguous;
+
+        // Call only after OnWarDeclared CREATED a new foreign record. Existing records,
+        // including reconciliation/legacy, must not acquire retroactive evidence.
+        internal bool CaptureNewNativeForeignWarStart(double startDay)
+        {
+            if (!_isActive || _conflictType != WarScoreConflictType.ForeignWar
+                || _nativeForeignWarStartObserved || _nativeForeignDeclarationAmbiguous
+                || double.IsNaN(startDay) || double.IsInfinity(startDay) || startDay < 0)
+                return false;
+            _nativeForeignWarStartDay = startDay;
+            _nativeForeignWarStartObserved = true;
+            return true;
+        }
+
+        // Another declaration callback while the same pair is still tracked could
+        // be a duplicate OR a new war after missed peace. Neither can be proven.
+        internal bool FlagAmbiguousNativeForeignDeclaration()
+        {
+            if (!_isActive || _conflictType != WarScoreConflictType.ForeignWar
+                || _nativeForeignDeclarationAmbiguous) return false;
+            _nativeForeignDeclarationAmbiguous = true;
+            return true;
+        }
+
+
+        internal bool InitializeMissingConflictInstanceId()
+        {
+            if (_conflictInstanceId != null) return false;
+            _conflictInstanceId = System.Guid.NewGuid().ToString("N");
+            return true;
+        }
 
         public string WarKey => _warKey;
         public string OriginalWarKey => _originalWarKey ?? _warKey;
@@ -107,6 +164,7 @@ namespace BellumCivile
             _terminalResolutionQueued = false;
             _terminalResolutionReason = string.Empty;
             _landlessPressureScore = 0f;
+            InitializeMissingConflictInstanceId();
         }
 
         internal void AddMissingFiefSnapshots(IEnumerable<WarScoreFiefSnapshotRecord> snapshots)
